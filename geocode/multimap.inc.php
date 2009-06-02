@@ -17,6 +17,6 @@ function geocode_multimap($q){
     
   $place = $json->result_set[0];
   
-  return array($place->address->display_name, array($place->point->lat, $place->point->lon));
+  return array($place->address->display_name, array((float) $place->point->lat, (float) $place->point->lon));
 }
 

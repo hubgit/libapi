@@ -22,6 +22,6 @@ function geocode_google($q){
   
   list($lon, $lat, $level) = $place->Point->coordinates;
   
-  return array($place->address, array($lat, $lon));
+  return array($place->address, array((float) $lat, (float) $lon));
 }
 

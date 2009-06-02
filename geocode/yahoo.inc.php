@@ -14,11 +14,10 @@ function geocode_yahoo($q){
   
   $xml->registerXPathNamespace('y', 'urn:yahoo:maps');
   
-  $results = $xml->xpath("//y:Result");
-  
-  if (!is_object($results) || empty($results))
+  $results = $xml->xpath("y:Result");
+  if (!is_object($xml) || empty($results))
     return array(FALSE, array(FALSE, FALSE));
-    
+  
   $place = $results[0]->children('urn:yahoo:maps');
   
   $name = array();
@@ -31,6 +30,6 @@ function geocode_yahoo($q){
     unset($name['Zip']);
   }
     
-  return array(implode(', ', $name), array((string) $place->Latitude, (string) $place->Longitude));
+  return array(implode(', ', $name), array((float) $place->Latitude, (float) $place->Longitude));
 }
 

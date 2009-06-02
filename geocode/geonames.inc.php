@@ -23,6 +23,6 @@ function geocode_geonames($q){
   if (isset($place->adminName1) && $place->name != $place->adminName1)
     $name = implode(', ', array($name, $place->adminName1));
     
-  return array($name, array($place->lat, $place->lng));
+  return array($name, array((float) $place->lat, (float) $place->lng));
 }
 
