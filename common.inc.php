@@ -3,6 +3,7 @@
 function get_data($url, $params, $format = 'json'){
   debug($params);
   $data = file_get_contents($url . '?' . http_build_query($params));
+  debug($data);
   
   switch ($format){
     case 'json':
