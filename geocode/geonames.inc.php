@@ -2,7 +2,7 @@
 
 # http://www.geonames.org/export/geonames-search.html
 
-return defined('GEONAMES_ENABLED');
+return defined('GEONAMES_GEOCODE');
 
 function geocode_geonames($q){
   $json = get_data('http://ws.geonames.org/searchJSON', array(
