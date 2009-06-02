@@ -41,9 +41,17 @@ function citedby_thomson($doi){
   if (!is_object($xml) || !empty($errors))
     return array(FALSE, array(FALSE, FALSE));
   
-  $results = $xml->xpath("isi:fn/isi:map/isi:map/isi:map[@name='WOS']");
-  $result = $results[0];
-  
-  return array((int) current($result->xpath("isi:val[@name='timesCited']")), (string) current($result->xpath("isi:val[@name='citingArticlesURL']")));
+  $output = array();
+  foreach ($xml->xpath("isi:fn/isi:map/isi:map/isi:map[@name='WOS']/isi:val") as $value){
+    switch((string) $value['name']){
+      case 'timesCited':
+        $output[0] = (int) $value;
+      break;
+      case 'citingArticlesURL':
+        $output[1] = (string) $value;
+      break;
+    } 
+  }
+  return $output;
 }
 
