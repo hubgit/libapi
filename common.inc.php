@@ -15,7 +15,7 @@ function get_data($url, $params = array(), $format = 'json', $http = array()){
     case 'json':
       return json_decode($data);
     case 'xml':
-      return simplexml_load_string($data);
+      return simplexml_load_string($data, NULL, LIBXML_NOCDATA);
     case 'raw':
       return $data;
   }
