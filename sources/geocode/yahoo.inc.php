@@ -2,12 +2,12 @@
 
 # http://developer.yahoo.com/maps/rest/V1/geocode.html
 
-return defined('YAHOO_API_KEY');
+return defined('YAHOO_KEY');
 
 function geocode_yahoo($q){
   $xml = get_data('http://local.yahooapis.com/MapsService/V1/geocode', array(
     'location' => $q,
-    'appid' => YAHOO_API_KEY,
+    'appid' => YAHOO_KEY,
   ), 'xml');
   
   //debug($xml);

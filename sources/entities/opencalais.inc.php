@@ -2,12 +2,12 @@
 
 # http://code.google.com/apis/maps/documentation/geocoding/index.html
 
-return defined('OPENCALAIS_API_KEY');
+return defined('OPENCALAIS_KEY');
 
 function entities_opencalais($text){
   $params = array(
     'content' => sprintf('<Document><Body>%s</Body></Document>', htmlspecialchars($text)),
-    'licenseID' => OPENCALAIS_API_KEY,
+    'licenseID' => OPENCALAIS_KEY,
     'paramsXML' => '<c:params xmlns:c="http://s.opencalais.com/1/pred/">
       <c:processingDirectives c:contentType="text/xml" c:outputFormat="application/json" c:calculateRelevanceScore="true" c:enableMetadataType="GenericRelations"/>
       <c:userDirectives c:allowDistribution="false" c:allowSearch="false"/>

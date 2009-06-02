@@ -2,13 +2,13 @@
 
 # http://searchapidocs.scopus.com/
 
-return defined('SCOPUS_API_KEY');
+return defined('SCOPUS_KEY');
 
 function citedby_scopus($doi){
   $data = get_data('http://www.scopus.com/scsearchapi/search.url', array(
     'search' => sprintf('DOI(%s)', $doi),
     'callback' => 'test',
-    'devId'=> SCOPUS_API_KEY,
+    'devId'=> SCOPUS_KEY,
   ), 'raw');
   
   $json = json_decode(preg_replace('/^test\(/', '', preg_replace('/\)$/', '', $data)));

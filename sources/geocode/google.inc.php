@@ -2,7 +2,7 @@
 
 # http://code.google.com/apis/maps/documentation/geocoding/index.html
 
-return defined('GOOGLE_MAPS_API_KEY');
+return defined('GOOGLE_MAPS_KEY');
 
 function geocode_google($q){
   $json = get_data('http://maps.google.com/maps/geo', array(
@@ -10,7 +10,7 @@ function geocode_google($q){
     'output' => 'json',
     'oe' => 'utf8',
     'sensor' => 'false',
-    'key'=> GOOGLE_API_KEY,
+    'key'=> GOOGLE_KEY,
   ));
   
   //debug($json);

@@ -2,10 +2,10 @@
 
 # http://www.multimap.com/openapidocs/1.2/web_service/ws_geocoding.htm
 
-return defined('MULTIMAP_API_KEY');
+return defined('MULTIMAP_KEY');
 
 function geocode_multimap($q){
-  $json = get_data('http://developer.multimap.com/API/geocode/1.2/' . urlencode(MULTIMAP_API_KEY), array(
+  $json = get_data('http://developer.multimap.com/API/geocode/1.2/' . urlencode(MULTIMAP_KEY), array(
     'qs' => $q,
     'output' => 'json',
   ));

@@ -2,11 +2,11 @@
 
 # http://code.google.com/apis/maps/documentation/geocoding/index.html
 
-return defined('YAHOO_API_KEY');
+return defined('YAHOO_KEY');
 
 function entities_placemaker($text){
   $params = array(
-    'appid' => YAHOO_API_KEY,
+    'appid' => YAHOO_KEY,
     'documentType' => 'text/plain',
     'documentContent' => $text,
   );
