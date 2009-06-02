@@ -1,6 +1,6 @@
 <?php
 
-# http://code.google.com/apis/maps/documentation/geocoding/index.html
+#
 
 return defined('OPENCALAIS_KEY');
 
