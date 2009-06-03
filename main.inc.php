@@ -8,10 +8,12 @@ class API {
     $this->action = $action;
     
     global $enabled;
+    if (empty($enabled[$action]))
+      exit(sprintf('No sources are enabled for action "%s"', $action));
     
     $this->sources = array();
     $match = sprintf('%s/sources/%s/*.inc.php', dirname(__FILE__), $action);
-    foreach (glob($match) as $file){   
+    foreach (glob($match) as $file){ 
       $source = basename($file, '.inc.php');
       if (in_array($source, $enabled[$action]) && include_once($file))
         $this->sources[] = $source;
@@ -21,7 +23,7 @@ class API {
     
   function all($q){
     if (empty($this->sources))
-      exit(sprintf('No sources are enabled for action "%s"', $action));
+      exit(sprintf('No sources are active for action "%s"', $action));
     
     $responses = array();
     foreach ($this->sources as $source){
