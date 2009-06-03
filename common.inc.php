@@ -25,3 +25,19 @@ function debug($arg){
   print_r($arg);
   print "\n";
 }
+
+function xpath_item($xml, $query){
+  $nodes = $xml->xpath($query);
+  if (!empty($nodes))
+    return (string) $nodes[0];
+  return FALSE;
+}
+
+function xpath_items($xml, $query){
+  $nodes = $xml->xpath($query);
+  $items = array();
+  if (!empty($nodes))
+    foreach ($nodes as $node)
+      $items[] = (string) $node;
+  return $items; 
+}

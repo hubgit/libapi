@@ -1,7 +1,8 @@
 <?php
 
-require dirname(__FILE__) . '/config.inc.php';
 require dirname(__FILE__) . '/common.inc.php';
+require dirname(__FILE__) . '/config.inc.php';
+require dirname(__FILE__) . '/enabled.inc.php';
 
 class API {
   function __construct($action){
