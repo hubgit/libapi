@@ -26,13 +26,10 @@ $enabled['entities'] = array(
   'opencalais',
   'placemaker',
   //'whatizit',
-  );
-
-$enabled['entities_pmid'] = array(
   'gopubmed',
   //'biocreative',
   );
-  
+
 $enabled['search'] = array(
   'boss',
   'google',

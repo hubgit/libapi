@@ -2,7 +2,7 @@
 
 # http://bcms.bioinfo.cnio.es/
 
-function entities_pmid_biocreative($q){ 
+function entities_biocreative($q){ 
   if (!$pmid = $q['pmid'])
     return FALSE;
     

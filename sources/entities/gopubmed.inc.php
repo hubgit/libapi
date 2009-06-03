@@ -1,6 +1,6 @@
 <?php
 
-function entities_pmid_gopubmed($pmid){ 
+function entities_gopubmed($q){ 
   if (!$pmid = $q['pmid'])
     return FALSE;
      
