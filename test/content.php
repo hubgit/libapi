@@ -4,6 +4,11 @@ require '../main.inc.php';
 
 $q = 'Google';
 
+$doi = '10.1038/nature07564';
+
 $api = new API('content');
-$responses = content_wikipedia(array('title' => $q));
+$responses = $api->all(array(
+  //'title' => $q, 
+  'doi' => $doi,
+  ));
 debug($responses);

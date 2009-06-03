@@ -2,7 +2,7 @@
 
 # http://en.wikipedia.org/w/api.php
 
-function fetch_wikipedia($q){
+function content_wikipedia($q){
   if (!$title = $q['title'])
     return FALSE;
     

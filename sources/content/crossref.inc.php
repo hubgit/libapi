@@ -1,32 +1,37 @@
 <?php
 
-# 
+# http://www.crossref.org/requestaccount/
+
+return defined('CROSSREF_AUTH');
 
 function content_crossref($q){
-  if (!$doi = $q['doi'])
+  if (!$q['uri'] && $q['doi'])
+    $q['uri'] = 'info:doi/' . $q['doi'];
+    
+  if (!$uri = $q['uri'])
     return FALSE;
-
+    
   $xml = get_data('http://www.crossref.org/openurl/', array(
     'noredirect' => 'true',
     'format' => 'unixref',
-    'id' => 'info:doi/' . $doi,
+    'id' => $uri,
+    'pid' => CROSSREF_AUTH,
     ), 'xml');
   
   //debug($xml);
   
-  $xml->registerXPathNamespace('isi', 'http://www.isinet.com/xrpc41');
-  
   if (!is_object($xml) || empty($xml->doi_record))
     return FALSE;
     
-  $item = $record->crossref->journal;
-  $article = $item->journal_article;
-  $journal = $item->journal_metadata;
-  $issue = $item->journal_issue;
+  $record = $xml->doi_record->crossref->journal;
   
-  if (!is_object($article) || !is_object($issue))
+  $article = $record->journal_article;
+  $journal = $record->journal_metadata;
+  $issue = $record->journal_issue;
+  
+  if (!is_object($article))
     return FALSE;
 
-  return $output;
+  return $record;
 }
 
