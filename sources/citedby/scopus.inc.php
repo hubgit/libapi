@@ -9,9 +9,10 @@ function citedby_scopus($q){
     return FALSE;
     
   $data = get_data('http://www.scopus.com/scsearchapi/search.url', array(
-    'search' => sprintf('DOI(%s)', $doi),
+    'search' => sprintf('DOI("%s")', $doi),
     'callback' => 'test',
     'devId'=> SCOPUS_KEY,
+    //'fields' => 'title,doctype,citedbycount,inwardurl,sourcetitle,issn,vol,issue,page,pubdate,eid,scp,doi,firstAuth,authlist,affiliations,abstract',
   ), 'raw');
   
   $json = json_decode(preg_replace('/^test\(/', '', preg_replace('/\)$/', '', $data)));
