@@ -4,7 +4,10 @@
 
 return defined('YAHOO_KEY');
 
-function entities_placemaker($text){
+function entities_placemaker($q){
+  if (!$text = $q['text'])
+    return FALSE;
+    
   $params = array(
     'appid' => YAHOO_KEY,
     'documentType' => 'text/plain',

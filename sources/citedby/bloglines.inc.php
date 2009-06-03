@@ -4,23 +4,25 @@
 
 return (defined('BLOGLINES_KEY') && defined('BLOGLINES_USER'));
 
-function citedby_bloglines($doi){
-  $url = 'http://dx.doi.org/' . $doi;
-  $url = 'http://hublog.hubmed.org/';
+function citedby_bloglines($q){
+  if (!$q['url'] && $q['doi']))
+    $q['url'] = 'http://dx.doi.org/' . $q['doi'];
+    
+  if (!$url = $q['url'])
+    return FALSE;
 
   $xml = get_data('http://www.bloglines.com/search', array(
     'format' => 'publicapi',
     'apiuser' => BLOGLINES_USER,
     'apikey' => BLOGLINES_KEY,
     's' => 'f',
-    'q' => 'bcite:' . $url,
+    'q' => 'bcite:' . $q['url'],
   ), 'xml');
-  
   
   //debug($xml);
   
   if (!is_object($xml) || !$xml->resultset['found'])
-    return array(FALSE, FALSE, array());
+    return FALSE;
   
   $items = array();
   foreach ($xml->xpath("resultset[@qtype='article']/result") as $item){

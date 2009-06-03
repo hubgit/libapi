@@ -2,7 +2,10 @@
 
 # http://en.wikipedia.org/w/api.php
 
-function fetch_wikipedia($title){    
+function fetch_wikipedia($q){
+  if (!$title = $q['title'])
+    return FALSE;
+    
   $json = get_data('http://en.wikipedia.org/w/api.php', array(
     'action' => 'parse',
     'format' => 'json',

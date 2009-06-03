@@ -4,7 +4,10 @@
 
 return defined('OPENCALAIS_KEY');
 
-function entities_opencalais($text){
+function entities_opencalais($q){
+  if (!$text = $q['text'])
+    return FALSE;
+    
   $params = array(
     'content' => sprintf('<Document><Body>%s</Body></Document>', htmlspecialchars($text)),
     'licenseID' => OPENCALAIS_KEY,
@@ -16,7 +19,6 @@ function entities_opencalais($text){
   );
   
   $http = array('method'=> 'POST', 'content' => http_build_query($params), 'header' => 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8');
-  
   $json = get_data('http://api.opencalais.com/enlighten/rest/', array(), 'json', $http);
   
   //debug($json);

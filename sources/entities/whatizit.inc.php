@@ -2,7 +2,10 @@
 
 # http://www.ebi.ac.uk/webservices/whatizit/
 
-function entities_whatizit($text){ 
+function entities_whatizit($q){ 
+  if (!$text = $q['text'])
+    return FALSE;
+    
   /* Proteins and Gene Ontology terms */
    
   $xml = whatizit_soap('whatizitSwissprotGo2', $text);

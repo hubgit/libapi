@@ -3,7 +3,10 @@
 # http://isiwebofknowledge.com/products_tools/products/related/trlinks/
 # requires authentication
 
-function citedby_thomson($doi){
+function citedby_thomson($q){
+  if (!$doi = $q['doi'])
+    return FALSE;
+    
   $query = sprintf('<map name="%s"><val name="doi">%s</val></map>', htmlspecialchars($doi), htmlspecialchars($doi));
   
   $request = sprintf('<?xml version="1.0" encoding="UTF-8" ?>
@@ -37,7 +40,7 @@ function citedby_thomson($doi){
   
   $errors = $xml->xpath("isi:fn/isi:error");
   if (!is_object($xml) || !empty($errors))
-    return array(FALSE, array(FALSE, FALSE));
+    return FALSE
   
   $output = array();
   foreach ($xml->xpath("isi:fn/isi:map/isi:map/isi:map[@name='WOS']/isi:val") as $value){

@@ -4,7 +4,10 @@
 
 return defined('SCOPUS_KEY');
 
-function citedby_scopus($doi){
+function citedby_scopus($q){
+  if (!$doi = $q['doi'])
+    return FALSE;
+    
   $data = get_data('http://www.scopus.com/scsearchapi/search.url', array(
     'search' => sprintf('DOI(%s)', $doi),
     'callback' => 'test',

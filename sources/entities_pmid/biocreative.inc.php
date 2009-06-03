@@ -2,8 +2,10 @@
 
 # http://bcms.bioinfo.cnio.es/
 
-function entities_pmid_biocreative($pmid){ 
-  debug($pmid);
+function entities_pmid_biocreative($q){ 
+  if (!$pmid = $q['pmid'])
+    return FALSE;
+    
   $http = array('method'=> 'POST', 'content' => xmlrpc_encode_request('Annotations.getAnnotations', $pmid), 'header' => 'Content-Type: text/xml');
   $data = get_data('http://bcms.bioinfo.cnio.es/xmlrpc/', array(), 'raw', $http);
   

@@ -1,6 +1,9 @@
 <?php
 
-function entities_pmid_gopubmed($pmid){  
+function entities_pmid_gopubmed($pmid){ 
+  if (!$pmid = $q['pmid'])
+    return FALSE;
+     
   $xml = get_data('http://www.gopubmed.org/GoMeshPubMed/gomeshpubmed/Search/Xml', array('q' => $pmid . '[PMID]'), 'xml');
   
   //debug($xml);

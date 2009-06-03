@@ -2,9 +2,9 @@
 
 require '../main.inc.php';
 
-$pmid = 16049137;
+$q = 16049137;
 
-$api = new API($pmid);
+$api = new API('entities_pmid');
 
-$responses = $api->all('entities_pmid');
+$responses = $api->all(array('pmid' => $q));
 debug($responses);

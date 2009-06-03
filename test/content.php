@@ -2,8 +2,8 @@
 
 require '../main.inc.php';
 
-$doi = 'Google';
+$q = 'Google';
 
-$api = new API($doi);
-$responses = $api->all('content');
+$api = new API('content');
+$responses = $api->all(array('title' => $q));
 debug($responses);
