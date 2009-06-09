@@ -6,19 +6,17 @@ return (defined('BIBSONOMY_USER') && defined('BIBSONOMY_KEY'));
 
 function metadata_bibsonomy($q){
   if (!$q['uri'] && $q['doi'])
-    $q['uri'] = 'info:doi/' . $q['doi'];
+    $q['uri'] = 'http://dx.doi.org/' . $q['doi'];
     
   if (!$uri = $q['uri'])
     return FALSE;
     
-  $xml = get_data('http://www.crossref.org/openurl/', array(
-    'noredirect' => 'true',
-    'format' => 'unixref',
-    'id' => $uri,
-    'pid' => CROSSREF_AUTH,
+  $xml = get_data('http://scraper.bibsonomy.org/service', array(
+    'url' => $uri,
+    'format' => 'rdf+xml',
     ), 'xml');
   
-  //debug($xml);
+  debug($xml);
   
   if (!is_object($xml) || empty($xml->doi_record))
     return FALSE;
@@ -34,4 +32,3 @@ function metadata_bibsonomy($q){
 
   return $record;
 }
-

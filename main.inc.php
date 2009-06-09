@@ -10,25 +10,27 @@ class API {
   function __construct($action, $sources = array()){
     if (!$action)
       exit('No action has been set');
-      
-    $this->action = $action;
-    
-    if (is_string($sources))
-      $sources = array($sources);
-      
-    if (!empty($sources))
-      return $this->sources = $sources;
-    
-    $this->sources = array();
 
     global $disabled;
+      
+    $this->action = $action;
+    $this->sources = array();
     
     $match = sprintf('%s/sources/%s/*.inc.php', dirname(__FILE__), $action);
     foreach (glob($match) as $file){ 
-      $source = basename($file, '.inc.php');
+      $source = preg_replace('/\.private$/', '', basename($file, '.inc.php'));
       if (!in_array($source, $disabled[$action]) && include_once($file))
         $this->sources[] = $source;
     }
+    
+    if (is_string($sources))
+      $sources = array($sources);
+    
+    // if specific sources were defined, only use those
+    if (!empty($sources))
+      foreach ($this->sources as $key => $source)
+        if (!in_array($source, $sources))
+          unset($this->sources[$key]);
     
     if (empty($this->sources))
       exit(sprintf('No sources are enabled for action "%s"', $action));
