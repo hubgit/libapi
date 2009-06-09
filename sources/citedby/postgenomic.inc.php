@@ -26,4 +26,3 @@ function citedby_postgenomic($q){
     
   return array(count($json), $json);
 }
-

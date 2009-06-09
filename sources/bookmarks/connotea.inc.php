@@ -13,7 +13,9 @@ function bookmarks_connotea($q){
     
   $auth = explode(':', CONNOTEA_AUTH);
 
-  $xml = get_data(sprintf('http://%s:%s@www.connotea.org/data/uri/%s', urlencode($auth[0]), urlencode($auth[1]), md5($uri)), array(), 'xml');
+  $xml = get_data(
+    sprintf('http://%s:%s@www.connotea.org/data/uri/%s', urlencode($auth[0]), urlencode($auth[1]), md5($uri)), 
+    array(), 'rdf');
   
   debug($xml);
     

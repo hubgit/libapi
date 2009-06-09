@@ -5,7 +5,9 @@ function get_data($url, $params = array(), $format = 'json', $http = array()){
   
   if (!empty($params))
     $url .= '?' . http_build_query($params);
-    
+  
+  $http['header'] .= (empty($http['header']) ? '' : "\n") . 'Accept: ' . accept_header($format);
+  
   $context = empty($http) ? NULL : stream_context_create(array('http' => $http));
     
   $data = file_get_contents($url, NULL, $context);
@@ -16,8 +18,25 @@ function get_data($url, $params = array(), $format = 'json', $http = array()){
       return json_decode($data);
     case 'xml':
       return simplexml_load_string($data, NULL, LIBXML_NOCDATA);
+    case 'rdf':
+      return simplexml_load_string($data, NULL, LIBXML_NOCDATA); // TODO: parse RDF
     case 'raw':
+    default:
       return $data;
+  }
+}
+
+function accept_header($format){
+  switch ($format){
+    case 'json':
+      return 'application/json, */*;q=0.2';
+    case 'xml':
+     return 'application/xml, */*;q=0.2';
+    case 'rdf':
+      return 'application/rdf+xml, */*;q=0.2';
+    case 'raw':
+    default:
+      return '*/*';
   }
 }
 

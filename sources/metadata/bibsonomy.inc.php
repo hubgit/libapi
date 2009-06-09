@@ -14,7 +14,7 @@ function metadata_bibsonomy($q){
   $xml = get_data('http://scraper.bibsonomy.org/service', array(
     'url' => $uri,
     'format' => 'rdf+xml',
-    ), 'xml');
+    ), 'rdf');
   
   debug($xml);
   
@@ -23,7 +23,7 @@ function metadata_bibsonomy($q){
   if (!is_object($xml))
     return FALSE;
   
-  $data = array();
+  $data = array('raw' => $xml);
   foreach ($xml->xpath("swrc:Article/*") as $item)
     $data[$item->getName()] = (string) $item;
   
