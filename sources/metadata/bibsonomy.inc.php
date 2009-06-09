@@ -18,17 +18,16 @@ function metadata_bibsonomy($q){
   
   debug($xml);
   
-  if (!is_object($xml) || empty($xml->doi_record))
-    return FALSE;
-    
-  $record = $xml->doi_record->crossref->journal;
+  $xml->registerXPathNamespace('swrc', 'http://swrc.ontoware.org/ontology#');
   
-  $article = $record->journal_article;
-  $journal = $record->journal_metadata;
-  $issue = $record->journal_issue;
-  
-  if (!is_object($article))
+  if (!is_object($xml))
     return FALSE;
+  
+  $data = array();
+  foreach ($xml->xpath("swrc:Article/*") as $item)
+    $data[$item->getName()] = (string) $item;
+  
+  $data['authors'] = xpath_items($xml, "swrc:Article/swrc:author/swrc:Person/swrc:name");    
 
-  return $record;
+  return $data;
 }
