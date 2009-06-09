@@ -1,10 +1,12 @@
 <?php
 
-require dirname(__FILE__) . '/common.inc.php';
-include dirname(__FILE__) . '/common.private.inc.php'; // private functions
+set_include_path(dirname(__FILE__) . PATH_SEPARATOR . get_include_path());
 
-require dirname(__FILE__) . '/config.inc.php';
-require dirname(__FILE__) . '/disabled.inc.php';
+require 'common.inc.php';
+include 'common.private.inc.php'; // private functions
+
+require 'config.inc.php';
+require 'disabled.inc.php';
 
 class API {
   function __construct($action, $sources = array()){
