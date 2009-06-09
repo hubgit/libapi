@@ -13,18 +13,12 @@ function entities_whatizit($q){
   $entities = array();
   $references = array();
   foreach ($xml->xpath('//ebi:uniprot') as $item){
-    foreach (explode(',', (string) $item['ids']) as $id){
-      $entities['Protein'][$id] = array(
-        'title' => (string) $item,
-      );
-    }
+    $entities['Protein'][(string) $item] = (string) $item['ids'];
   }
 
   foreach ($xml->xpath('//ebi:go') as $item){
     $id = (string) $item['concept'];
-    $entities['GO'][$id] = array(
-      'title' => (string) $item['term'],
-    );
+    $entities['GO'][$id] = (string) $item['term'];
     
     $references[] = array(
       'start' => (string) $item['id'],
@@ -51,16 +45,16 @@ function entities_whatizit($q){
     if (!$id)
       continue;
     
-    $entities[$type][$id] = array(
-      'title' => (string) $item['surface'],
-    );
-    
+    $entities[$type][$id] = (string) $item['surface'];
+        
     $references[] = array(
       'text' => (string) $item,
       'score' => (string) $item['weight'],
       'entity' => $id,
       );
   }
+  
+  $references = array(); // tmp
       
   return array($entities, $references);
 }

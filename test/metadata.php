@@ -3,9 +3,9 @@
 require '../main.inc.php';
 
 $q = array(
-  'title' => 'Google',
+  'doi' => '10.1038/nature07564',
   );
 
-$api = new API('content');
+$api = new API('metadata');
 $responses = $api->all($q);
 debug($responses);

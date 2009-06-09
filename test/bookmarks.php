@@ -2,8 +2,10 @@
 
 require '../main.inc.php';
 
-$q = 'http://www.nature.com/';
+$q = array(
+  'uri' => 'http://www.nature.com/',
+  );
 
 $api = new API('bookmarks');
-$responses = $api->all(array('uri' => $q));
+$responses = $api->all($q);
 debug($responses);

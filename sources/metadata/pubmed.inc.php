@@ -2,7 +2,7 @@
 
 # fetch an individual item from PubMed by DOI or PMID
 
-function content_pubmed($q){
+function metadata_pubmed($q){
   if (!$q['pmid'] && $q['doi']){
     $xml = get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi', array(
       'db' => 'pubmed',

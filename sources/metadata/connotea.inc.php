@@ -2,7 +2,7 @@
 
 # http://www.connotea.org/webcite
 
-function content_connotea($q){
+function metadata_connotea($q){
   if (!$q['uri'] && $q['doi'])
     $q['uri'] = 'http://dx.doi.org/' . $q['doi'];
     

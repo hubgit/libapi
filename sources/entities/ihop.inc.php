@@ -13,15 +13,19 @@ function entities_ihop($q){
   if (!is_object($xml))
     return array();
   
-  $xml->registerXPathNamespace('ihop', 'http://www.pdg.cnb.uam.es/UniPub/iHOP/xml');  
+  $xml->registerXPathNamespace('ihop', 'http://www.pdg.cnb.uam.es/UniPub/iHOP/xml');
+  
+  $sentences = $xml->xpath("ihop:iHOPsentence");
+  if (empty($sentences))
+    return FALSE; 
   
   $entities = array();
   
   foreach ($xml->xpath("ihop:iHOPsentence/ihop:iHOPatom/ihop:MeSHLink") as $item)
-    $entities['mesh'][(string) $item['meshId']] = array('title' => (string) $item['term']);
+    $entities['mesh'][(string) $item['meshId']] = (string) $item['term'];
   
   foreach ($xml->xpath("ihop:iHOPsentence/ihop:iHOPatom/ihop:chemicalCompound") as $item)
-    $entities['chemical'][(string) $item['CID']] = array('title' => (string) $item['name']);
+    $entities['chemical'][(string) $item['CID']] = (string) $item['name'];
   
   return array($entities);
 }

@@ -1,10 +1,10 @@
 <?php
 
-# http://www.crossref.org/requestaccount/
+# 
 
-return defined('CROSSREF_AUTH');
+return (defined('BIBSONOMY_USER') && defined('BIBSONOMY_KEY'));
 
-function content_crossref($q){
+function metadata_bibsonomy($q){
   if (!$q['uri'] && $q['doi'])
     $q['uri'] = 'info:doi/' . $q['doi'];
     

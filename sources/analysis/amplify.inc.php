@@ -14,15 +14,22 @@ function analysis_amplify($q){
     'inputText' => $text,
     ), 'xml');
   
-  debug($xml);
+  //debug($xml);
   
   if (!is_object($xml))
-    return array();
+    return FALSE;
     
-  $entities = array(
-    'Topic' => xpath_items($xml, "//Topic/Name"),
-    'Action' => xpath_items($xml,"//Action/Name"),     
-    );
+  $entities = array();
+    
+  foreach ($xml->xpath('//TopicResult') as $item) {
+    $name = xpath_item($item, "Topic/Name");
+    $entities['Topic'][$name] = xpath_item($item, "Polarity/Mean/Name");
+  }
+  
+  foreach ($xml->xpath('//ActionResult') as $item) {
+    $name = xpath_item($item, "Action/Name");
+    $entities['Action'][$name] = xpath_item($item, "ActionType/Result/Name");
+  }
   
   foreach ($xml->xpath('//Demographics') as $item) {
     $entities['Demographics'][] = array(

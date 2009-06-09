@@ -20,7 +20,7 @@ function entities_gopubmed($q){
     $id = (string) $item['id'];
     $type = (string) $item['localName'];
     
-    $entities[$type][$id] = array('title' => (string) $item['name']);
+    $entities[$type][$id] = (string) $item['name'];
   }
   
   foreach ($xml->xpath("ygg:Documents/ygg:Document/ygg:Annotations/ygg:DocAnnotations[@type='Wiki']/ygg:Wiki") as $item){
@@ -32,7 +32,7 @@ function entities_gopubmed($q){
     $data = (string) $item;
     $parts = explode(';', $data);
     $entities['Protein'][$id] = array(
-      'uniprot' => explode('|', $parts[0]),
+      'uniprot' => $parts[0], //explode('|', $parts[0]),
       'title' => $parts[1],
       );
   }

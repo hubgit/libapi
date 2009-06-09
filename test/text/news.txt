@@ -1,0 +1,33 @@
+The United States has awarded a US$90-million contract to biotech company MedImmune to produce a new live attenuated virus vaccine against influenza A (H1N1) swine flu. The 1 June announcement follows the placing of almost $1 billion in vaccine-supply contracts to pharmaceutical companies a fortnight ago.
+
+Nature News analyses the likely impact of these efforts on domestic and world ability to mobilize sufficient swine flu vaccine - and the importance of deploying new technologies to boost production capacity.
+Why the rash of announcements from the United States now?
+
+The US government has cottoned on to the cruel mathematics: current flu vaccine production capacities fall short of what would be needed in a pandemic.
+
+Rather than just awarding new vaccine-supply contracts, the government is hoping to implement new technologies that could effectively boost the amount of vaccine available from existing manufacturing capacity. These include creating new live-virus attentuated vaccines and testing adjuvants that boost the immune response of pandemic flu vaccines. Potentially some vaccines may also be produced more quickly - perhaps providing enough to protect first responders - by making them in caterpillar cells, rather than in the usual hens' eggs.
+How does the $90-million live attenuated vaccine contract help?
+
+The virus in a live attenuated vaccine multiplies in vaccinated people without causing illness. It can therefore be given in much lower doses than a killed virus or an antigen subunit vaccine, effectively increasing vaccine supply 30- to 100-fold (see Vaccine decisions loom for new flu strain). MedImmune, based in Gaithersburg, Maryland, already makes a live attenuated seasonal flu vaccine, FluMist, which is approved for use in the United States for those aged 2-49 years old.
+
+It's not yet clear that this contract will increase vaccine capacity much. The efficacy of a new H1N1 vaccine will only be apparent once clinical trials have been carried out. Also, MedImmune's own production capacity is limited, and it will be hard for government to persuade other vaccine makers to turn their egg vaccine plants over to live attenuated vaccine production.
+If the other vaccine contracts are the traditional sort, how will they help increase production capacity?
+
+As part of the $1-billion contract, the US government has awarded Sanofi Pasteur $191 million, Novartis $150 million, CSL Biotherapies $180 million and GlaxoSmithKline (GSK) $38 million to supply H1N1 vaccine antigen. But these companies will also be testing adjuvants, chemicals that boost the capacity of the vaccine to stimulate an immune response, meaning that you can stretch the available vaccine to cover more people. The United States will be buying $283 million worth of adjuvant from Novartis and GSK to test alongside vaccine antigen.
+
+"Someone has gotten the message, someone is listening," says Robert Webster, a flu virologist at St Jude Children's Research Hospital in Memphis, Tennessee. Webster, who developed some of the first subunit antigen flu vaccines, says these lost the "marvellous adjuvant effect of whole virus vaccines; it's absolutely the case that we need these new adjuvants to give that same effect."
+Are there any other new technologies for increasing our vaccine stores?
+
+One hope is to compress the production cycle: growing the virus in hens' eggs takes time. Although the US Centers for Disease Control and Prevention in Atlanta, Georgia, last week began shipping seed vaccine strains of the novel swine H1N1 virus to vaccine manufacturers, substantial amounts will not flow until October.
+
+New technologies hold out the promise of producing flu vaccine in weeks, but almost all are still in the research stage. One possible practical option is a flu vaccine produced by Protein Sciences of Meriden, Connecticut, in suspensions of cells of the caterpillar Spodoptera frugiperda that have been infected with a baculovirus carrying genes for virus surface proteins. The company could in principle start rolling out a swine flu vaccine within six weeks, and was the only new vaccine technology company to be invited to a World Health Organization (WHO) meeting in Geneva two weeks ago on swine flu vaccine strategy.
+
+Protein Sciences received word last week that it will receive a federal contract to produce swine flu vaccine, and so will be able to purchase some much-needed extra manufacturing capacity. At present, it can only produce up to 30,000 doses a week. It has applied for an FDA licence for its 'FluBlok' vaccine for adults in April 2008 and expects a decision by October, says chief operating officer Manon Cox. The company hopes to get emergency clearance for a swine flu vaccine and will run clinical trials this month on its H1N1 vaccine candidate.
+Globally, what are the latest figures on how much vaccine the world might be able to produce, and when?
+
+The figures vary depending on how much virus antigen is needed, whether one or two doses are needed, and how successful any adjuvants are. The WHO's initial estimates last month were that if current world production capacity was all switched over to a H1N1 vaccine, the amount available by this Christmas could range from just over a billion doses to less than 500 million.
+
+WHO's expert committee on vaccines has since said that up to 4.9 billion doses could be available in 12 months, but real data will only be available this summer. For the moment, the WHO's new higher estimates are 'wildly optimistic', says David Fedson, a pandemic-vaccine expert and former employee of Aventis Pasteur MSD, a joint venture European vaccine company owned by Aventis Pasteur and Merck in the US.
+How much vaccine are developing countries likely to get?
+
+The picture here isn't bright. The WHO is trying to negotiate for 10% of global production to be set aside for developing countries. If, for example, 860 million doses are available by Christmas, that would mean just 86 million doses; if two doses were needed per person, it will be only enough for 43 million people. That's "a drop in the bucket," Fedson says. But if there is aggressive political leadership to focus on maximizing output by diverting production capacity to a mix of adjuvants, live attenuated virus and maybe caterpillar-cell vaccines, there is just the possibility of having more than enough vaccine to go round. That remains a remote hope.

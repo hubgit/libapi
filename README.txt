@@ -1,13 +1,23 @@
 A collection of text processing APIs.
 
-* geocode: a port of Simon Willison's geocoders http://github.com/simonw/geocoders/
-Returns ((string) place_name, ((float) lat, (float) lon)) if the string can be geocoded.
+* analysis: sentiment analysis
+
+* bookmarks: list of bookmarks for the given identifier
 
 * citedby: APIs that return citation counts for a DOI
 Returns ((int) citedbycount, (string) url for citedby page) if successful.
 
+* content: fetch content
+
 * entities: extract entities from a string of text (or sometimes XML)
 Returns ((array) entities, (array) references): a list of entities found in the text and their positions.
+
+* geocode: a port of Simon Willison's geocoders http://github.com/simonw/geocoders/
+Returns ((string) place_name, ((float) lat, (float) lon)) if the string can be geocoded.
+
+* metadata: metadata about an object, given an identifier
+
+* search: search results for a given term
 
 ===
 
