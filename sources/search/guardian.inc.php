@@ -20,6 +20,6 @@ function search_guardian($q, $params = array()){
   if (!is_object($json))
     return FALSE;
     
-  return array($json->total, $json->results);
+  return array($json->search->count, $json->search->results);
 }
 
