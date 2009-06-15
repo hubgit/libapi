@@ -5,8 +5,8 @@
 return defined('NYTIMES_KEY');
 
 function content_nytimes($q){
-  if (isset($q['facet']))
-    $query = sprintf('des_facet:[%s]', $q['facet']);
+  if (isset($q['nytimes-facet']))
+    $query = sprintf('des_facet:[%s]', $q['nytimes-facet']);
     
   if (!isset($query))
     return FALSE;

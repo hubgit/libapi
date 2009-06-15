@@ -4,6 +4,6 @@ require '../main.inc.php';
 
 $q = 'anatomy';
 
-$api = new API('search');
+$api = new API('search', 'guardian');
 $responses = $api->all($q);
 debug($responses);

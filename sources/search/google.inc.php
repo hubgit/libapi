@@ -17,7 +17,7 @@ function search_google($q, $params = array()){
   $http = array('header' => 'Referer: ' . GOOGLE_REFERER);
   $json = get_data('http://ajax.googleapis.com/ajax/services/search/web', array_merge($default, $params), 'json', $http);
   
-  debug($json);
+  //debug($json);
   
   if (!is_object($json))
     return FALSE;

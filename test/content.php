@@ -4,11 +4,12 @@ require '../main.inc.php';
 
 $q = array(
   //'title' => 'Google',
-  'facet' => 'SCIENCE AND TECHNOLOGY',
-  'output' => '../data/nytimes',
+  //'nytimes-facet' => 'SCIENCE AND TECHNOLOGY',
+  'guardian-filter' => '/science',
+  'output' => '../data/guardian',
   );
 
 //$api = new API('content');
-$api = new API('content', 'nytimes');
+$api = new API('content', 'guardian');
 $responses = $api->all($q);
 debug($responses);
