@@ -11,6 +11,9 @@ mysql_query('SET CHARACTER SET utf8');
 function db_query(){
   $params = func_get_args();
   $query = array_shift($params);
+  
+  if (is_array($params[0]))
+    $params = $params[0];
  
   foreach ($params as $key => $value)
     if (!is_int($value))

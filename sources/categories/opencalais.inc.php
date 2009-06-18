@@ -1,10 +1,10 @@
 <?php
 
-#
+# http://opencalais.com/documentation/calais-web-service-api
 
 return defined('OPENCALAIS_KEY');
 
-function entities_opencalais($q){
+function categories_opencalais($q){
   if (!$text = $q['text'])
     return FALSE;
     
@@ -12,7 +12,7 @@ function entities_opencalais($q){
     'content' => sprintf('<Document><Body>%s</Body></Document>', htmlspecialchars($text)),
     'licenseID' => OPENCALAIS_KEY,
     'paramsXML' => '<c:params xmlns:c="http://s.opencalais.com/1/pred/">
-      <c:processingDirectives c:contentType="text/xml" c:outputFormat="application/json" c:calculateRelevanceScore="true" c:enableMetadataType="GenericRelations"/>
+      <c:processingDirectives c:contentType="text/xml" c:outputFormat="application/json" c:enableMetadataType="SocialTags"/>
       <c:userDirectives c:allowDistribution="false" c:allowSearch="false"/>
       <c:externalMetadata/>
       </c:params>',
@@ -21,33 +21,34 @@ function entities_opencalais($q){
   $http = array('method'=> 'POST', 'content' => http_build_query($params), 'header' => 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8');
   $json = get_data('http://api.opencalais.com/enlighten/rest/', array(), 'json', $http);
   
-  //debug($json);
+  debug($json);
   
   if (!is_object($json))
     return array();
       
-  $entities = array();
-  $references = array();
+  $categories = array();
+      
   foreach ($json as $id => $data){
-    if ($id == 'doc' || $data->{'_typeGroup'} != 'entities')
+    if ($id == 'doc')
       continue;
       
-    $entities[$data->{'_type'}][$id] = array(
-      'title' => $data->name,
-      'score' => $data->relevance,
-      'raw' => $data,
-      );
-    
-    foreach ($data->instances as $instance){
-      $references[] = array(
-        'start' => $instance->offset,
-        'end' => $instance->offset + $instance->length,
-        'text' => $instance->exact,
-        'entity' => $id,
-        );
-    }
+    switch($data->{'_typeGroup'}){
+      case 'topics':
+        $categories[$data->category] = array(
+          'title' => $data->categoryName,
+          'raw' => $data,
+          );
+      break;
+      
+      case 'socialTag':
+        $categories[$data->socialTag] = array(
+          'title' => $data->name,
+          'score' => $data->importance,
+          'raw' => $data,
+          );      
+      break;
+    }    
   }
   
-  return array($entities, $references);
+  return $categories;
 }
-

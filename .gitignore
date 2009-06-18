@@ -5,6 +5,9 @@ libapi.tmproj
 private
 *.private.*
 
-test/results.*
+test/results
 
 data
+scripts
+html
+

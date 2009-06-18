@@ -6,12 +6,13 @@ function get_data($url, $params = array(), $format = 'json', $http = array()){
   if (!empty($params))
     $url .= '?' . http_build_query($params);
   
-  $http['header'] .= (empty($http['header']) ? '' : "\n") . 'Accept: ' . accept_header($format);
+  //$http['header'] .= (empty($http['header']) ? '' : "\n") . 'Accept: ' . accept_header($format);
   
   $context = empty($http) ? NULL : stream_context_create(array('http' => $http));
-    
+  
   $data = file_get_contents($url, NULL, $context);
   debug($data);
+  debug($http_response_header);
   
   switch ($format){
     case 'json':
