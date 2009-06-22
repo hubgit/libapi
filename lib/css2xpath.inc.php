@@ -15,6 +15,7 @@ class CSS2XPath{
     }
     return 'descendant::' . $s;
   }
+  
   function __construct(){
     $this->re = array(
       // add @ for attribs
