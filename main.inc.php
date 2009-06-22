@@ -1,6 +1,10 @@
 <?php
 
-set_include_path(dirname(__FILE__) . PATH_SEPARATOR . get_include_path());
+set_include_path(implode(PATH_SEPARATOR, array(
+  dirname(__FILE__),
+  dirname(__FILE__) . '/lib',
+  get_include_path()
+  )));
 
 require 'common.inc.php';
 include 'common.private.inc.php'; // private functions

@@ -11,14 +11,16 @@ function get_data($url, $params = array(), $format = 'json', $http = array()){
   $context = empty($http) ? NULL : stream_context_create(array('http' => $http));
   
   $data = file_get_contents($url, NULL, $context);
-  debug($data);
-  debug($http_response_header);
+  //debug($data);
+  //debug($http_response_header);
   
   switch ($format){
     case 'json':
       return json_decode($data);
     case 'xml':
       return simplexml_load_string($data, NULL, LIBXML_NOCDATA);
+    case 'html':
+      return simplexml_import_dom(@DOMDocument::loadHTML($data));
     case 'rdf':
       return simplexml_load_string($data, NULL, LIBXML_NOCDATA); // TODO: parse RDF
     case 'raw':
@@ -60,4 +62,20 @@ function xpath_items($xml, $query){
     foreach ($nodes as $node)
       $items[] = (string) $node;
   return $items; 
+}
+
+# http://developer.yahoo.com/yql/
+function yql($query, $format = 'json'){
+  return get_data('http://query.yahooapis.com/v1/public/yql', array(
+    'q' => $query,
+    'format' => $format,
+    ));
+}
+
+function base64_encode_file($t){
+  return strtr(base64_encode($t), '+/', '-_') ;
+}
+
+function base64_decode_file($t){
+  return base64_decode(strtr($t, '-_', '+/'));
 }
