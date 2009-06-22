@@ -1,5 +1,7 @@
 <?php
 
+// ported from the javascript version at http://code.google.com/p/css2xpath/
+
 class CSS2XPath{
   function transform($s){
     $i = 0;

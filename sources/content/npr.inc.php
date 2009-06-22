@@ -1,6 +1,7 @@
 <?php
 
 # http://www.npr.org/api/
+# Note that full-text content is not available for some topics.
 
 return defined('NPR_KEY');
 
