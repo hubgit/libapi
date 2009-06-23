@@ -8,6 +8,7 @@ A collection of text processing APIs.
 Returns ((int) citedbycount, (string) url for citedby page) if successful.
 
 * content: fetch content
+Stores items in an output folder if defined, otherwise returns an array of items.
 
 * entities: extract entities from a string of text (or sometimes XML)
 Returns ((array) entities, (array) references): a list of entities found in the text and their positions.
@@ -18,11 +19,10 @@ Returns ((string) place_name, ((float) lat, (float) lon)) if the string can be g
 * metadata: metadata about an object, given an identifier
 
 * search: search results for a given term
+Returns an array of search results
 
 ===
 
-To get started, copy config-example.inc.php to config.inc.php and add in your own API keys. Comment out the definition lines in this file for services you don't want to be active.
+To get started, copy config-example.inc.php to config.inc.php and add in your own API keys.
 
 See the scripts in the 'test' folder for an example of how to call a particular class of APIs.
-
-
