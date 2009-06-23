@@ -7,6 +7,7 @@ mysql_connect('localhost', DB_USER, DB_PASS) or die("Could not connect to MySQL 
 mysql_select_db(DB) or die("Could not select database\n");
 
 mysql_query('SET CHARACTER SET utf8');
+//mysql_query('SET NAMES utf8');
 
 function db_query(){
   $params = func_get_args();
