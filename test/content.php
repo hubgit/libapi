@@ -23,5 +23,5 @@ $q = array(
 
 //$api = new API('content');
 $api = new API('content', 'npr');
-$responses = $api->all($q);
+$responses = $api->run($q);
 debug($responses);

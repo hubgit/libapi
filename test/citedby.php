@@ -10,5 +10,5 @@ $q = array(
   );
 
 $api = new API('citedby');
-$responses = $api->all($q);
+$responses = $api->run($q);
 debug($responses);

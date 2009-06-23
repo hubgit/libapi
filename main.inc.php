@@ -17,33 +17,35 @@ require 'common.inc.php';
 include 'common.private.inc.php'; // private functions
 
 require 'config.inc.php';
-require 'disabled.inc.php';
 
 class API {
-  function __construct($action, $sources = array()){
+  function __construct($action, $sources = NULL){
     if (!$action)
       exit('No action has been set');
-
-    global $disabled;
       
     $this->action = $action;
-    $this->sources = array();
+    
+    $available = array();
     
     $match = sprintf('%s/sources/%s/*.inc.php', dirname(__FILE__), $action);
-    foreach (glob($match) as $file){ 
-      $source = preg_replace('/\.private$/', '', basename($file, '.inc.php'));
-      if (!in_array($source, $disabled[$action]) && include_once($file))
-        $this->sources[] = $source;
+    foreach (glob($match) as $file)
+      if (include_once($file))
+        $available[] = preg_replace('/\.private$/', '', basename($file, '.inc.php'));
+    
+    // use all available sources if none were specified
+    if (!isset($sources)){
+      $this->sources = $available;
     }
+    else{
+      // if specific sources were defined, use only those
+      if (is_string($sources))
+        $sources = array($sources);
     
-    if (is_string($sources))
-      $sources = array($sources);
-    
-    // if specific sources were defined, only use those
-    if (!empty($sources))
-      foreach ($this->sources as $key => $source)
-        if (!in_array($source, $sources))
-          unset($this->sources[$key]);
+      $this->sources = array();
+      foreach ($sources as $source)
+        if (in_array($source, $available))
+          $this->sources[] = $source;
+    }
     
     if (empty($this->sources))
       exit(sprintf('No sources are enabled for action "%s"', $action));
@@ -52,7 +54,10 @@ class API {
     return $this->sources;
   }
     
-  function all($q){
+  function run($q){
+    if (!$this->action)
+      exit('No action has been set');
+      
     if (empty($this->sources))
       exit(sprintf('No sources are active for action "%s"', $this->action));
     

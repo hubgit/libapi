@@ -13,7 +13,7 @@ $api = new API('entities', array(
   'ihop'
   ));
   
-$responses = $api->all($q);
+$responses = $api->run($q);
 
 debug($responses);
 

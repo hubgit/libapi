@@ -7,5 +7,5 @@ $q = array(
 );
 
 $api = new API('analysis', 'amplify');
-$responses = $api->all($q);
+$responses = $api->run($q);
 debug($responses);

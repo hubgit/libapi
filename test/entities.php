@@ -8,5 +8,5 @@ $q = array(
 );
 
 $api = new API('entities', 'opencalais');
-$responses = $api->all($q);
+$responses = $api->run($q);
 debug($responses);

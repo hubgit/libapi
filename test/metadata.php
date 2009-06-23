@@ -8,5 +8,5 @@ $q = array(
 
 $api = new API('metadata');
 //$api = new API('metadata', 'bibsonomy');
-$responses = $api->all($q);
+$responses = $api->run($q);
 debug($responses);

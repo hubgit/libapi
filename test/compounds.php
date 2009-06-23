@@ -7,5 +7,5 @@ $q = array(
   );
 
 $api = new API('entities', array('whatizit'));
-$responses = $api->all($q);
+$responses = $api->run($q);
 debug($responses);

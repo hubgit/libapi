@@ -7,5 +7,5 @@ $q = array(
   );
 
 $api = new API('bookmarks');
-$responses = $api->all($q);
+$responses = $api->run($q);
 debug($responses);
