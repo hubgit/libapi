@@ -15,13 +15,15 @@ function get_data($url, $params = array(), $format = 'json', $http = array()){
   return format_data($format, $data);
 }
 
-function get_data_curl($url, $params = array(), $format = 'json', $http = array()){
+function get_data_curl($url, $params = array(), $format = 'json', $http = array(), $curl_params = array()){
   debug($params);
   if (!empty($params))
     $url .= '?' . http_build_query($params);
         
   $curl = curl_init($url);
-  curl_setopt_array($curl, array(
+  
+  // array_merge doesn't preserve numeric keys
+  curl_setopt_array($curl, $curl_params + array(
     CURLOPT_CONNECTTIMEOUT => 60, // 1 minute
     CURLOPT_TIMEOUT => 60*60*24, // 1 day
     CURLOPT_RETURNTRANSFER => 1, // return contents
@@ -34,7 +36,7 @@ function get_data_curl($url, $params = array(), $format = 'json', $http = array(
   $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
   debug('Status: ' . $status);  
-  //debug($data);
+  debug($data);
 
   curl_close($curl);
   return format_data($format, $data); 
@@ -105,4 +107,19 @@ function base64_encode_file($t){
 
 function base64_decode_file($t){
   return base64_decode(strtr($t, '-_', '+/'));
+}
+
+function snippet($text, $start, $end, $pad = 50, $wrap = array('<b>', '</b>')){
+  $length = mb_strlen($text);
+  $position = array($start, $end);
+  
+  $start -= $pad;
+  while ($start > 0 && preg_match('/\S/', mb_substr($text, $start, 1)))
+    $start--;
+    
+  $end += $pad;
+  while ($end < $length && preg_match('/\S/', mb_substr($text, $end, 1)))
+    $end++;
+    
+  return mb_substr($text, $start, $position[0] - $start) . $wrap[0] . mb_substr($text, $position[0], $position[1] - $position[0]) . $wrap[1] . mb_substr($text, $position[1], $end - $position[1]);
 }

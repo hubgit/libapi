@@ -26,21 +26,27 @@ function entities_placemaker($q){
   $xml->registerXPathNamespace('y', 'http://wherein.yahooapis.com/v1/schema');
   
   $entities = array();
-  foreach ($xml->xpath("y:document/y:placeDetails/y:place") as $item){
-    $id = (int) $item->woeId;
-    $type = (string) $item->type;
-    $entities[$type][$id] = array(
-      'title' => (string) $item->name,
-      'lat' => (float) $item->centroid->latitude,
-      'lng' => (float) $item->centroid->longitude,
-      'score' => (int) $item->confidence,
-      );
+  $nodes = $xml->xpath("y:document/y:placeDetails/y:place");
+  if (!empty($nodes)){
+    foreach ($nodes as $item){
+      $id = (int) $item->woeId;
+      $type = (string) $item->type;
+      $entities[$type][$id] = array(
+        'title' => (string) $item->name,
+        'lat' => (float) $item->centroid->latitude,
+        'lng' => (float) $item->centroid->longitude,
+        'score' => (int) $item->confidence,
+        );
+    }
   }
   
   $references = array();
-  foreach ($xml->xpath("y:document/y:referenceList/y:reference") as $item){
-    $id = (string) $item->woeIds;
-    $references[] = array('start' => (int) $item->start, 'end' => (int) $item->end, 'text' => (string) $item->text, 'entity' => $id);
+  $nodes = $xml->xpath("y:document/y:referenceList/y:reference");
+  if (!empty($nodes)){
+    foreach ($nodes as $item){
+      $id = (string) $item->woeIds;
+      $references[] = array('start' => (int) $item->start, 'end' => (int) $item->end, 'text' => (string) $item->text, 'entity' => $id);
+    }
   }
       
   return array($entities, $references);
