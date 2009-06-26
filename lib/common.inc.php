@@ -109,7 +109,7 @@ function base64_decode_file($t){
   return base64_decode(strtr($t, '-_', '+/'));
 }
 
-function snippet($text, $start, $end, $pad = 50, $wrap = array('<b>', '</b>')){
+function snippet($text, $start, $end, $pad = 50){
   $length = mb_strlen($text);
   $position = array($start, $end);
   
@@ -121,5 +121,15 @@ function snippet($text, $start, $end, $pad = 50, $wrap = array('<b>', '</b>')){
   while ($end < $length && preg_match('/\S/', mb_substr($text, $end, 1)))
     $end++;
     
-  return mb_substr($text, $start, $position[0] - $start) . $wrap[0] . mb_substr($text, $position[0], $position[1] - $position[0]) . $wrap[1] . mb_substr($text, $position[1], $end - $position[1]);
+  return mb_substr($text, $start, $position[0] - $start) . '{{{' . mb_substr($text, $position[0], $position[1] - $position[0]) . '}}}' . mb_substr($text, $position[1], $end - $position[1]);
+}
+
+function output_folder($dir){
+  $dir = DATA_DIR . $dir;
+  
+  if (!file_exists($dir))
+    mkdir($dir, 0755, TRUE);
+  if (!is_dir($dir))
+    return FALSE;
+  return $dir;
 }

@@ -43,7 +43,10 @@ function entities_opencalais($q){
         'start' => $instance->offset,
         'end' => $instance->offset + $instance->length,
         'text' => $instance->exact,
+        'name' => $data->name,
+        'type' => $data->{'_type'},
         'entity' => $id,
+        'snippet' => sprintf('%s{{{%s}}}%s', $instance->prefix, $instance->exact, $instance->suffix),
         );
     }
   }

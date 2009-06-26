@@ -11,13 +11,9 @@ function content_delicious_tag($q){
   if (!isset($query))
     return FALSE;
     
-  if (isset($q['output'])){
-    $output_folder = $q['output'];
-    if (!file_exists($output_folder))
-      mkdir($output_folder, 0755, TRUE);
-    if (!is_dir($output_folder))
+  if (isset($q['output']))
+    if (!$output_folder = output_folder($q['output']))
       return FALSE;
-  }
   
   $css2xpath = new CSS2XPath();
       
