@@ -35,8 +35,8 @@ function get_data_curl($url, $params = array(), $format = 'json', $http = array(
   $data = curl_exec($curl);  
   $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
-  debug('Status: ' . $status);  
-  debug($data);
+  //debug('Status: ' . $status);  
+  //debug($data);
 
   curl_close($curl);
   return format_data($format, $data); 
@@ -52,6 +52,8 @@ function format_data($format, $data){
       return simplexml_import_dom(@DOMDocument::loadHTML($data));
     case 'rdf':
       return simplexml_load_string($data, NULL, LIBXML_NOCDATA); // TODO: parse RDF
+    case 'php':
+      return unserialize($data);
     case 'raw':
     default:
       return $data;
@@ -94,7 +96,10 @@ function xpath_items($xml, $query){
 }
 
 # http://developer.yahoo.com/yql/
-function yql($query, $format = 'json'){
+function yql($query, $args = array(), $format = 'json'){
+  if (!empty($args))
+    $query = vsprintf($query, is_array($args) ? $args : array($args));
+  
   return get_data('http://query.yahooapis.com/v1/public/yql', array(
     'q' => $query,
     'format' => $format,
@@ -114,10 +119,13 @@ function snippet($text, $start, $end, $pad = 50){
   $position = array($start, $end);
   
   $start -= $pad;
+  $start = max($start, 0);
+  
   while ($start > 0 && preg_match('/\S/', mb_substr($text, $start, 1)))
     $start--;
     
   $end += $pad;
+  $end = min($end, $length);
   while ($end < $length && preg_match('/\S/', mb_substr($text, $end, 1)))
     $end++;
     
@@ -130,6 +138,10 @@ function output_folder($dir){
   if (!file_exists($dir))
     mkdir($dir, 0755, TRUE);
   if (!is_dir($dir))
-    return FALSE;
+    exit('Could not create output folder ' . $dir);
   return $dir;
+}
+
+function space_prefix_html_elements($html){
+  return preg_replace("/<(p|div|br|h1|h2|h3|h4|h5|h6|ol|ul|li|pre|address|blockquote|dl|div|fieldset|form|hr|noscript|table|td|dd|dt)(\s|>)/", ' <$1$2', $html);
 }
