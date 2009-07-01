@@ -5,15 +5,11 @@
 require 'lib/css2xpath.inc.php';
 
 function content_delicious_tag($q){
-  if (isset($q['tag']))
-    $query = $q['tag'];
-    
-  if (!isset($query))
+  if (!$query = $q['tag'])
     return FALSE;
     
   if (isset($q['output']))
-    if (!$output_folder = output_folder($q['output']))
-      return FALSE;
+    $output_folder = output_folder($q['output']);
   
   $css2xpath = new CSS2XPath();
       

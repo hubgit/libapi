@@ -12,8 +12,7 @@ function content_nytimes($q){
     return FALSE;
     
   if (isset($q['output']))
-    if (!$output_folder = output_folder($q['output']))
-      return FALSE;
+    $output_folder = output_folder($q['output']);
   
   $n = 10;
   $page = 0; // results start at 0

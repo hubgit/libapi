@@ -6,15 +6,14 @@
 return defined('NPR_KEY');
 
 function content_npr($q){
-  if (isset($q['npr-topic']))
-    $query = $q['npr-topic']; // eg 1007 = 'Health & Science' // http://www.npr.org/api/mappingCodes.php
+  if (!$query = $q['npr-topic']) // eg 1007 = 'Health & Science' // http://www.npr.org/api/mappingCodes.php
+    return FALSE;
     
-  if (!isset($query) || !is_numeric($query))
+  if (!is_numeric($query))
     return FALSE;
     
   if (isset($q['output']))
-    if (!$output_folder = output_folder($q['output']))
-      return FALSE;
+    $output_folder = output_folder($q['output']);
   
   $n = 20;
   $page = 0; // results start at 0

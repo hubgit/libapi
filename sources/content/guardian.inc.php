@@ -5,15 +5,11 @@
 return defined('GUARDIAN_KEY');
 
 function content_guardian($q){
-  if (isset($q['guardian-filter']))
-    $query = $q['guardian-filter'];
-    
-  if (!isset($query))
+  if (!$query = $q['guardian-filter'])
     return FALSE;
     
   if (isset($q['output']))
-    if (!$output_folder = output_folder($q['output']))
-      return FALSE;
+    $output_folder = output_folder($q['output']);
   
   $n = 50;
   $page = 0; // results start at 0

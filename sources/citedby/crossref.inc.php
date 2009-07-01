@@ -1,6 +1,6 @@
 <?php
 
-# 
+# http://www.crossref.org/citedby.html
 
 return defined('CROSSREF_AUTH');
 

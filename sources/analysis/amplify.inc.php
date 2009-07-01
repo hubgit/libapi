@@ -1,6 +1,6 @@
 <?php
 
-#
+# http://community.openamplify.com/content/apidocs.aspx
 
 return defined('AMPLIFY_KEY');
 

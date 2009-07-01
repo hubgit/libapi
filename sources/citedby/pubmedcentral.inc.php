@@ -1,6 +1,6 @@
 <?php
 
-# 
+# http://www.pubmedcentral.nih.gov/utils/
 
 function citedby_pubmedcentral($q){
   if (!$pmid = $q['pmid'])

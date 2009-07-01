@@ -10,8 +10,8 @@ $q = array(
   //'guardian-filter' => '/science',
   //'output' => '/guardian/articles',
   
-  //'feed-url' => 'http://newsrss.bbc.co.uk/rss/newsonline_world_edition/science/nature/rss.xml',
-  //'feed-url' => 'http://feeds.feedburner.com/bbcnewssciencenaturefullfeed',
+  //'feed' => 'http://newsrss.bbc.co.uk/rss/newsonline_world_edition/science/nature/rss.xml',
+  //'feed' => 'http://feeds.feedburner.com/bbcnewssciencenaturefullfeed',
   //'output' => '/bbc-news/full',
   
   //'tag' => 'science2.0',

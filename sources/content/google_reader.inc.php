@@ -5,15 +5,11 @@
 return defined('GOOGLE_AUTH');
 
 function content_google_reader($q){
-  if (isset($q['feed-url']))
-    $query = $q['feed-url'];
-    
-  if (!isset($query))
+  if (!$query = $q['feed'])
     return FALSE;
     
   if (isset($q['output']))
-    if (!$output_folder = output_folder($q['output']))
-      return FALSE;
+    $output_folder = output_folder($q['output']);
 
   $http = google_reader_auth();
   

@@ -1,6 +1,6 @@
 <?php
 
-# 
+# http://www.postgenomic.com/wiki/doku.php?id=api
 
 function citedby_postgenomic($q){
   $params = array(

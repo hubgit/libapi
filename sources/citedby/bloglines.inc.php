@@ -1,6 +1,6 @@
 <?php
 
-# http://searchapidocs.scopus.com/
+# http://www.bloglines.com/search
 
 return (defined('BLOGLINES_KEY') && defined('BLOGLINES_USER'));
 
