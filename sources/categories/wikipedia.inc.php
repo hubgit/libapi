@@ -1,6 +1,6 @@
 <?php
 
-# http://opencalais.com/documentation/calais-web-service-api
+# http://en.wikipedia.org/w/api.php
 
 function categories_wikipedia($q){
   if (!$title = $q['title'])
@@ -17,12 +17,12 @@ function categories_wikipedia($q){
     'cllimit' => 500,
     'clshow' => '!hidden',
     'titles' => $title,
-    ), 'json', $http);
+    ));
   
-  debug($json);
+  //debug($json);
   
   if (!is_object($json))
-    return array();
+    return FALSE;
       
   $categories = array();
       
