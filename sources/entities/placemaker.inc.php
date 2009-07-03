@@ -45,7 +45,12 @@ function entities_placemaker($q){
   if (!empty($nodes)){
     foreach ($nodes as $item){
       $id = (string) $item->woeIds;
-      $references[] = array('start' => (int) $item->start, 'end' => (int) $item->end, 'text' => (string) $item->text, 'entity' => $id);
+      $references[] = array(
+        'start' => (int) $item->start, 
+        'end' => (int) $item->end, 
+        'text' => (string) $item->text, 
+        'entity' => $id,
+        'snippet' => snippet($text, (int) $item->start, (int) $item->end),
     }
   }
       
