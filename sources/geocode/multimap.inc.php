@@ -10,13 +10,18 @@ function geocode_multimap($q){
     'output' => 'json',
   ));
   
-  //debug($json);
+  debug($json);
     
   if (!is_object($json) || empty($json->result_set))
-    return array(FALSE, array(FALSE, FALSE));
+    return FALSE;
     
   $place = $json->result_set[0];
   
-  return array($place->address->display_name, array((float) $place->point->lat, (float) $place->point->lon));
+  return array(
+    'address' => $place->address->display_name, 
+    'lat' => (float) $place->point->lat, 
+    'lng' => (float) $place->point->lon,
+    'raw' => $place,
+    );
 }
 

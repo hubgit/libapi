@@ -6,6 +6,6 @@ $q = array(
   'text' => file_get_contents('compounds.txt'),
   );
 
-$api = new API('entities', array('whatizit'));
+$api = new API('entities', 'whatizit');
 $responses = $api->run($q);
 debug($responses);

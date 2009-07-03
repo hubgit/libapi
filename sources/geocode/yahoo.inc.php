@@ -37,7 +37,7 @@ function geocode_yahoo($q){
     'address' => implode(', ', $name), 
     'lat' => (float) $place->Latitude, 
     'lng' => (float) $place->Longitude,
-    'raw' => $xml,
+    'raw' => $place,
     );
 }
 

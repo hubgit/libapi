@@ -13,7 +13,7 @@ function geocode_geonames($q){
   debug($json);
   
   if (!is_object($json) || empty($json->geonames))
-    return array(FALSE, array(FALSE, FALSE));
+    return FALSE;
     
   $place = $json->geonames[0];
   
@@ -22,5 +22,12 @@ function geocode_geonames($q){
     $name = implode(', ', array($name, $place->adminName1));
     
   return array($name, array((float) $place->lat, (float) $place->lng));
+  
+  return array(
+    'address' => $name, 
+    'lat' => (float) $place->lat, 
+    'lng' => (float) $place->lng,
+    'raw' => $place,
+    );
 }
 

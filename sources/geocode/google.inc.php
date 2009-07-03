@@ -10,18 +10,23 @@ function geocode_google($q){
     'output' => 'json',
     'oe' => 'utf8',
     'sensor' => 'false',
-    'key'=> GOOGLE_KEY,
+    'key' => GOOGLE_MAPS_KEY,
   ));
   
-  //debug($json);
+  debug($json);
   
   if (!is_object($json) || $json->Status->code != 200)
-    return array(FALSE, array(FALSE, FALSE));
+    return FALSE;
   
   $place = $json->Placemark[0];
   
   list($lon, $lat, $level) = $place->Point->coordinates;
-  
-  return array($place->address, array((float) $lat, (float) $lon));
+    
+  return array(
+    'address' => $place->address, 
+    'lat' => (float) $lat, 
+    'lng' => (float) $lon,
+    'raw' => $place,
+    );
 }
 

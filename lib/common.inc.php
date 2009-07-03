@@ -35,7 +35,7 @@ function get_data_curl($url, $params = array(), $format = 'json', $http = array(
   $data = curl_exec($curl);  
   $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
-  //debug('Status: ' . $status);  
+  debug('Status: ' . $status);  
   //debug($data);
 
   curl_close($curl);

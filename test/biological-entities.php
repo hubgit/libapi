@@ -10,7 +10,7 @@ $q = array(
 $api = new API('entities', array(
   'whatizit', 
   'gopubmed', 
-  'ihop'
+  'ihop',
   ));
   
 $responses = $api->run($q);
