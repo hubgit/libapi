@@ -14,7 +14,7 @@ function content_flickr_user($q){
   if (isset($q['from']))
     $from = $q['from'];
   else if (file_exists($output_folder . '/latest'))
-    $from = filemtime($output_folder . '/latest');
+    $from = file_get_contents($output_folder . '/latest');
   else
     $from = 0; // 1970-01-01T00:00:00Z
    
@@ -32,6 +32,7 @@ function content_flickr_user($q){
       'min_upload_date' => $from,
       'per_page' => $n,
       'page' => $page,
+      'sort' => 'date-posted-asc',
       );
 
    $data = $flickr->api('flickr.photos.search', $params);
@@ -53,15 +54,24 @@ function content_flickr_user($q){
         $item = $result['flickr'];
         //debug($item);
         
-        $format = $item['originalformat'] ? $item['originalformat'] : 'jpg';
-        $secret = $item['originalsecret'] ? $item['originalsecret'] : $item['secret'];      
-        $suffix = $item['originalsecret'] ? '_o' : '';
+        if ($item['originalformat']){
+          $format = $item['originalformat'];
+          $secret = $item['originalsecret'];      
+          $suffix = '_o';
+        }
+        else{
+          $format = 'jpg';
+          $secret = $item['secret'];      
+          $suffix = '';
+        }
         
         $img = sprintf('http://farm%d.static.flickr.com/%d/%s_%s%s.%s', $item['farm'], $item['server'], $item['id'], $secret, $suffix, $format);
         debug($img);
         
         file_put_contents(sprintf('%s/%s%s.jpg', $output_folder, $id, $suffix), file_get_contents($img));
         file_put_contents($out, json_encode($item));
+        
+        file_put_contents($output_folder . '/latest', $item['dateuploaded']);
       }
       else
         $items[] = $photo;
@@ -70,9 +80,6 @@ function content_flickr_user($q){
     sleep(1);
     
   } while ($page++ <= $data['photos']['pages']);
-  
-  //if ($output_folder)
-    //file_put_contents($output_folder . '/latest', strtotime((string) $xml['update']));
 
   return $items;
 }

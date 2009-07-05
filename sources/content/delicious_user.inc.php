@@ -11,7 +11,7 @@ function content_delicious_user($q){
   if (isset($q['from']))
     $from = $q['from'];
   else if (file_exists($output_folder . '/latest'))
-    $from = filemtime($output_folder . '/latest');
+    $from = file_get_contents($output_folder . '/latest');
   else
     $from = 0; // 1970-01-01T00:00:00Z
 
