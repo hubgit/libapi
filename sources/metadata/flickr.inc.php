@@ -4,7 +4,7 @@
 
 return defined('FLICKR_KEY');
 
-function metadata_flickr($q){ 
+function metadata_flickr($q){    
   if (!$id = $q['id'])
    return FALSE;
     
