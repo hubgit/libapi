@@ -79,7 +79,7 @@ function content_flickr_user($q){
   
     sleep(1);
     
-  } while ($page++ <= $data['photos']['pages']);
+  } while ($page++ < $data['photos']['pages']);
 
   return $items;
 }
