@@ -18,6 +18,9 @@ include 'common.private.inc.php'; // private functions
 
 require 'config.inc.php';
 
+if (!defined('DATA_DIR'))
+  define('DATA_DIR', __DIR__ . '/data');
+
 class API {
   function __construct($action, $sources = NULL){
     if (!$action)

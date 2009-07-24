@@ -23,6 +23,14 @@ Returns an array of search results
 
 ===
 
+REQUIRES PHP 5.3 (for the convenience of __DIR__).
+
 To get started, copy config-example.inc.php to config.inc.php and add in your own API keys.
 
 See the scripts in the 'test' folder for an example of how to call a particular class of APIs.
+
+===
+
+Examples:
+
+* To back up a user's Twitter posts: define TWITTER_AUTH in config.php, edit the screen name in test/backup/twitter.php then run test/backup/twitter.php on the command line. The data will be saved in the 'data' directory, unless you've defined DATA_DIR in config.php
