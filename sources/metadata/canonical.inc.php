@@ -28,6 +28,7 @@ function metadata_canonical($q){
   
   if (strstr($mime, 'html')){
     $html = @DOMDocument::loadHTMLFile($url);
+    // TODO: check if successful
     $xml = simplexml_import_dom($html);
     $links = $xml->xpath("//head/link[@rel='canonical']");
     if (!empty($links))

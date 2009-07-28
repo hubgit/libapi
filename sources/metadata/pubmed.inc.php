@@ -8,10 +8,11 @@ function metadata_pubmed($q){
       'db' => 'pubmed',
       'retmode' => 'xml',
       'retmax' => 1,
-      'usehistory' => 'y',
+      'usehistory' => 'n',
       'term' => $q['doi'] . '[DOI]',
       ), 'xml');
-      debug($xml);
+      
+    debug($xml);
     
     if ((int) $xml->Count > 0)  
       $q['pmid'] = (int) $xml->IdList->Id[0];
