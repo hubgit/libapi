@@ -1,6 +1,6 @@
 <?php
 
-#
+# http://developer.yahoo.com/geo/placemaker/
 
 return defined('YAHOO_KEY');
 
@@ -51,6 +51,7 @@ function entities_placemaker($q){
         'text' => (string) $item->text, 
         'entity' => $id,
         'snippet' => snippet($text, (int) $item->start, (int) $item->end),
+        );
     }
   }
       

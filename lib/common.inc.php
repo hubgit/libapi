@@ -132,6 +132,10 @@ function snippet($text, $start, $end, $pad = 50){
   return mb_substr($text, $start, $position[0] - $start) . '{{{' . mb_substr($text, $position[0], $position[1] - $position[0]) . '}}}' . mb_substr($text, $position[1], $end - $position[1]);
 }
 
+function unsnippet($input){
+  return str_replace(array('{{{', '}}}'), array('<b>', '</b>'), htmlspecialchars($input, NULL, 'UTF-8'));
+}
+
 function output_folder($dir){
   $dir = DATA_DIR . $dir;
   
@@ -144,4 +148,23 @@ function output_folder($dir){
 
 function space_prefix_html_elements($html){
   return preg_replace("/<(p|div|br|h1|h2|h3|h4|h5|h6|ol|ul|li|pre|address|blockquote|dl|div|fieldset|form|hr|noscript|table|td|dd|dt)(\s|>)/", ' <$1$2', $html);
+}
+
+function prnt($input, $context = 'html'){
+  switch($context){
+    case 'raw':
+      print $input;
+    break;
+    
+    case 'html':
+    default:
+      print htmlspecialchars($input, NULL, 'UTF-8');
+    break;
+    
+    case 'attribute':
+    case 'attr':
+      print htmlspecialchars($input, NULL, 'UTF-8');
+    break;  
+  } 
+  
 }

@@ -23,7 +23,7 @@ Returns an array of search results
 
 ===
 
-REQUIRES PHP 5.3 (for the convenience of __DIR__).
+REQUIRES PHP 5
 
 To get started, copy config-example.inc.php to config.inc.php and add in your own API keys.
 

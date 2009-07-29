@@ -96,6 +96,6 @@ class Flickr {
   
   function write_config($key, $value){
     define($key, $value);
-    file_put_contents(__DIR__ . '/../config.inc.php', sprintf("\ndefine('%s', '%s');\n", $key, $value), FILE_APPEND) or die('Could not write to config.php');
+    file_put_contents(dirname(__FILE__) . '/../config.inc.php', sprintf("\ndefine('%s', '%s');\n", $key, $value), FILE_APPEND) or die('Could not write to config.php');
   }
 }
