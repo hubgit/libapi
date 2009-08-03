@@ -9,7 +9,9 @@ function content_delicious_tag($q){
     return FALSE;
     
   if (isset($q['output']))
-    $output_folder = output_folder($q['output']);
+    $output_folder = output_folder($q['output'] . '/' . preg_replace('/\W/', '_', $query)); // FIXME: proper sanitising
+  
+  //debug($output_folder); exit();
   
   $css2xpath = new CSS2XPath();
       

@@ -137,6 +137,8 @@ function unsnippet($input){
 }
 
 function output_folder($dir){
+  #$dir = preg_replace('/[^a-z0-9\(\)\_\-\+ ]/i', '_', $dir); // FIXME: proper sanitising
+  
   $dir = DATA_DIR . $dir;
   
   if (!file_exists($dir))
