@@ -1,8 +1,10 @@
 <?php
 
+define('ROOT_DIR', dirname(__FILE__));
+
 set_include_path(implode(PATH_SEPARATOR, array(
-  dirname(__FILE__),
-  dirname(__FILE__) . '/lib',
+  ROOT_DIR,
+  ROOT_DIR . '/lib',
   get_include_path()
   )));
 
@@ -19,7 +21,7 @@ include 'common.private.inc.php'; // private functions
 require 'config.inc.php';
 
 if (!defined('DATA_DIR'))
-  define('DATA_DIR', dirname(__FILE__) . '/data');
+  define('DATA_DIR', ROOT_DIR . '/data');
 
 class API {
   function __construct($action, $sources = NULL){
@@ -30,7 +32,7 @@ class API {
     
     $available = array();
     
-    $match = sprintf('%s/sources/%s/*.inc.php', dirname(__FILE__), $action);
+    $match = sprintf('%s/sources/%s/*.inc.php', ROOT_DIR, $action);
     foreach (glob($match) as $file)
       if (include_once($file))
         $available[] = preg_replace('/\.private$/', '', basename($file, '.inc.php'));

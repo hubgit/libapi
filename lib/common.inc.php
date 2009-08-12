@@ -5,6 +5,8 @@ function get_data($url, $params = array(), $format = 'json', $http = array()){
   if (!empty($params))
     $url .= '?' . http_build_query($params);
   
+  //debug($url);
+  
   //$http['header'] .= (empty($http['header']) ? '' : "\n") . 'Accept: ' . accept_header($format);
   $context = empty($http) ? NULL : stream_context_create(array('http' => $http));
   
@@ -136,6 +138,13 @@ function unsnippet($input){
   return str_replace(array('{{{', '}}}'), array('<b>', '</b>'), htmlspecialchars($input, NULL, 'UTF-8'));
 }
 
+function input_folder($dir){
+  $dir = DATA_DIR . $dir;
+  if (!file_exists($dir) || !is_dir($dir))
+    return FALSE;
+  return $dir;
+}
+
 function output_folder($dir){
   #$dir = preg_replace('/[^a-z0-9\(\)\_\-\+ ]/i', '_', $dir); // FIXME: proper sanitising
   
@@ -145,6 +154,7 @@ function output_folder($dir){
     mkdir($dir, 0755, TRUE);
   if (!is_dir($dir))
     exit('Could not create output folder ' . $dir);
+  
   return $dir;
 }
 
