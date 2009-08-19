@@ -55,9 +55,9 @@ function content_pubmed($q){
         $out = sprintf('%s/%s.xml', $output_folder, $id);
         file_put_contents($out, $article->asXML());
         
-        $date = current($article->xpath("PubmedData/History/PubMedPubDate[@PubStatus='pubmed']"));
-        if ((int) $date->Year && (int) $date->Month && (int) $date->Day)
-          file_put_contents($output_folder . '/latest', sprintf('%d/%d/%d', (int) $date->Year, (int) $date->Month, (int) $date->Day));
+        //$date = current($article->xpath("PubmedData/History/PubMedPubDate[@PubStatus='pubmed']"));
+        //if ((int) $date->Year && (int) $date->Month && (int) $date->Day)
+          //file_put_contents($output_folder . '/latest', sprintf('%d/%d/%d', (int) $date->Year, (int) $date->Month, (int) $date->Day));
       }
       else
         $items[] = $article;
@@ -69,5 +69,7 @@ function content_pubmed($q){
     
   } while ($start < $pubmed->count);
 
+  file_put_contents($output_folder . '/latest', date('Y/m/d'))
+  
   return $items;
 }
