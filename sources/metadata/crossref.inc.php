@@ -8,16 +8,22 @@ function metadata_crossref($q){
   if (!$q['uri'] && $q['doi'])
     $q['uri'] = 'info:doi/' . $q['doi'];
     
-  if (!$uri = $q['uri'])
+  if (!($uri = $q['uri']) && empty($q['openurl']))
     return FALSE;
-    
-  $xml = get_data('http://www.crossref.org/openurl/', array(
+
+  $params = array(
     'noredirect' => 'true',
     'format' => 'unixref',
-    'id' => $uri,
     'pid' => CROSSREF_AUTH,
-    ), 'xml');
+    );
+    
+  if ($uri)
+    $params['id'] = $uri;
   
+  if (!empty($q['openurl']))
+    $params = array_merge($params, $q['openurl']);
+    
+  $xml = get_data('http://www.crossref.org/openurl/', $params, 'xml');
   //debug($xml);
   
   if (!is_object($xml) || empty($xml->doi_record))

@@ -5,6 +5,8 @@ function get_data($url, $params = array(), $format = 'json', $http = array()){
   if (!empty($params))
     $url .= '?' . http_build_query($params);
   
+  //debug($url);
+  
   //$http['header'] .= (empty($http['header']) ? '' : "\n") . 'Accept: ' . accept_header($format);
   $context = empty($http) ? NULL : stream_context_create(array('http' => $http));
   
@@ -137,16 +139,49 @@ function snippet($text, $start, $end, $pad = 50){
   return mb_substr($text, $start, $position[0] - $start) . '{{{' . mb_substr($text, $position[0], $position[1] - $position[0]) . '}}}' . mb_substr($text, $position[1], $end - $position[1]);
 }
 
+function unsnippet($input){
+  return str_replace(array('{{{', '}}}'), array('<b>', '</b>'), htmlspecialchars($input, NULL, 'UTF-8'));
+}
+
+function input_folder($dir){
+  $dir = DATA_DIR . $dir;
+  if (!file_exists($dir) || !is_dir($dir))
+    return FALSE;
+  return $dir;
+}
+
 function output_folder($dir){
+  #$dir = preg_replace('/[^a-z0-9\(\)\_\-\+ ]/i', '_', $dir); // FIXME: proper sanitising
+  
   $dir = DATA_DIR . $dir;
   
   if (!file_exists($dir))
     mkdir($dir, 0755, TRUE);
   if (!is_dir($dir))
     exit('Could not create output folder ' . $dir);
+  
   return $dir;
 }
 
 function space_prefix_html_elements($html){
   return preg_replace("/<(p|div|br|h1|h2|h3|h4|h5|h6|ol|ul|li|pre|address|blockquote|dl|div|fieldset|form|hr|noscript|table|td|dd|dt)(\s|>)/", ' <$1$2', $html);
+}
+
+function prnt($input, $context = 'html'){
+  switch($context){
+    case 'raw':
+      print $input;
+    break;
+    
+    case 'html':
+    default:
+      print htmlspecialchars($input, NULL, 'UTF-8');
+    break;
+    
+    case 'attribute':
+    case 'attr':
+      print htmlspecialchars($input, NULL, 'UTF-8');
+    break;  
+  } 
+  
 }

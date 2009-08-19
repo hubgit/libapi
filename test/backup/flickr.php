@@ -1,6 +1,6 @@
 <?php
 
-require __DIR__ . '/../../main.inc.php';
+require dirname(__FILE__) . '/../../main.inc.php';
 require 'flickr.inc.php';
 
 $user = '35034348300@N01';
