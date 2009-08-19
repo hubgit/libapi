@@ -10,16 +10,30 @@ function content_british_pathe($q){
   
   $items = array();
   
+  $attempts = array();
+  
+  global $http_status;
+  
   do{      
     $html = get_data('http://www.britishpathe.com/record.php', array(
       'id' => $id,
       'view' => 'print',
     ), 'html', array('timeout' => 120));
     
+    if ($http_status == 403)
+      break;
+    
     //debug($html);
     
-    if (!is_object($html) || empty($html->body))
-      break;
+    if ($http_status != 200){
+      if (++$attempts[$id] > 2)
+        $id++;
+      continue;
+    }
+    
+    //if (!is_object($html) || empty($html->body))
+    if (empty($html->body))
+     break;
       
     $flat = $html->asXML();
       
