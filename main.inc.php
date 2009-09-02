@@ -55,7 +55,7 @@ class API {
     if (empty($this->sources))
       exit(sprintf('No sources are enabled for action "%s"', $action));
       
-    debug($this->sources);
+    //debug($this->sources);
     return $this->sources;
   }
     

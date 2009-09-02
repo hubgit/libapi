@@ -5,7 +5,7 @@ function get_data($url, $params = array(), $format = 'json', $http = array()){
   if (!empty($params))
     $url .= '?' . http_build_query($params);
   
-  //debug($url);
+  debug($url);
   
   //$http['header'] .= (empty($http['header']) ? '' : "\n") . 'Accept: ' . accept_header($format);
   $context = empty($http) ? NULL : stream_context_create(array('http' => $http));
@@ -77,6 +77,10 @@ function accept_header($format){
 }
 
 function debug($arg){
+  global $debug;
+  if ($debug == 'OFF')
+    return;
+    
   print_r($arg);
   print "\n";
 }

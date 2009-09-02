@@ -25,8 +25,8 @@ function content_pubmed($q){
   $items = array();
   
   $params = array(
-    'min_date' => $from,
-    'max_date' => $to,
+    'mindate' => $from,
+    'maxdate' => $to,
     'datetype' => 'mdat',
     );
 
@@ -69,7 +69,7 @@ function content_pubmed($q){
     
   } while ($start < $pubmed->count);
 
-  file_put_contents($output_folder . '/latest', date('Y/m/d'))
+  file_put_contents($output_folder . '/latest', date('Y/m/d'));
   
   return $items;
 }
