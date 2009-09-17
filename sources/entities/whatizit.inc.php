@@ -11,7 +11,7 @@ function entities_whatizit($q){
   $xml = whatizit_soap('whatizitSwissprotGo2', $text);
   if (!is_object($xml))
     return FALSE;
-      
+          
   $entities = array();
   $references = array();
   foreach ($xml->xpath('//ebi:uniprot') as $item){
@@ -70,7 +70,7 @@ function whatizit_soap($pipeline, $text){
     $client = new SoapClient(dirname(__FILE__) . '/whatizit.wsdl');
   
   // hack for bug in XML response
-  $text = str_replace('<', '|', $text);
+  //$text = str_replace('<', '|', $text);
   
   $params = array(
     'text' => $text,
@@ -80,9 +80,9 @@ function whatizit_soap($pipeline, $text){
     
   try{
     $result = $client->contact($params);
-  } catch (SoapFault $exception) { return FALSE; }
+  } catch (SoapFault $exception) { debug($exception); exit(); return FALSE; }
   
-  debug($result);
+  //debug($result);
   
   libxml_use_internal_errors(TRUE);
   
@@ -96,7 +96,6 @@ function whatizit_soap($pipeline, $text){
 
   if (!empty($errors))
     return FALSE;
-  exit();
     
   $xml->registerXPathNamespace('ebi', 'http://www.ebi.ac.uk/z');
   
