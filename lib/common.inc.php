@@ -14,6 +14,11 @@ function get_data($url, $params = array(), $format = 'json', $http = array()){
   //debug($data);
   //debug($http_response_header);
   
+  global $http_status;
+  $h = explode(' ', $http_response_header[0], 3);
+  $http_status = $h[1];
+  debug($http_status);
+  
   return format_data($format, $data);
 }
 
