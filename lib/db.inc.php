@@ -13,14 +13,17 @@ function db_query(){
   $params = func_get_args();
   $query = array_shift($params);
   
-  if (is_array($params[0]))
-    $params = $params[0];
+  if (!empty($params)){
+    if (is_array($params[0]))
+      $params = $params[0];
  
-  foreach ($params as $key => $value)
-    if (!is_int($value))
-      $params[$key] = mysql_real_escape_string($value);
+    foreach ($params as $key => $value)
+      if (!is_int($value))
+        $params[$key] = mysql_real_escape_string($value);
+  }
   
   $sql = vsprintf($query, $params);
+  //debug($sql);
   
   $result = mysql_query($sql);
   if (mysql_errno())
