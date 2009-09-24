@@ -114,7 +114,7 @@ function yql($query, $args = array(), $format = 'json'){
   return get_data('http://query.yahooapis.com/v1/public/yql', array(
     'q' => $query,
     'format' => $format,
-    ));
+    ), $format);
 }
 
 function base64_encode_file($t){
