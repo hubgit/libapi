@@ -2,6 +2,8 @@
 
 # http://googlewebmastercentral.blogspot.com/2009/02/specify-your-canonical.html
 
+# TODO: cononical short URL
+
 function metadata_canonical($q){  
   if (!$url = $q['url'])
     return FALSE;
