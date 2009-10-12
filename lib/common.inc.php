@@ -26,7 +26,7 @@ function get_data_curl($url, $params = array(), $format = 'json', $http = array(
   debug($params);
   if (!empty($params))
     $url .= '?' . http_build_query($params);
-        
+
   $curl = curl_init($url);
   
   // array_merge doesn't preserve numeric keys
@@ -83,11 +83,11 @@ function accept_header($format){
 
 function debug($arg){
   global $debug;
-  if ($debug == 'OFF')
-    return;
+  if ($debug != 'OFF')    
+    error_log(print_r($arg, TRUE) . "\n", 3, DEBUG_LOG);
     
-  print_r($arg);
-  print "\n";
+  //print_r($arg);
+  //print "\n";
 }
 
 function xpath_item($xml, $query){
