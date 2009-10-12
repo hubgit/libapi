@@ -23,6 +23,9 @@ require 'config.inc.php';
 if (!defined('DATA_DIR'))
   define('DATA_DIR', ROOT_DIR . '/data');
 
+if (!defined('DEBUG_LOG'))
+  define('DEBUG_LOG', DATA_DIR . '/debug.log');
+  
 class API {
   function __construct($action, $sources = NULL){
     if (!$action)
