@@ -83,11 +83,11 @@ function accept_header($format){
 
 function debug($arg){
   global $debug;
+  if ($debug == 'PRINT')
+    return print(print_r($arg, TRUE) . "\n");
+    
   if ($debug != 'OFF')    
     error_log(print_r($arg, TRUE) . "\n", 3, DEBUG_LOG);
-    
-  //print_r($arg);
-  //print "\n";
 }
 
 function xpath_item($xml, $query){
