@@ -1,6 +1,35 @@
 <?php
 
 function entities_gopubmed($q){ 
+  if (!$text = $q['text'])
+    return FALSE;
+    
+    
+  static $client;
+  if (!is_object($client))
+    $client = new SoapClient('http://gopubmed4.biotec.tu-dresden.de/GoPubMedTermGenerationService/services/GoPubMedTermGeneration?wsdl', array('trace' => 1));
+  
+  $params = array(
+    'texts' => array($text),
+    'applicationCode' => 'test123',
+    );
+    
+  //print_r($client->__getFunctions());
+    
+  try{
+    $result = $client->generateConceptsFromText($params);
+  } catch (SoapFault $exception) { print_r($exception); exit(); return FALSE; }
+       
+  $entities = $result->return;
+  
+  if (!is_array($entities))
+    return array();
+  
+  $references = array();
+  return array($entities, $references);
+}
+
+function entities_gopubmed_pmid($q){ 
   if (!$pmid = $q['pmid'])
     return FALSE;
      
