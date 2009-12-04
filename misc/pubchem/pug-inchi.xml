@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<!DOCTYPE PCT-Data PUBLIC "-//NCBI//NCBI PCTools/EN" "http://pubchem.ncbi.nlm.nih.gov/pug/pug.dtd">
+<PCT-Data>
+  <PCT-Data_input>
+    <PCT-InputData>
+      <PCT-InputData_query>
+        <PCT-Query>
+          <PCT-Query_type>
+            <PCT-QueryType>
+              <PCT-QueryType_css>
+                <PCT-QueryCompoundCS>
+                  <PCT-QueryCompoundCS_query>
+                    <PCT-QueryCompoundCS_query_data>%s</PCT-QueryCompoundCS_query_data>
+                  </PCT-QueryCompoundCS_query>
+                  <PCT-QueryCompoundCS_type>
+                    <PCT-QueryCompoundCS_type_identical>
+                      <PCT-CSIdentity value="same-stereo-isotope">5</PCT-CSIdentity>
+                    </PCT-QueryCompoundCS_type_identical>
+                  </PCT-QueryCompoundCS_type>
+                  <PCT-QueryCompoundCS_results>2000000</PCT-QueryCompoundCS_results>
+                </PCT-QueryCompoundCS>
+              </PCT-QueryType_css>
+            </PCT-QueryType>
+          </PCT-Query_type>
+        </PCT-Query>
+      </PCT-InputData_query>
+    </PCT-InputData>
+  </PCT-Data_input>
+</PCT-Data>
