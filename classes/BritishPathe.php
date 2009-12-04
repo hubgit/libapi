@@ -13,7 +13,7 @@ class BritishPathe extends API {
     global $http_status;
   
     do{      
-      $html =$this->get_data('http://www.britishpathe.com/record.php', array(
+      $html = $this->get_data('http://www.britishpathe.com/record.php', array(
         'id' => $id,
         'view' => 'print',
       ), 'html', array('timeout' => 120));

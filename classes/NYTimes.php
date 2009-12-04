@@ -25,7 +25,7 @@ class NYTimes extends API {
       $start = $page * $n;
       //debug($start);
       
-      $json =$this->get_data('http://api.nytimes.com/svc/search/v1/article', array(
+      $json = $this->get_data('http://api.nytimes.com/svc/search/v1/article', array(
         'query' => $query,
         'fields' => 'byline,body,date,title,url,des_facet',
         'api-key' => Config::get('NYTIMES'),

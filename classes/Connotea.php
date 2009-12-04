@@ -13,7 +13,7 @@ class Connotea extends API {
 
     $auth = explode(':', Config::get('CONNOTEA_AUTH'));
 
-    $dom =$this->get_data(
+    $dom = $this->get_data(
       sprintf('http://%s:%s@www.connotea.org/data/uri/%s', urlencode($auth[0]), urlencode($auth[1]), md5($uri)), 
       array(), 'dom');
 
@@ -42,7 +42,7 @@ class Connotea extends API {
     if (!$uri = $q['uri'])
       return FALSE;
 
-    $json =$this->get_data('http://www.connotea.org/webcite', array(
+    $json = $this->get_data('http://www.connotea.org/webcite', array(
       'uri' => $uri,
       'fmt' => 'json',
       ));

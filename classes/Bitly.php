@@ -2,7 +2,7 @@
 
 class Bitly extends API {
   public $doc = 'http://bit.ly/apidocs';
-  public $def = array('BITLY_USER', 'BITLY);
+  public $def = array('BITLY_USER', 'BITLY');
   
   function metadata($q){
     if (!$q['uri'] && $q['doi'])

@@ -27,7 +27,7 @@ class Flickr extends API {
     $params = array_merge($default, $params);
     $params['api_sig'] = $this->sign($params); 
     
-    $data =$this->get_data('http://www.flickr.com/services/rest/', $params, 'php');
+    $data = $this->get_data('http://www.flickr.com/services/rest/', $params, 'php');
     debug($data);
     
     switch($data['stat']){

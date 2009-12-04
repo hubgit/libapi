@@ -7,7 +7,7 @@ class PubMedCentral extends API {
     if (!$pmid = $q['pmid'])
       return FALSE;
     
-    $xml =$this->get_data('http://www.pubmedcentral.nih.gov/utils/entrez2pmcciting.cgi', array(
+    $xml = $this->get_data('http://www.pubmedcentral.nih.gov/utils/entrez2pmcciting.cgi', array(
       'view' => 'xml',
       'id' => $pmid,
       ), 'xml');

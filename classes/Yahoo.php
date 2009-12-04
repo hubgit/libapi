@@ -86,7 +86,7 @@ class Yahoo extends API {
       'appid' => Config::get('YAHOO'),
     );
 
-    $json =$this->get_data('http://boss.yahooapis.com/ysearch/web/v1/' . urlencode($q), array_merge($default, $params));
+    $json = $this->get_data('http://boss.yahooapis.com/ysearch/web/v1/' . urlencode($q), array_merge($default, $params));
 
     //debug($json);
 

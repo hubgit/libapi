@@ -11,7 +11,7 @@ class Bloglines extends API {
     if (!$url = $q['url'])
       return FALSE;
 
-    $xml =$this->get_data('http://www.bloglines.com/search', array(
+    $xml = $this->get_data('http://www.bloglines.com/search', array(
       'format' => 'publicapi',
       'apiuser' => Config::get('BLOGLINES_USER'),
       'apikey' => Config::get('BLOGLINES'),

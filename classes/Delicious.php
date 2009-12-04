@@ -8,7 +8,7 @@ class Delicious extends API {
     if (!$uri = $q['uri'])
       return FALSE;
 
-    $json =$this->get_data('http://badges.del.icio.us/feeds/json/url/data', array('url' => $uri));
+    $json = $this->get_data('http://badges.del.icio.us/feeds/json/url/data', array('url' => $uri));
     //debug($json);
     
     if (!is_array($json) || empty($json))
@@ -16,7 +16,7 @@ class Delicious extends API {
 
     $meta = array('total' => $json[0]->total_posts, 'tags' => $json[0]->top_tags);
     
-    $dom =$this->get_data('http://feeds.delicious.com/v2/rss/url/' . md5($uri), array(), 'dom');
+    $dom = $this->get_data('http://feeds.delicious.com/v2/rss/url/' . md5($uri), array(), 'dom');
     //debug(simplexml_import_dom($dom));
   
     $items = array();
@@ -61,7 +61,7 @@ class Delicious extends API {
     $n = 100;
 
     do{
-      $xml =$this->get_data('http://delicious.com/tag/' . urlencode($query), array(
+      $xml = $this->get_data('http://delicious.com/tag/' . urlencode($query), array(
         'setcount' => $n,
         'page' => $page,
         ), 'html', $http);
@@ -131,7 +131,7 @@ class Delicious extends API {
 
     $auth = explode(':', Config::get('DELICIOUS_AUTH'));
 
-    $xml =$this->get_data(
+    $xml = $this->get_data(
       sprintf('https://%s:%s@api.del.icio.us/v1/posts/all', urlencode($auth[0]), urlencode($auth[1])), 
       array('fromdt' => gmdate("Y-m-d\TH:i:s\Z", $from)),
       'xml');

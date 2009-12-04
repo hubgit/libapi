@@ -104,7 +104,7 @@ class PubChem extends API{
       
     $xml = sprintf(file_get_contents(MISC_DIR . '/pubchem/pug-inchi.xml'), htmlspecialchars($inchi));
     $http = array('method'=> 'POST', 'content' => $xml, 'header' => 'Content-Type: text/xml; charset=UTF-8');
-    $result =$this->get_data('http://pubchem.ncbi.nlm.nih.gov/pug/pug.cgi', array(), 'dom', $http);
+    $result = $this->get_data('http://pubchem.ncbi.nlm.nih.gov/pug/pug.cgi', array(), 'dom', $http);
     
     $xpath = new DOMXPath($result);
     $status = $xpath->query("//PCT-Status")->item(0)->getAttribute("value")->nodeValue;
@@ -117,7 +117,7 @@ class PubChem extends API{
     $i = 0;
     do { // try 10 times to connect, every 6 seconds
       $http = array('method'=> 'POST', 'content' => $xml, 'header' => 'Content-Type: text/xml; charset=UTF-8');
-      $result =$this->get_data('http://pubchem.ncbi.nlm.nih.gov/pug/pug.cgi', array(), 'dom', $http);
+      $result = $this->get_data('http://pubchem.ncbi.nlm.nih.gov/pug/pug.cgi', array(), 'dom', $http);
 
       $xpath = new DOMXPath($result);
       $status = $xpath->query("//PCT-Status")->item(0)->getAttribute("value")->nodeValue;

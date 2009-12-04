@@ -33,7 +33,7 @@ class Wikipedia extends API {
     if (is_array($title)) // fetch multiple titles at once
       $title = implode('|', $title);
 
-    $json =$this->get_data('http://en.wikipedia.org/w/api.php', array(
+    $json = $this->get_data('http://en.wikipedia.org/w/api.php', array(
       'action' => 'query',
       'format' => 'json',
       'prop' => 'categories',

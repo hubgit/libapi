@@ -26,7 +26,7 @@ class Twitter extends API {
     $auth = explode(':', Config::get('TWITTER_AUTH'));
    
     do {
-     $json =$this->get_data(
+     $json = $this->get_data(
        sprintf('http://%s:%s@twitter.com/statuses/user_timeline.json', urlencode($auth[0]), urlencode($auth[1])),
        array(
         'screen_name' => $user,

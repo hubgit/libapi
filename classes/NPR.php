@@ -23,7 +23,7 @@ class NPR extends API {
       $start = $page * $n;
       //print "$start\n";
       
-      $json =$this->get_data('http://api.npr.org/query', array(
+      $json = $this->get_data('http://api.npr.org/query', array(
         'id' => $query,
         'fields' => 'title,storyDate,text',
         'numResults' => $n,

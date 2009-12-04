@@ -16,7 +16,7 @@ class Google extends API {
     );
 
     $http = array('header' => 'Referer: ' . Config::get('GOOGLE_REFERER'));
-    $json =$this->get_data('http://ajax.googleapis.com/ajax/services/search/web', array_merge($default, $params), 'json', $http);
+    $json = $this->get_data('http://ajax.googleapis.com/ajax/services/search/web', array_merge($default, $params), 'json', $http);
 
     //debug($json);
 
@@ -59,7 +59,7 @@ class Google extends API {
     $continuation = '';
   
     do{
-      $xml =$this->get_data('http://www.google.com/reader/atom/feed/' . urlencode($query), array(
+      $xml = $this->get_data('http://www.google.com/reader/atom/feed/' . urlencode($query), array(
         'n' => $n,
         'c' => $continuation,
         ), 'xml', $http);

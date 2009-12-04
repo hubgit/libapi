@@ -7,7 +7,7 @@ class ChemACX extends API {
     if (!$id = $q['id'])
       return FALSE;
       
-    $data =$this->get_data('http://chemacx.cambridgesoft.com/chemacx/chemacx/chemacx_action.asp', array(
+    $data = $this->get_data('http://chemacx.cambridgesoft.com/chemacx/chemacx/chemacx_action.asp', array(
       'dbname' => 'chemacx',
       'dataaction' => 'get_structure',
       'Table' => 'Substance',
