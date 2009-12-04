@@ -2,7 +2,7 @@
 
 class GoogleMaps extends API {
   public $doc = 'http://code.google.com/apis/maps/documentation/geocoding/index.html';
-  public $def = 'GOOGLE_MAPS_KEY';
+  public $def = 'GOOGLE_MAPS';
   
   function geocode($q){
     $json = $this->get_data('http://maps.google.com/maps/geo', array(
@@ -10,7 +10,7 @@ class GoogleMaps extends API {
       'output' => 'json',
       'oe' => 'utf8',
       'sensor' => 'false',
-      'key' => GOOGLE_MAPS_KEY,
+      'key' => Config::get('GOOGLE_MAPS'),
     ));
   
     debug($json);

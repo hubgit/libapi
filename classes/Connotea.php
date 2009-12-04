@@ -4,16 +4,16 @@ class Connotea extends API {
   public $doc = 'http://www.connotea.org/webcite';
   public $def = 'CONNOTEA_AUTH';
   
-  function get_bookmarks_for_item($q){
+  function bookmarks_for_item($q){
     if (!$q['uri'] && $q['doi'])
       $q['uri'] = 'http://dx.doi.org/' . $q['doi'];
 
     if (!$uri = $q['uri'])
       return FALSE;
 
-    $auth = explode(':', CONNOTEA_AUTH);
+    $auth = explode(':', Config::get('CONNOTEA_AUTH'));
 
-    $dom = get_data(
+    $dom =$this->get_data(
       sprintf('http://%s:%s@www.connotea.org/data/uri/%s', urlencode($auth[0]), urlencode($auth[1]), md5($uri)), 
       array(), 'dom');
 
@@ -35,14 +35,14 @@ class Connotea extends API {
     return array($items, array('total' => count($items));
   }
   
-  function metadata_connotea($q){
+  function metadata($q){
     if (!$q['uri'] && $q['doi'])
       $q['uri'] = 'http://dx.doi.org/' . $q['doi'];
 
     if (!$uri = $q['uri'])
       return FALSE;
 
-    $json = get_data('http://www.connotea.org/webcite', array(
+    $json =$this->get_data('http://www.connotea.org/webcite', array(
       'uri' => $uri,
       'fmt' => 'json',
       ));

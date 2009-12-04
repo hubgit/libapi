@@ -15,7 +15,7 @@ class API {
       throw new Exception('Requirement not defined: ' . $def);
   }
   
-  function get_data($url, $params = array(), $format = 'json', $http = array()){
+  function$this->get_data($url, $params = array(), $format = 'json', $http = array()){
     debug($params);
     if (!empty($params))
       $url .= '?' . http_build_query($params);

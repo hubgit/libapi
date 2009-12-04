@@ -2,7 +2,7 @@
 
 class Guardian extends API {
   public $doc = 'http://api.guardianapis.com/docs';
-  public $def = 'GUARDIAN_KEY';
+  public $def = 'GUARDIAN';
 
   function content($q){
     if (!$query = $q['guardian-filter'])
@@ -22,8 +22,8 @@ class Guardian extends API {
       $start = $page * $n;
       //print "$start\n";
       
-      $json = get_data('http://api.guardianapis.com/content/search', array(
-        'api_key' => Config::get('GUARDIAN_KEY'),
+      $json =$this->get_data('http://api.guardianapis.com/content/search', array(
+        'api_key' => Config::get('GUARDIAN'),
         'content-type' => 'article',
         'filter' => $query,
         'format' => 'json',
@@ -52,7 +52,7 @@ class Guardian extends API {
       return FALSE;
 
     $default = array(
-      'api_key' => Config::get('GUARDIAN_KEY'),
+      'api_key' => Config::get('GUARDIAN'),
       'content-type' => 'article',
       'format' => 'json',
       'q' => $q,

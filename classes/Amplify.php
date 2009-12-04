@@ -2,14 +2,14 @@
 
 class Amplify extends API {
   public $doc = 'http://community.openamplify.com/content/apidocs.aspx';
-  public $def = 'AMPLIFY_KEY';
+  public $def = 'AMPLIFY';
   
   function analyse($q){
     if (!$text = $q['text'])
       return FALSE;
 
     $dom = $this->get_data('http://portaltnx.openamplify.com/AmplifyWeb/AmplifyThis', array(
-      'apiKey' => AMPLIFY_KEY,
+      'apiKey' => Config::get('AMPLIFY'),
       'outputFormat' => 'xml',
       'inputText' => $text,
       ), 'dom');

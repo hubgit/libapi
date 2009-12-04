@@ -18,7 +18,7 @@ class Postgenomic extends API {
     else
       return FALSE;
     
-    $json = get_data('http://www.postgenomic.com/api.php', $params);
+    $json =$this->get_data('http://www.postgenomic.com/api.php', $params);
     
     //debug($json);
   

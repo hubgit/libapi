@@ -2,7 +2,7 @@
 
 class NYTimes extends API {
  public $doc = 'http://developer.nytimes.com/docs/article_search_api';
- public $def = 'NYTIMES_KEY';
+ public $def = 'NYTIMES';
 
   function content($q){
     if (isset($q['nytimes-facet']))
@@ -25,10 +25,10 @@ class NYTimes extends API {
       $start = $page * $n;
       //debug($start);
       
-      $json = get_data('http://api.nytimes.com/svc/search/v1/article', array(
+      $json =$this->get_data('http://api.nytimes.com/svc/search/v1/article', array(
         'query' => $query,
         'fields' => 'byline,body,date,title,url,des_facet',
-        'api-key' => NYTIMES_KEY,
+        'api-key' => Config::get('NYTIMES'),
         'offset' => $page,
       ));
     
@@ -55,7 +55,7 @@ class NYTimes extends API {
     $default = array(
       'query' => $q,
       'fields' => 'byline,body,date,title,url,des_facet',
-      'api-key' => NYTIMES_KEY,
+      'api-key' => Config::get('NYTIMES'),
     );
 
     $json = $this->get_data('http://api.nytimes.com/svc/search/v1/article', array_merge($default, $params));

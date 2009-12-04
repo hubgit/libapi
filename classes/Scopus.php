@@ -8,7 +8,7 @@ class Scopus extends API {
     if (!$doi = $q['doi'])
       return FALSE;
     
-    $data = get_data('http://www.scopus.com/scsearchapi/search.url', array(
+    $data =$this->get_data('http://www.scopus.com/scsearchapi/search.url', array(
       'search' => sprintf('DOI("%s")', $doi),
       'callback' => 'test',
       'devId'=> SCOPUS_KEY,

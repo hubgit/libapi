@@ -2,11 +2,11 @@
 
 class OpenCalais extends API {
    public $doc = 'http://opencalais.com/documentation/calais-web-service-api';
-   public $def = 'OPENCALAIS_KEY';
+   public $def = 'OPENCALAIS';
    
    function query($params){
       $http = array('method'=> 'POST', 'content' => http_build_query($params), 'header' => 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8');
-      return get_data('http://api.opencalais.com/enlighten/rest/', array(), 'json', $http);
+      return$this->get_data('http://api.opencalais.com/enlighten/rest/', array(), 'json', $http);
    }
    
    function entities($q){
@@ -15,7 +15,7 @@ class OpenCalais extends API {
 
      $json = $this->query(array(
         'content' => sprintf('<Document><Body>%s</Body></Document>', htmlspecialchars($text)),
-        'licenseID' => OPENCALAIS_KEY,
+        'licenseID' => Config::get('OPENCALAIS'),
         'paramsXML' => '<c:params xmlns:c="http://s.opencalais.com/1/pred/">
           <c:processingDirectives c:contentType="text/xml" c:outputFormat="application/json" c:calculateRelevanceScore="true" c:enableMetadataType="GenericRelations"/>
           <c:userDirectives c:allowDistribution="false" c:allowSearch="false"/>
@@ -62,7 +62,7 @@ class OpenCalais extends API {
 
      $json = $this->query(array(
        'content' => sprintf('<Document><Body>%s</Body></Document>', htmlspecialchars($text)),
-       'licenseID' => OPENCALAIS_KEY,
+       'licenseID' => Config::get('OPENCALAIS'),
        'paramsXML' => '<c:params xmlns:c="http://s.opencalais.com/1/pred/">
          <c:processingDirectives c:contentType="text/xml" c:outputFormat="application/json" c:enableMetadataType="SocialTags"/>
          <c:userDirectives c:allowDistribution="false" c:allowSearch="false"/>

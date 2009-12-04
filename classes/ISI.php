@@ -32,7 +32,7 @@ class ISI extends API {
     ', $query);
 
     $http = array('method'=> 'POST', 'content' => $request, 'header' => 'Content-Type: text/xml');
-    $dom = get_data('https://ws.isiknowledge.com/esti/xrpc', NULL, 'dom', $http);
+    $dom =$this->get_data('https://ws.isiknowledge.com/esti/xrpc', NULL, 'dom', $http);
   
     //debug(simplexml_import_dom($dom));
     

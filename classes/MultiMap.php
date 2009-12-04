@@ -2,10 +2,10 @@
 
 class MultiMap extends API {
   public $doc = 'http://www.multimap.com/openapidocs/1.2/web_service/ws_geocoding.htm';
-  public $def = 'MULTIMAP_KEY';
+  public $def = 'MULTIMAP';
 
   function geocode($q){
-    $json = get_data('http://developer.multimap.com/API/geocode/1.2/' . urlencode(MULTIMAP_KEY), array(
+    $json =$this->get_data('http://developer.multimap.com/API/geocode/1.2/' . urlencode(Config::get('MULTIMAP')), array(
       'qs' => $q,
       'output' => 'json',
     ));

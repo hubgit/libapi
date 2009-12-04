@@ -15,8 +15,8 @@ class Google extends API {
       'rsz' => 'large',    
     );
 
-    $http = array('header' => 'Referer: ' . GOOGLE_REFERER);
-    $json = get_data('http://ajax.googleapis.com/ajax/services/search/web', array_merge($default, $params), 'json', $http);
+    $http = array('header' => 'Referer: ' . Config::get('GOOGLE_REFERER'));
+    $json =$this->get_data('http://ajax.googleapis.com/ajax/services/search/web', array_merge($default, $params), 'json', $http);
 
     //debug($json);
 
@@ -27,7 +27,7 @@ class Google extends API {
   }
   
   function auth(){
-    $auth = explode(':', GOOGLE_AUTH);
+    $auth = explode(':', Config::get('GOOGLE_AUTH'));
   
     $params = array('Email' => $auth[0], 'Passwd' => $auth[1]);
     $context = stream_context_create(array('http' => array('method' => 'POST', 'content' => http_build_query($params))));
@@ -59,7 +59,7 @@ class Google extends API {
     $continuation = '';
   
     do{
-      $xml = get_data('http://www.google.com/reader/atom/feed/' . urlencode($query), array(
+      $xml =$this->get_data('http://www.google.com/reader/atom/feed/' . urlencode($query), array(
         'n' => $n,
         'c' => $continuation,
         ), 'xml', $http);

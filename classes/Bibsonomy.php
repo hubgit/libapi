@@ -2,7 +2,7 @@
 
 class Bibsonomy extends API {
   public $doc = '';
-  public $def = array('BIBSONOMY_USER', 'BIBSONOMY_KEY');
+  public $def = array('BIBSONOMY_USER', 'BIBSONOMY');
 
   function metadata($q){
     if (!$q['uri'] && $q['doi'])
@@ -16,7 +16,7 @@ class Bibsonomy extends API {
       'format' => 'rdf+xml',
       ), 'rdf');
   
-    debug($xml);
+    //debug($xml);
   
     $xml->registerXPathNamespace('swrc', 'http://swrc.ontoware.org/ontology#');
   

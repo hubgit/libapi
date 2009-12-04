@@ -2,7 +2,7 @@
 
 class Bloglines extends API {
   public $doc = 'http://www.bloglines.com/search';
-  public $def = array('BLOGLINES_KEY', 'BLOGLINES_USER'); 
+  public $def = array('BLOGLINES', 'BLOGLINES_USER'); 
   
   function citedby($q){
     if (!$q['url'] && $q['doi']))
@@ -11,10 +11,10 @@ class Bloglines extends API {
     if (!$url = $q['url'])
       return FALSE;
 
-    $xml = get_data('http://www.bloglines.com/search', array(
+    $xml =$this->get_data('http://www.bloglines.com/search', array(
       'format' => 'publicapi',
-      'apiuser' => BLOGLINES_USER,
-      'apikey' => BLOGLINES_KEY,
+      'apiuser' => Config::get('BLOGLINES_USER'),
+      'apikey' => Config::get('BLOGLINES'),
       's' => 'f',
       'q' => 'bcite:' . $q['url'],
     ), 'xml');

@@ -2,14 +2,14 @@
 
 class Yahoo extends API {
   public $doc = '';
-  public $def = 'YAHOO_KEY';
+  public $def = 'YAHOO';
   
   # http://developer.yahoo.com/yql/
   function yql($query, $args = array(), $format = 'json'){
     if (!empty($args))
       $query = vsprintf($query, is_array($args) ? $args : array($args));
 
-    return get_data('http://query.yahooapis.com/v1/public/yql', array(
+    return$this->get_data('http://query.yahooapis.com/v1/public/yql', array(
       'q' => $query,
       'format' => $format,
       ), $format);
@@ -19,7 +19,7 @@ class Yahoo extends API {
   function geocode($q){
     $dom = $this->get_data('http://local.yahooapis.com/MapsService/V1/geocode', array(
       'location' => $q,
-      'appid' => YAHOO_KEY,
+      'appid' => Config::get('YAHOO'),
     ), 'dom');
   
     //debug($dom);
@@ -63,7 +63,7 @@ class Yahoo extends API {
     $suffix = isset($q['suffix']) ? '/' . $q['suffix'] : '';
 
     $json = $this->get_data('http://where.yahooapis.com/v1/place/' . $id . $suffix, array(
-      'appid' => YAHOO_KEY,
+      'appid' => Config::get('YAHOO'),
       'format' => 'json',
       ));
 
@@ -83,10 +83,10 @@ class Yahoo extends API {
       'view' => 'language,delicious_toptags,delicious_saves,keyterms,searchmonkey_feed',
       'abstract' => 'long',
       'format' => 'json',
-      'appid' => YAHOO_KEY,
+      'appid' => Config::get('YAHOO'),
     );
 
-    $json = get_data('http://boss.yahooapis.com/ysearch/web/v1/' . urlencode($q), array_merge($default, $params));
+    $json =$this->get_data('http://boss.yahooapis.com/ysearch/web/v1/' . urlencode($q), array_merge($default, $params));
 
     //debug($json);
 
@@ -102,7 +102,7 @@ class Yahoo extends API {
       return FALSE;
 
     $params = array(
-      'appid' => YAHOO_KEY,
+      'appid' => Config::get('YAHOO'),
       'documentType' => 'text/plain',
       'documentContent' => $text,
     );

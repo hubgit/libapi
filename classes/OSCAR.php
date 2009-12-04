@@ -1,7 +1,9 @@
 <?php
 
 class OSCAR extends API {
-  function entities_oscar($q){
+  public $url = 'http://127.0.0.1:8181';
+  
+  function entities($q){
     if (!$text = $q['text'])
       return FALSE;
     
@@ -11,7 +13,7 @@ class OSCAR extends API {
       );
     
     $http = array('method'=> 'POST', 'content' => http_build_query($params), 'header' => 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8');
-    $xml = get_data('http://127.0.0.1:8181/oscar/Process', array(), 'xml', $http);
+    $xml = $this->get_data($this->url . '/oscar/Process', array(), 'xml', $http);
   
     if (!is_object($xml))
       return FALSE;
