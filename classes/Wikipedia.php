@@ -2,6 +2,29 @@
 
 class Wikipedia extends API {
   public $doc = 'http://en.wikipedia.org/w/api.php';
+  
+  function search($q, $params = array()){
+    if (!$q)
+      return FALSE;
+
+    $default = array(
+      'action' => 'opensearch',
+      'format' => 'json',  
+      'redirects' => 'true',
+      'limit' => 10,
+      'search' => $q,
+    );
+
+    $json = $this->get_data('http://en.wikipedia.org/w/api.php', array_merge($default, $params), 'json', $http);
+
+    //debug($json);
+
+    if (!is_array($json))
+      return FALSE;
+
+    return array($json[1]);
+  }
+  
 
   function categories($q){
     if (!$title = $q['title'])
@@ -41,4 +64,32 @@ class Wikipedia extends API {
 
     return $categories;
   } 
+
+  function content($q){
+    if (!$title = $q['title'])
+      return FALSE;
+
+    $json = $this->get_data('http://en.wikipedia.org/w/api.php', array(
+      'action' => 'parse',
+      'format' => 'json',
+      'redirects' => 'true',
+      'prop' => 'text|categories|displaytitle',
+      'page' => $title,
+    ));
+
+    //debug($json);
+
+    if (!is_object($json) || !$json->parse->text)
+      return array();
+
+    $categories = array();
+    foreach ($json->parse->categories as $category)
+      $categories[] = $category->{'*'};
+
+    return array(
+      'title' => $json->parse->displaytitle, 
+      'html' => $json->parse->text->{'*'}, 
+      'categories' => $categories
+      );
+  }  
 }

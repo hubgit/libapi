@@ -54,7 +54,7 @@ function content_pubmed($q){
       foreach ($xml->PubmedArticle as $article){
         $id = (int) $article->MedlineCitation->PMID;
         $status = (string) $article->MedlineCitation['Status'];
-        if ($status == 'In-Data-Review')
+        if ($status == 'In-Data-Review') // FIXME
           continue;
           
         if ($output_folder){

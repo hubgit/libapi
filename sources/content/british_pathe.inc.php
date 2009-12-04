@@ -1,6 +1,6 @@
 <?php
 
-# http://api.guardianapis.com/docs
+# 
 
 function content_british_pathe($q){
   if (isset($q['output']))

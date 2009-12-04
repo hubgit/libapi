@@ -1,8 +1,8 @@
 <?php
 
 class Amplify extends API {
-  public $def = 'AMPLIFY_KEY';
   public $doc = 'http://community.openamplify.com/content/apidocs.aspx';
+  public $def = 'AMPLIFY_KEY';
   
   function analyse($q){
     if (!$text = $q['text'])

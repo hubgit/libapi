@@ -15,66 +15,29 @@ mb_regex_encoding('UTF-8');
 
 libxml_use_internal_errors(FALSE); // true = hide parsing errors; use libxml_get_errors() to display later.
 
-require 'common.inc.php';
-include 'common.private.inc.php'; // private functions
+require 'functions.php';
+require 'Config.php';
 
-require 'config.inc.php';
+date_default_timezone_set(Config::timezone);
 
-if (!defined('DATA_DIR'))
-  define('DATA_DIR', ROOT_DIR . '/data');
-
-if (!defined('DEBUG_LOG'))
-  define('DEBUG_LOG', DATA_DIR . '/debug.log');
-  
-class API {
-  function __construct($action, $sources = NULL){
-    if (!$action)
-      exit('No action has been set');
-      
-    $this->action = $action;
-    
-    $available = array();
-    
-    $match = sprintf('%s/sources/%s/*.inc.php', ROOT_DIR, $action);
-    foreach (glob($match) as $file)
-      if (include_once($file))
-        $available[] = preg_replace('/\.private$/', '', basename($file, '.inc.php'));
-    
-    // use all available sources if none were specified
-    if (!isset($sources)){
-      $this->sources = $available;
-    }
-    else{
-      // if specific sources were defined, use only those
-      if (is_string($sources))
-        $sources = array($sources);
-    
-      $this->sources = array();
-      foreach ($sources as $source)
-        if (in_array($source, $available))
-          $this->sources[] = $source;
-    }
-    
-    if (empty($this->sources))
-      exit(sprintf('No sources are enabled for action "%s"', $action));
-      
-    //debug($this->sources);
-    return $this->sources;
-  }
-    
-  function run($q){
-    if (!$this->action)
-      exit('No action has been set');
-      
-    if (empty($this->sources))
-      exit(sprintf('No sources are active for action "%s"', $this->action));
-    
-    $responses = array();
-    foreach ($this->sources as $source){
-      $function = sprintf('%s_%s', $this->action, $source);
-      debug($function . '...');
-      $responses[$source] = call_user_func($function, $q);
-    }
-    return $responses;
-  }
+function __autoload($class){
+  $file = sprintf('%s/classes/%s', ROOT_DIR, $class);
+  if (file_exists($file . '.private.php'))
+    require_once($file . '.private.php');
+  else if (file_exists($file . '.php'))
+    require_once($file . '.php');
 }
+
+require ROOT_DIR . '/API.php';
+require ROOT_DIR . '/DB.php';
+
+if (empty(Config::data))
+  Config::data = ROOT_DIR . '/data';
+  
+define('DATA_DIR', Config::data);
+
+if (!empty(Config::log))
+  Config::log = Config::data . '/debug.log';
+
+define('MISC_DIR', ROOT_DIR . '/misc');
+  
