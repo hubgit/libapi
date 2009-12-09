@@ -8,7 +8,7 @@ class CrossRef extends API {
     if (!$doi = $q['doi'])
       return FALSE;
 
-    $auth = explode(':', Config::get('CROSSREF_AUTH'));
+    $auth = explode(':', Libapi_Config::get('CROSSREF_AUTH'));
 
     $xml = $this->get_data('http://doi.crossref.org/servlet/getForwardLinks', array(
       'doi' => $doi,
@@ -45,7 +45,7 @@ class CrossRef extends API {
     $params = array(
       'noredirect' => 'true',
       'format' => 'unixref',
-      'pid' => Config::get('CROSSREF_AUTH'),
+      'pid' => Libapi_Config::get('CROSSREF_AUTH'),
       );
 
     if ($uri)

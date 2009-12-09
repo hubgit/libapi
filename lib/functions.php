@@ -1,7 +1,7 @@
 <?php
 
 function debug($arg){
-  switch (Config::debug){
+  switch (Libapi_Config::property('debug')){
     case 'PRINT':
       return print(print_r($arg, TRUE) . "\n");
     break;
@@ -10,8 +10,9 @@ function debug($arg){
     break;
     
     default:
-      error_log(print_r($arg, TRUE) . "\n", 3, Config::log);    
+      error_log(print_r($arg, TRUE) . "\n", 3, Libapi_Config::property('log'));    
     break;
+  }
 }
 
 function snippet($text, $start, $end, $pad = 50){

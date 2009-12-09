@@ -19,7 +19,7 @@ class Yahoo extends API {
   function geocode($q){
     $dom = $this->get_data('http://local.yahooapis.com/MapsService/V1/geocode', array(
       'location' => $q,
-      'appid' => Config::get('YAHOO'),
+      'appid' => Libapi_Config::get('YAHOO'),
     ), 'dom');
   
     //debug($dom);
@@ -63,7 +63,7 @@ class Yahoo extends API {
     $suffix = isset($q['suffix']) ? '/' . $q['suffix'] : '';
 
     $json = $this->get_data('http://where.yahooapis.com/v1/place/' . $id . $suffix, array(
-      'appid' => Config::get('YAHOO'),
+      'appid' => Libapi_Config::get('YAHOO'),
       'format' => 'json',
       ));
 
@@ -83,7 +83,7 @@ class Yahoo extends API {
       'view' => 'language,delicious_toptags,delicious_saves,keyterms,searchmonkey_feed',
       'abstract' => 'long',
       'format' => 'json',
-      'appid' => Config::get('YAHOO'),
+      'appid' => Libapi_Config::get('YAHOO'),
     );
 
     $json = $this->get_data('http://boss.yahooapis.com/ysearch/web/v1/' . urlencode($q), array_merge($default, $params));
@@ -102,7 +102,7 @@ class Yahoo extends API {
       return FALSE;
 
     $params = array(
-      'appid' => Config::get('YAHOO'),
+      'appid' => Libapi_Config::get('YAHOO'),
       'documentType' => 'text/plain',
       'documentContent' => $text,
     );
@@ -158,7 +158,7 @@ class Yahoo extends API {
       'context' => $text,
       'query' => $query, // context for extraction (search terms)
       'output' => 'json',
-      'appid' => Config::get('YAHOO'),
+      'appid' => Libapi_Config::get('YAHOO'),
     );
 
     $http = array('method' => 'POST', 'content' => http_build_query($params), 'header' => 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8');

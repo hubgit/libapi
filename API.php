@@ -2,20 +2,28 @@
 
 class API {
   function __construct(){
-    if (isset($this::def) && !empty($this::def))
-      if (is_array($this::def))
-        foreach ($this::def as $def)
+    if (isset($this->def) && !empty($this->def))
+      if (is_array($this->def))
+        foreach ($this->def as $def)
           $this->check_def($def);
       else
         $this->check_def($def);
   }
   
+  static function __autoload($class){
+    $file = sprintf('%s/classes/%s', LIBAPI_ROOT, $class);
+    if (file_exists($file . '.private.php'))
+      require_once($file . '.private.php');
+    else if (file_exists($file . '.php'))
+      require_once($file . '.php');
+  }
+  
   function check_def($def){
-    if (Config::get($def]) === FALSE)
+    if (Libapi_Config::get($def) === FALSE)
       throw new Exception('Requirement not defined: ' . $def);
   }
   
-  function$this->get_data($url, $params = array(), $format = 'json', $http = array()){
+  function get_data($url, $params = array(), $format = 'json', $http = array()){
     debug($params);
     if (!empty($params))
       $url .= '?' . http_build_query($params);
@@ -127,7 +135,7 @@ class API {
     return base64_decode(strtr($t, '-_', '+/'));
   }
   
-  function print($input, $context = 'html'){
+  function output($input, $context = 'html'){
     switch($context){
       case 'raw':
         print $input;

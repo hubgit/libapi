@@ -25,7 +25,7 @@ Returns an array of search results
 
 REQUIRES PHP 5
 
-To get started, copy Config-example.php to Config.php and add in your own API keys.
+To get started, copy Config-example.php to Config.php and add in your own API keys/database credentials.
 
 See the scripts in the 'test' folder for an example of how to call a particular class of APIs.
 
@@ -33,4 +33,4 @@ See the scripts in the 'test' folder for an example of how to call a particular 
 
 Examples:
 
-* To back up a user's Twitter posts: set TWITTER_AUTH in Config.php, edit the screen name in test/backup/twitter.php then run test/backup/twitter.php on the command line. The data will be saved in the 'data' directory, unless you've defined $data in Config.php
+* To back up a user's Twitter posts: set TWITTER_AUTH in Config.php, edit the screen name in test/backup/twitter.php then run test/backup/twitter.php on the command line. The data will be saved in the 'data' directory, unless you've defined DATA in Config.php

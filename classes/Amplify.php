@@ -9,7 +9,7 @@ class Amplify extends API {
       return FALSE;
 
     $dom = $this->get_data('http://portaltnx.openamplify.com/AmplifyWeb/AmplifyThis', array(
-      'apiKey' => Config::get('AMPLIFY'),
+      'apiKey' => Libapi_Config::get('AMPLIFY'),
       'outputFormat' => 'xml',
       'inputText' => $text,
       ), 'dom');

@@ -67,7 +67,7 @@ class Whatizit extends API {
     static $client;
     if (!is_object($client))
       //$client = new SoapClient('http://www.ebi.ac.uk/webservices/whatizit/ws?wsdl');
-      $client = new SoapClient(ROOT_DIR . '/whatizit.wsdl');
+      $client = new SoapClient(LIBAPI_ROOT . '/whatizit.wsdl');
   
     // hack for bug in XML response
     //$text = str_replace('<', '|', $text);

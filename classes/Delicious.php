@@ -129,7 +129,7 @@ class Delicious extends API {
     else
       $from = 0; // 1970-01-01T00:00:00Z
 
-    $auth = explode(':', Config::get('DELICIOUS_AUTH'));
+    $auth = explode(':', Libapi_Config::get('DELICIOUS_AUTH'));
 
     $xml = $this->get_data(
       sprintf('https://%s:%s@api.del.icio.us/v1/posts/all', urlencode($auth[0]), urlencode($auth[1])), 

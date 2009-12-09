@@ -15,7 +15,7 @@ class OpenCalais extends API {
 
      $json = $this->query(array(
         'content' => sprintf('<Document><Body>%s</Body></Document>', htmlspecialchars($text)),
-        'licenseID' => Config::get('OPENCALAIS'),
+        'licenseID' => Libapi_Config::get('OPENCALAIS'),
         'paramsXML' => '<c:params xmlns:c="http://s.opencalais.com/1/pred/">
           <c:processingDirectives c:contentType="text/xml" c:outputFormat="application/json" c:calculateRelevanceScore="true" c:enableMetadataType="GenericRelations"/>
           <c:userDirectives c:allowDistribution="false" c:allowSearch="false"/>
@@ -62,7 +62,7 @@ class OpenCalais extends API {
 
      $json = $this->query(array(
        'content' => sprintf('<Document><Body>%s</Body></Document>', htmlspecialchars($text)),
-       'licenseID' => Config::get('OPENCALAIS'),
+       'licenseID' => Libapi_Config::get('OPENCALAIS'),
        'paramsXML' => '<c:params xmlns:c="http://s.opencalais.com/1/pred/">
          <c:processingDirectives c:contentType="text/xml" c:outputFormat="application/json" c:enableMetadataType="SocialTags"/>
          <c:userDirectives c:allowDistribution="false" c:allowSearch="false"/>

@@ -15,7 +15,7 @@ class Google extends API {
       'rsz' => 'large',    
     );
 
-    $http = array('header' => 'Referer: ' . Config::get('GOOGLE_REFERER'));
+    $http = array('header' => 'Referer: ' . Libapi_Config::get('GOOGLE_REFERER'));
     $json = $this->get_data('http://ajax.googleapis.com/ajax/services/search/web', array_merge($default, $params), 'json', $http);
 
     //debug($json);
@@ -27,7 +27,7 @@ class Google extends API {
   }
   
   function auth(){
-    $auth = explode(':', Config::get('GOOGLE_AUTH'));
+    $auth = explode(':', Libapi_Config::get('GOOGLE_AUTH'));
   
     $params = array('Email' => $auth[0], 'Passwd' => $auth[1]);
     $context = stream_context_create(array('http' => array('method' => 'POST', 'content' => http_build_query($params))));

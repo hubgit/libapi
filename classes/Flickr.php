@@ -17,7 +17,7 @@ class Flickr extends API {
   function api($method, $params = array()){ 
     $default = array(
       'method' => $method,
-	    'api_key'	=> Config::get('FLICKR'),
+	    'api_key'	=> Libapi_Config::get('FLICKR'),
 	    'format'	=> 'php_serial',
     );
     
@@ -49,7 +49,7 @@ class Flickr extends API {
   // Generate api_sig from array of parameters
   function sign($params){
     ksort($params);
-    return md5(Config::get('FLICKR_SECRET') . implode('', array_map(array($this, 'flatten'), array_keys($params), array_values($params))));
+    return md5(Libapi_Config::get('FLICKR_SECRET') . implode('', array_map(array($this, 'flatten'), array_keys($params), array_values($params))));
   }
   
     // Concatenate key/value pairs into a flat string
@@ -86,7 +86,7 @@ class Flickr extends API {
    
    function show_authentication_url($frob){ 
     $params = array(
-      'api_key' => Config::get('FLICKR'),
+      'api_key' => Libapi_Config::get('FLICKR'),
       'frob' => $frob,
       'perms' => 'read',
       );
@@ -186,7 +186,7 @@ class Flickr extends API {
      return FALSE;
 
     $data = $this->get_data('http://api.flickr.com/services/rest/', array(
-      'api_key' => Config::get('FLICKR'),
+      'api_key' => Libapi_Config::get('FLICKR'),
       'format' => 'php_serial',
       'method' => 'flickr.photos.getInfo',
       'photo_id' => $id,
@@ -207,7 +207,7 @@ class Flickr extends API {
       $params = array('text' => $params);  
 
     $data = $this->get_data('http://api.flickr.com/services/rest/', array_merge(array(
-      'api_key' => Config::get('FLICKR'),
+      'api_key' => Libapi_Config::get('FLICKR'),
       'format' => 'php_serial',
       'method' => 'flickr.photos.search',
       'per_page' => 20,

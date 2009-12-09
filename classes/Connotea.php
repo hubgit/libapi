@@ -11,7 +11,7 @@ class Connotea extends API {
     if (!$uri = $q['uri'])
       return FALSE;
 
-    $auth = explode(':', Config::get('CONNOTEA_AUTH'));
+    $auth = explode(':', Libapi_Config::get('CONNOTEA_AUTH'));
 
     $dom = $this->get_data(
       sprintf('http://%s:%s@www.connotea.org/data/uri/%s', urlencode($auth[0]), urlencode($auth[1]), md5($uri)), 

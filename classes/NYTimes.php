@@ -28,7 +28,7 @@ class NYTimes extends API {
       $json = $this->get_data('http://api.nytimes.com/svc/search/v1/article', array(
         'query' => $query,
         'fields' => 'byline,body,date,title,url,des_facet',
-        'api-key' => Config::get('NYTIMES'),
+        'api-key' => Libapi_Config::get('NYTIMES'),
         'offset' => $page,
       ));
     
@@ -55,7 +55,7 @@ class NYTimes extends API {
     $default = array(
       'query' => $q,
       'fields' => 'byline,body,date,title,url,des_facet',
-      'api-key' => Config::get('NYTIMES'),
+      'api-key' => Libapi_Config::get('NYTIMES'),
     );
 
     $json = $this->get_data('http://api.nytimes.com/svc/search/v1/article', array_merge($default, $params));

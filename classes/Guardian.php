@@ -23,7 +23,7 @@ class Guardian extends API {
       //print "$start\n";
       
       $json = $this->get_data('http://api.guardianapis.com/content/search', array(
-        'api_key' => Config::get('GUARDIAN'),
+        'api_key' => Libapi_Config::get('GUARDIAN'),
         'content-type' => 'article',
         'filter' => $query,
         'format' => 'json',
@@ -52,7 +52,7 @@ class Guardian extends API {
       return FALSE;
 
     $default = array(
-      'api_key' => Config::get('GUARDIAN'),
+      'api_key' => Libapi_Config::get('GUARDIAN'),
       'content-type' => 'article',
       'format' => 'json',
       'q' => $q,
