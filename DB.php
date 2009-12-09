@@ -1,13 +1,22 @@
 <?php
 
-class DB {
-  public $host = 'localhost';
+class DB {  
+  private $link;
   
-  function __construct($host = 'localhost'){    
-    mysql_connect($host, Config::get('DB_USER'), Config::get('DB_PASS')) or die("Could not connect to MySQL database\n");
-    mysql_select_db(Config::get('DB')) or die("Could not select database\n");
+  function __construct($host = 'localhost', $database = NULL, $user = NULL, $password = NULL){
+    if (!isset($database))
+      $database = Config::get('DB');
+      
+    if (!isset($user))
+      $user = Config::get('DB_USER');
+    
+    if (!isset($password))
+      $password = Config::get('DB_PASS');
+      
+    $this->link = mysql_connect($host, $user, $password) or die("Could not connect to MySQL database\n");
+    mysql_select_db($database, $this->link) or die("Could not select database\n");
 
-    mysql_query('SET CHARACTER SET utf8');
+    mysql_query('SET CHARACTER SET utf8', $this->link);
     //mysql_query('SET NAMES utf8');
   }
   
@@ -27,9 +36,9 @@ class DB {
     $sql = vsprintf($query, $params);
     //debug($sql);
 
-    $result = mysql_query($sql);
-    if (mysql_errno())
-      exit(sprintf("MySQL error %d:\n\t%s\n", mysql_errno(), mysql_error()));
+    $result = mysql_query($sql, $this->link);
+    if (mysql_errno($this->link))
+      exit(sprintf("MySQL error %d:\n\t%s\n", mysql_errno($this->link), mysql_error($this->link)));
 
     return $result;
   }
