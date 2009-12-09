@@ -1,7 +1,7 @@
 <?php
 
 class DB {  
-  private $link;
+  public $link;
   
   function __construct($host = 'localhost', $database = NULL, $user = NULL, $password = NULL){
     if (!isset($database))

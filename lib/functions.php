@@ -1,7 +1,7 @@
 <?php
 
 function debug($arg){
-  switch (Config::property('debug')){
+  switch (Config::get('DEBUG')){
     case 'PRINT':
       return print(print_r($arg, TRUE) . "\n");
     break;
@@ -10,7 +10,7 @@ function debug($arg){
     break;
     
     default:
-      error_log(print_r($arg, TRUE) . "\n", 3, Config::property('log'));    
+      error_log(print_r($arg, TRUE) . "\n", 3, Config::get('LOG'));    
     break;
   }
 }
