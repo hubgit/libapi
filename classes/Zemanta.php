@@ -11,13 +11,13 @@ class Zemanta extends API {
     $params = array(
       'text' => $text,
       'format' => 'json',
-      'api_key' => Libapi_Config::get('ZEMANTA'),
+      'api_key' => Config::get('ZEMANTA'),
       'method' => 'zemanta.suggest_markup',
       'return_rdf_links' => 1,
     );
   
     $http = array('method' => 'POST', 'content' => http_build_query($params), 'header' => 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8');
-    $json = $this->Libapi_Config::get('YAHOO')get_data('http://api.zemanta.com/services/rest/0.0/', array(), 'json', $http);
+    $json = $this->Config::get('YAHOO')get_data('http://api.zemanta.com/services/rest/0.0/', array(), 'json', $http);
   
     debug($json);
   

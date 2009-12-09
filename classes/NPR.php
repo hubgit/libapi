@@ -28,7 +28,7 @@ class NPR extends API {
         'fields' => 'title,storyDate,text',
         'numResults' => $n,
         'startNum' => ($n * $page) + 1,
-        'apiKey' => Libapi_Config::get('NPR'),
+        'apiKey' => Config::get('NPR'),
         'output' => 'JSON',
       ));
     

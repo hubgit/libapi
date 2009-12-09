@@ -4,8 +4,8 @@ class DB {
   public $host = 'localhost';
   
   function __construct($host = 'localhost'){    
-    mysql_connect($host, Libapi_Config::get('DB_USER'), Libapi_Config::get('DB_PASS')) or die("Could not connect to MySQL database\n");
-    mysql_select_db(Libapi_Config::get('DB')) or die("Could not select database\n");
+    mysql_connect($host, Config::get('DB_USER'), Config::get('DB_PASS')) or die("Could not connect to MySQL database\n");
+    mysql_select_db(Config::get('DB')) or die("Could not select database\n");
 
     mysql_query('SET CHARACTER SET utf8');
     //mysql_query('SET NAMES utf8');

@@ -14,7 +14,7 @@ class Unlock extends API {
       'type' => 'plain',
       'gazetteer' => 'geonames',
       'outputFormat' => 'basic',
-      'apiKey' => Libapi_Config::get('UNLOCK'),
+      'apiKey' => Config::get('UNLOCK'),
       'document' => $text,
     );
   

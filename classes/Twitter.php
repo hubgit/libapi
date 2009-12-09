@@ -23,7 +23,7 @@ class Twitter extends API {
   
     $items = array();
   
-    $auth = explode(':', Libapi_Config::get('TWITTER_AUTH'));
+    $auth = explode(':', Config::get('TWITTER_AUTH'));
    
     do {
      $json = $this->get_data(

@@ -8,7 +8,7 @@ class UMLSKS extends API {
     $this->auth_client = new SoapClient(
       'http://umlsks.nlm.nih.gov/authorization/services/AuthorizationPort?wsdl', 
       array(
-        'local_cert' => Libapi_Config::get('UMLSKS_CERT'),
+        'local_cert' => Config::get('UMLSKS_CERT'),
         'allow_self_signed' => TRUE,
         'trace' => TRUE,
         ));
@@ -16,7 +16,7 @@ class UMLSKS extends API {
     $this->client = new SoapClient(
       'http://kswebp2.nlm.nih.gov/UMLSKS/services/UMLSKSService?wsdl', 
       array(
-        'local_cert' => Libapi_Config::get('UMLSKS_CERT'),
+        'local_cert' => Config::get('UMLSKS_CERT'),
         'allow_self_signed' => TRUE,
         'trace' => TRUE,
         ));
@@ -25,7 +25,7 @@ class UMLSKS extends API {
   }
     
   function get_pgt(){  
-    $auth = explode(':', Libapi_Config::get('UMLSKS_AUTH'));
+    $auth = explode(':', Config::get('UMLSKS_AUTH'));
     
     try{
       $result = $this->auth_client->getProxyGrantTicket($auth[0], $auth[1]);

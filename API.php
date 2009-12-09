@@ -19,7 +19,7 @@ class API {
   }
   
   function check_def($def){
-    if (Libapi_Config::get($def) === FALSE)
+    if (Config::get($def) === FALSE)
       throw new Exception('Requirement not defined: ' . $def);
   }
   

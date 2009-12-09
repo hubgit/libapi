@@ -16,16 +16,16 @@ mb_regex_encoding('UTF-8');
 libxml_use_internal_errors(FALSE); // true = hide parsing errors; use libxml_get_errors() to display later.
 
 require 'functions.php';
-require 'Libapi_Config.php';
+require 'Config.php';
 
-date_default_timezone_set(Libapi_Config::get('TIMEZONE'));
+date_default_timezone_set(Config::get('TIMEZONE'));
 
-if (empty(Libapi_Config::$properties['DATA']))
-  Libapi_Config::set('DATA', LIBAPI_ROOT . '/data');
-define('DATA_DIR', Libapi_Config::get('DATA')); // shortcut = DATA_DIR
+if (empty(Config::$properties['DATA']))
+  Config::set('DATA', LIBAPI_ROOT . '/data');
+define('DATA_DIR', Config::get('DATA')); // shortcut = DATA_DIR
 
-if (empty(Libapi_Config::$properties['LOG']))
-  Libapi_Config::set('LOG', DATA_DIR . '/debug.log');
+if (empty(Config::$properties['LOG']))
+  Config::set('LOG', DATA_DIR . '/debug.log');
 
 define('MISC_DIR', LIBAPI_ROOT . '/misc');
 

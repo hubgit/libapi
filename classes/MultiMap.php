@@ -5,7 +5,7 @@ class MultiMap extends API {
   public $def = 'MULTIMAP';
 
   function geocode($q){
-    $json = $this->get_data('http://developer.multimap.com/API/geocode/1.2/' . urlencode(Libapi_Config::get('MULTIMAP')), array(
+    $json = $this->get_data('http://developer.multimap.com/API/geocode/1.2/' . urlencode(Config::get('MULTIMAP')), array(
       'qs' => $q,
       'output' => 'json',
     ));

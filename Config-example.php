@@ -1,6 +1,6 @@
 <?php
 
-class Libapi_Config {
+class Config {
   static $properties = array(
     'TIMEZONE' => 'Europe/London',
     'DATA' => '/path/to/libapi-data',
@@ -22,13 +22,13 @@ class Libapi_Config {
     /* DO NOT EDIT BELOW HERE */
     
     static function get($key){
-      if (isset(Libapi_Config::$properties[$key]) && !empty(Libapi_Config::$properties[$key]))
-        return Libapi_Config::$properties[$key];
+      if (isset(Config::$properties[$key]) && !empty(Config::$properties[$key]))
+        return Config::$properties[$key];
       else
-        throw new Exception('Libapi_Config value not defined: ' . $key);
+        throw new Exception('Config value not defined: ' . $key);
      }
 
     static function set($key, $value){
-      Libapi_Config::$properties[$key] = $value; 
+      Config::$properties[$key] = $value; 
     }
 }

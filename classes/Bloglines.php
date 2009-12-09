@@ -13,8 +13,8 @@ class Bloglines extends API {
 
     $xml = $this->get_data('http://www.bloglines.com/search', array(
       'format' => 'publicapi',
-      'apiuser' => Libapi_Config::get('BLOGLINES_USER'),
-      'apikey' => Libapi_Config::get('BLOGLINES'),
+      'apiuser' => Config::get('BLOGLINES_USER'),
+      'apikey' => Config::get('BLOGLINES'),
       's' => 'f',
       'q' => 'bcite:' . $q['url'],
     ), 'xml');

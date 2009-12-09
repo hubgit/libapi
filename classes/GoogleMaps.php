@@ -10,7 +10,7 @@ class GoogleMaps extends API {
       'output' => 'json',
       'oe' => 'utf8',
       'sensor' => 'false',
-      'key' => Libapi_Config::get('GOOGLE_MAPS'),
+      'key' => Config::get('GOOGLE_MAPS'),
     ));
   
     debug($json);

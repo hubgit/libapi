@@ -18,8 +18,8 @@ class Bitly extends API {
       return FALSE;  
 
     $json = $this->get_data('http://api.bit.ly/info', array(
-      'login' => Libapi_Config::get('BITLY_USER'),
-      'apiKey' => Libapi_Config::get('BITLY'),
+      'login' => Config::get('BITLY_USER'),
+      'apiKey' => Config::get('BITLY'),
       'version' => '2.0.1',
       'format' => 'json',
       'shortUrl' => $uri,
@@ -38,8 +38,8 @@ class Bitly extends API {
 
   function shorten($url){
     $json = $this->get_data('http://api.bit.ly/shorten', array(
-      'login' => Libapi_Config::get('BITLY_USER'),
-      'apiKey' => Libapi_Config::get('BITLY'),
+      'login' => Config::get('BITLY_USER'),
+      'apiKey' => Config::get('BITLY'),
       'version' => '2.0.1',
       'format' => 'json',
       'longUrl' => $url,
@@ -55,8 +55,8 @@ class Bitly extends API {
 
   function stats($url){
     $json = $this->get_data('http://api.bit.ly/stats', array(
-      'login' => Libapi_Config::get('BITLY_USER'),
-      'apiKey' => Libapi_Config::get('BITLY'),
+      'login' => Config::get('BITLY_USER'),
+      'apiKey' => Config::get('BITLY'),
       'version' => '2.0.1',
       'format' => 'json',
       'shortUrl' => $url,
