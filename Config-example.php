@@ -3,7 +3,7 @@
 class Config {
   static $properties = array(
     'TIMEZONE' => 'Europe/London',
-    'DATA' => '/path/to/libapi-data',
+    'DATA_DIR' => '/path/to/libapi-data',
     'DEBUG' => 'PRINT', // OFF, FILE, PRINT
     'LOG' => '',
     

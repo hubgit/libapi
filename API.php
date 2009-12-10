@@ -1,6 +1,9 @@
 <?php
 
 class API {
+  public $input_dir;
+  public $output_dir;
+  
   function __construct(){
     if (isset($this->def) && !empty($this->def))
       if (is_array($this->def))
@@ -106,25 +109,35 @@ class API {
     }
   }
   
-  function input_dir($dir){
-    $dir = DATA_DIR . $dir;
+  function get_input_dir($dir){
+    $dir = Config::get('DATA_DIR') . $dir;
     if (!file_exists($dir) || !is_dir($dir))
       return FALSE;
     return $dir;
   }
 
-  function output_dir($dir){
+  function get_output_dir($dir){
     #$dir = preg_replace('/[^a-z0-9\(\)\_\-\+ ]/i', '_', $dir); // FIXME: proper sanitising
     
     if (strpos($dir, '/') !== 0) // path doesn't start with '/', so treat as relative to DATA_DIR
-      $dir = DATA_DIR . '/' . $dir;
+      $dir = Config::get('DATA_DIR') . '/' . $dir;
 
     if (!file_exists($dir))
       mkdir($dir, 0755, TRUE); // TRUE = recursive
+      
     if (!is_dir($dir))
       exit('Could not create output folder ' . $dir);
 
     return $dir;
+  }
+  
+  function get_latest($q, $default = 1){
+    if (isset($q['from']))
+      return $q['from'];
+    else if ($this->output_dir && file_exists($this->output_dir . '/latest'))
+      return file_get_contents($this->output_dir . '/latest');
+    else
+      return $default;
   }
   
   function base64_encode_file($t){

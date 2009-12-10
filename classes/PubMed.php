@@ -53,14 +53,9 @@ class PubMed extends API {
       return FALSE;
     
     if (isset($q['output']))
-      $output_dir = $this->output_dir($q['output']);
+      $this->output_dir = $this->get_output_dir($q['output']);
   
-    if (isset($q['from']))
-      $from = $q['from'];
-    else if ($output_dir && file_exists($output_dir . '/latest'))
-      $from = file_get_contents($output_dir . '/latest');
-    else
-      $from = 0;
+    $from = $this->get_latest($q, 0); // 0 = 1970-01-01T00:00:00Z
 
     $to = date('Y/m/d', time() + 60*60*24*365*10); // 10 years in future
 
@@ -101,8 +96,8 @@ class PubMed extends API {
           if ($status == 'In-Data-Review') // FIXME
             continue;
           
-          if ($output_dir){
-            $out = sprintf('%s/%d.xml', $output_dir, $id); // id = integer
+          if ($this->output_dir){
+            $out = sprintf('%s/%d.xml', $this->output_dir, $id); // id = integer
             file_put_contents($out, $article->asXML());
           }
           else
@@ -115,7 +110,7 @@ class PubMed extends API {
       } while ($start < $pubmed->count);
     }
 
-    file_put_contents($output_dir . '/latest', date('Y/m/d'));
+    file_put_contents($this->output_dir . '/latest', date('Y/m/d'));
   
     return $items;
   }

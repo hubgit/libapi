@@ -109,14 +109,9 @@ class Flickr extends API {
       return FALSE;
     
     if (isset($q['output']))
-      $output_dir = $this->output_dir($q['output']);
+      $this->output_dir = $this->get_output_dir($q['output']);
     
-    if (isset($q['from']))
-      $from = $q['from'];
-    else if ($output_dir && file_exists($output_dir . '/latest'))
-      $from = file_get_contents($output_dir . '/latest');
-    else
-      $from = 0; // 1970-01-01T00:00:00Z
+    $from = $this->get_latest($q, 0); // 0 = 1970-01-01T00:00:00Z
    
     $n = 500;
     $page = 1; // pages start at 1
@@ -140,10 +135,10 @@ class Flickr extends API {
         return FALSE;
     
       foreach ($data['photos']['photo'] as $photo){
-        if ($output_dir){
+        if ($this->output_dir){
           $id = preg_replace('/\D/', '', $photo['id']); // can't use %d as too big, so sanitise by removing non-numeric characters
         
-          $out = sprintf('%s/%s.js', $output_dir, $id);
+          $out = sprintf('%s/%s.js', $this->output_dir, $id);
           if (file_exists($out))
             continue;
           
@@ -164,10 +159,10 @@ class Flickr extends API {
           $image_url = sprintf('http://farm%d.static.flickr.com/%d/%s_%s%s.%s', $item['farm'], $item['server'], $item['id'], $secret, $suffix, $format);
           debug($image_url);
         
-          file_put_contents(sprintf('%s/%s%s.jpg', $output_dir, $id, $suffix), file_get_contents($image_url));
+          file_put_contents(sprintf('%s/%s%s.jpg', $this->output_dir, $id, $suffix), file_get_contents($image_url));
           file_put_contents($out, json_encode($item)); // write this once image has been retrieved, as a marker of success
         
-          file_put_contents($output_dir . '/latest', $item['dateuploaded']);
+          file_put_contents($this->output_dir . '/latest', $item['dateuploaded']);
         }
         else
           $items[] = $photo;

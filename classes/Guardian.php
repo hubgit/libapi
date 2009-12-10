@@ -9,7 +9,7 @@ class Guardian extends API {
       return FALSE;
     
     if (isset($q['output']))
-      $output_dir = $this->output_dir($q['output']);
+      $this->output_dir = $this->get_output_dir($q['output']);
   
     $n = 50;
     $page = 0; // results start at 0
@@ -35,8 +35,8 @@ class Guardian extends API {
         break;
       
       foreach ($json->search->results as $item){
-        if ($output_dir)
-          file_put_contents(sprintf('%s/%d.js', $output_dir, $this->base64_encode_file($item->id)), json_encode($item)); 
+        if ($this->output_dir)
+          file_put_contents(sprintf('%s/%d.js', $this->output_dir, $this->base64_encode_file($item->id)), json_encode($item)); 
         else
           $items[] = $item;
       }

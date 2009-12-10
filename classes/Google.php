@@ -49,7 +49,7 @@ class Google extends API {
       return FALSE;
     
     if (isset($q['output']))
-      $output_dir = $this->output_dir($q['output']);
+      $this->output_dir = $this->get_output_dir($q['output']);
 
     $http = $this->auth();
   
@@ -73,8 +73,8 @@ class Google extends API {
       $xml->registerXPathNamespace('gr', 'http://www.google.com/schemas/reader/atom/');
     
       foreach ($xml->xpath('/atom:feed/atom:entry') as $item){
-        if ($output_dir)
-          file_put_contents(sprintf('%s/%s.xml', $output_dir, base64_encode($item->id)), $item->asXML()); 
+        if ($this->output_dir)
+          file_put_contents(sprintf('%s/%s.xml', $this->output_dir, base64_encode($item->id)), $item->asXML()); 
         else
           $items[] = $item;
       }

@@ -20,14 +20,13 @@ require 'Config.php';
 
 date_default_timezone_set(Config::get('TIMEZONE'));
 
-if (empty(Config::$properties['DATA']))
-  Config::set('DATA', LIBAPI_ROOT . '/data');
-define('DATA_DIR', Config::get('DATA')); // shortcut = DATA_DIR
+if (empty(Config::$properties['DATA_DIR']))
+  Config::set('DATA_DIR', LIBAPI_ROOT . '/data');
 
 if (empty(Config::$properties['LOG']))
   Config::set('LOG', DATA_DIR . '/debug.log');
 
-define('MISC_DIR', LIBAPI_ROOT . '/misc');
+Config::set('MISC_DIR', LIBAPI_ROOT . '/misc');
 
 require LIBAPI_ROOT . '/API.php';
 require LIBAPI_ROOT . '/DB.php';

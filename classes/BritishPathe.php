@@ -3,7 +3,7 @@
 class BritishPathe extends API {
   function content($q){
     if (isset($q['output']))
-      $output_dir = $this->output_dir($q['output']);
+      $this->output_dir = $this->get_output_dir($q['output']);
   
     $id = isset($q['start']) ? (int) $q['start'] : 1;
   
@@ -34,21 +34,21 @@ class BritishPathe extends API {
       
       $flat = $html->asXML();
       
-      if ($output_dir)
-        file_put_contents(sprintf('%s/%d.html', $output_dir, $id), $flat); 
+      if ($this->output_dir)
+        file_put_contents(sprintf('%s/%d.html', $this->output_dir, $id), $flat); 
       else
         $items[] = $item;
     
-      if ($output_dir && preg_match('!http://www\.britishpathe\.com/media/Reference/00000000/\d+/(\d+)\.jpg!', $flat, $matches)){
+      if ($this->get_output_dir && preg_match('!http://www\.britishpathe\.com/media/Reference/00000000/\d+/(\d+)\.jpg!', $flat, $matches)){
         $media_id = $matches[1];
         $image_url = sprintf('http://www.britishpathe.com/media/Reference/00000000/%08d/%08d.jpg', floor($media_id/1000) * 1000, $media_id);
         $video_url = sprintf('rtmp://streaming.britishpathe.com/vod/_definst_/flv:FLASH/00000000/%08d/%08d', floor($media_id/1000) * 1000, $media_id);
       
         debug($image_url);
-        file_put_contents(sprintf('%s/%d.jpg', $output_dir, $id), file_get_contents($image_url));
+        file_put_contents(sprintf('%s/%d.jpg', $this->output_dir, $id), file_get_contents($image_url));
       
         debug($video_url);
-        $command = sprintf('flvstreamer --rtmp %s > %s', escapeshellarg($video_url), escapeshellarg(sprintf('%s/%d.flv', $output_dir, $id)));
+        $command = sprintf('flvstreamer --rtmp %s > %s', escapeshellarg($video_url), escapeshellarg(sprintf('%s/%d.flv', $this->output_dir, $id)));
         debug($command);
         system($command);
       }

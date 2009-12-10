@@ -32,7 +32,7 @@ class CrossRef extends API {
         );
     }
     
-    return array($items, array('total' => count($items));
+    return array($items, array('total' => count($items)));
   }
 
   function metadata($q){

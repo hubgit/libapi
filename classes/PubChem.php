@@ -102,7 +102,7 @@ class PubChem extends API{
     if (stripos($inchi, 'inchi=') !== 0)
       $inchi = 'InChI=' . $inchi;
       
-    $xml = sprintf(file_get_contents(MISC_DIR . '/pubchem/pug-inchi.xml'), htmlspecialchars($inchi));
+    $xml = sprintf(file_get_contents(Config::get('MISC_DIR') . '/pubchem/pug-inchi.xml'), htmlspecialchars($inchi));
     $http = array('method'=> 'POST', 'content' => $xml, 'header' => 'Content-Type: text/xml; charset=UTF-8');
     $result = $this->get_data('http://pubchem.ncbi.nlm.nih.gov/pug/pug.cgi', array(), 'dom', $http);
     
@@ -112,7 +112,7 @@ class PubChem extends API{
       exit('Error searching PubChem');
       
     $reqid = $xpath->query("//PCT-Waiting_reqid")->item(0)->nodeValue;
-    $xml = sprintf(file_get_contents(MISC_DIR . '/pubchem/pug-reqid.xml'), htmlspecialchars($reqid));
+    $xml = sprintf(file_get_contents(Config::get('MISC_DIR') . '/pubchem/pug-reqid.xml'), htmlspecialchars($reqid));
 
     $i = 0;
     do { // try 10 times to connect, every 6 seconds
@@ -150,8 +150,8 @@ class PubChem extends API{
       
     $params = array_merge($default, $params);
     
-    $output_dir = $this->$this->output_dir('cache/pubchem/images');
-    $file = sprintf('%s/%s.png', $output_dir, $this->base64_encode_file(http_build_query($params)));
+    $this->output_dir = $this->$this->get_output_dir('cache/pubchem/images');
+    $file = sprintf('%s/%s.png', $this->output_dir, $this->base64_encode_file(http_build_query($params)));
     
     if (!file_exists($file))
       file_put_contents($file, $this->get_data('http://pubchem.ncbi.nlm.nih.gov/image/imagefly.cgi', $params, 'raw'));

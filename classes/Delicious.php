@@ -42,7 +42,7 @@ class Delicious extends API {
       return FALSE;
 
     if (isset($q['output']))
-      $output_dir = $this->output_dir($q['output'] . '/' . preg_replace('/\W/', '_', $query)); // FIXME: proper sanitising
+      $this->output_dir = $this->get_output_dir($q['output'] . '/' . preg_replace('/\W/', '_', $query)); // FIXME: proper sanitising
 
     $css2xpath = new CSS2XPath();
 
@@ -97,8 +97,8 @@ class Delicious extends API {
 
         debug($data);   
 
-        if ($output_dir)
-          file_put_contents(sprintf('%s/%s.js', $output_dir, base64_encode_file($data['user'] .  '*' . $data['uri'])), json_encode($data)); 
+        if ($this->output_dir)
+          file_put_contents(sprintf('%s/%s.js', $this->output_dir, base64_encode_file($data['user'] .  '*' . $data['uri'])), json_encode($data)); 
         else
           $items[] = $item;
       }
@@ -120,14 +120,9 @@ class Delicious extends API {
     $this->check_def('DELICIOUS_AUTH');
       
     if (isset($q['output']))
-      $output_dir = $this->output_dir($q['output']);
-
-    if (isset($q['from']))
-      $from = $q['from'];
-    else if ($output_dir && file_exists($output_dir . '/latest'))
-      $from = file_get_contents($output_dir . '/latest');
-    else
-      $from = 0; // 1970-01-01T00:00:00Z
+      $this->output_dir = $this->get_output_dir($q['output']);
+      
+    $from = $this->get_latest($q, 0); // 0 = 1970-01-01T00:00:00Z
 
     $auth = explode(':', Config::get('DELICIOUS_AUTH'));
 
@@ -144,14 +139,14 @@ class Delicious extends API {
     $items = array();
 
     foreach ($xml->post as $item){
-      if ($output_dir)
-        file_put_contents(sprintf('%s/%s.xml', $output_dir, preg_replace('/\W/i', '', (string) $item['hash'])), $item->asXML()); 
+      if ($this->output_dir)
+        file_put_contents(sprintf('%s/%s.xml', $this->output_dir, preg_replace('/\W/i', '', (string) $item['hash'])), $item->asXML()); 
       else
         $items[] = $item;
     }
 
-    if ($output_dir)
-      file_put_contents($output_dir . '/latest', strtotime((string) $xml['update']));
+    if ($this->output_dir)
+      file_put_contents($this->output_dir . '/latest', strtotime((string) $xml['update']));
 
     return $items;
   }
