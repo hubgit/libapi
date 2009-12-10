@@ -7,7 +7,7 @@ class API {
         foreach ($this->def as $def)
           $this->check_def($def);
       else
-        $this->check_def($def);
+        $this->check_def($this->def);
   }
   
   static function __autoload($class){
@@ -117,7 +117,7 @@ class API {
     #$dir = preg_replace('/[^a-z0-9\(\)\_\-\+ ]/i', '_', $dir); // FIXME: proper sanitising
     
     if (strpos($dir, '/') !== 0) // path doesn't start with '/', so treat as relative to DATA_DIR
-      $dir = DATA_DIR . $dir;
+      $dir = DATA_DIR . '/' . $dir;
 
     if (!file_exists($dir))
       mkdir($dir, 0755, TRUE); // TRUE = recursive

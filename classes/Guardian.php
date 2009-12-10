@@ -9,7 +9,7 @@ class Guardian extends API {
       return FALSE;
     
     if (isset($q['output']))
-      $output_dir = output_dir($q['output']);
+      $output_dir = $this->output_dir($q['output']);
   
     $n = 50;
     $page = 0; // results start at 0

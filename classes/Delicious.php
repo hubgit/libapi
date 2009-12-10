@@ -42,7 +42,7 @@ class Delicious extends API {
       return FALSE;
 
     if (isset($q['output']))
-      $output_dir = output_dir($q['output'] . '/' . preg_replace('/\W/', '_', $query)); // FIXME: proper sanitising
+      $output_dir = $this->output_dir($q['output'] . '/' . preg_replace('/\W/', '_', $query)); // FIXME: proper sanitising
 
     $css2xpath = new CSS2XPath();
 
@@ -120,7 +120,7 @@ class Delicious extends API {
     $this->check_def('DELICIOUS_AUTH');
       
     if (isset($q['output']))
-      $output_dir = output_dir($q['output']);
+      $output_dir = $this->output_dir($q['output']);
 
     if (isset($q['from']))
       $from = $q['from'];

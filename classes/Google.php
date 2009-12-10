@@ -49,7 +49,7 @@ class Google extends API {
       return FALSE;
     
     if (isset($q['output']))
-      $output_dir = output_dir($q['output']);
+      $output_dir = $this->output_dir($q['output']);
 
     $http = $this->auth();
   

@@ -3,7 +3,7 @@
 class BritishPathe extends API {
   function content($q){
     if (isset($q['output']))
-      $output_dir = output_dir($q['output']);
+      $output_dir = $this->output_dir($q['output']);
   
     $id = isset($q['start']) ? (int) $q['start'] : 1;
   

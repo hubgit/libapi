@@ -150,7 +150,7 @@ class PubChem extends API{
       
     $params = array_merge($default, $params);
     
-    $output_dir = $this->output_dir('cache/pubchem/images');
+    $output_dir = $this->$this->output_dir('cache/pubchem/images');
     $file = sprintf('%s/%s.png', $output_dir, $this->base64_encode_file(http_build_query($params)));
     
     if (!file_exists($file))

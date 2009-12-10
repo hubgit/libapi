@@ -53,7 +53,7 @@ class PubMed extends API {
       return FALSE;
     
     if (isset($q['output']))
-      $output_dir = output_dir($q['output']);
+      $output_dir = $this->output_dir($q['output']);
   
     if (isset($q['from']))
       $from = $q['from'];
