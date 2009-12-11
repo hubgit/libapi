@@ -69,7 +69,7 @@ class API {
     $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
     debug('Status: ' . $status);  
-    //debug($data);
+    debug($data);
 
     curl_close($curl);
     return $this->format_data($format, $data); 

@@ -55,8 +55,7 @@ class PubMed extends API {
     if (!$max = $q['max'])
       $max = 100000000; // is there a limit?
     
-    if (isset($q['output']))
-      $this->output_dir = $this->get_output_dir($q['output']);
+    $this->output_dir = isset($q['output']) ? $this->get_output_dir($q['output']) : NULL;
   
     $from = $this->get_latest($q, 0); // 0 = 1970-01-01T00:00:00Z
 

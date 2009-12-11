@@ -11,8 +11,7 @@ class Twitter extends API {
     if (!$max = $q['max'])
       $max = 3200; // maximum 3200 items available through the API
     
-    if (isset($q['output']))
-      $this->output_dir = $this->get_output_dir($q['output']);
+    $this->output_dir = isset($q['output']) ? $this->get_output_dir($q['output']) : NULL;
 
     $auth = explode(':', Config::get('TWITTER_AUTH'));
       
