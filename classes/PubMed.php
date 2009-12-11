@@ -20,9 +20,9 @@ class PubMed extends API {
 
     $xml = $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi', array_merge($default, $params), 'xml');
 
-    debug($xml);
+    //debug($xml);
     if (!is_object($xml))
-      return false;
+      return FALSE;
 
     $this->count = (int) $xml->Count;
     $this->webenv = (string) $xml->WebEnv;
@@ -51,6 +51,9 @@ class PubMed extends API {
   function content($q){
     if (!$term = $q['term'])
       return FALSE;
+      
+    if (!$max = $q['max'])
+      $max = 100000000; // is there a limit?
     
     if (isset($q['output']))
       $this->output_dir = $this->get_output_dir($q['output']);
@@ -59,9 +62,9 @@ class PubMed extends API {
 
     $to = date('Y/m/d', time() + 60*60*24*365*10); // 10 years in future
 
-    $n = 500;
-
+    $n = min($max, 500);
     $items = array();
+    $count = 0;
 
     foreach (array('edat', 'mdat') as $datetype){ // edat = date added to entrez (pdat = published date), mdat = date modified
       $start = 0;
@@ -90,11 +93,11 @@ class PubMed extends API {
       
         //debug($xml);
     
-        foreach ($xml->PubmedArticle as $article){
+        foreach ($xml->PubmedArticle as $article){           
           $id = (int) $article->MedlineCitation->PMID;
           $status = (string) $article->MedlineCitation['Status'];
-          if ($status == 'In-Data-Review') // FIXME
-            continue;
+          //if ($status == 'In-Data-Review') // FIXME
+            //continue;
           
           if ($this->output_dir){
             $out = sprintf('%s/%d.xml', $this->output_dir, $id); // id = integer

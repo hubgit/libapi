@@ -18,7 +18,7 @@ class Twitter extends API {
       
     $from = $this->get_latest($q, 1); // 1 = earliest status id
    
-    $n = 200; // max 200
+    $n = min($max, 200); // max 200
     $page = 1; // pages start at 1
   
     $items = array();
@@ -38,11 +38,7 @@ class Twitter extends API {
       if (!is_array($json) || empty($json))
         break;
     
-      foreach ($json as $item){
-        if ($count++ == $max)
-          break(2);
-          debug($count);
-          
+      foreach ($json as $item){          
         if ($this->output_dir){
           $out = sprintf('%s/%s.js', $this->output_dir, preg_replace('/\D/', '', $item->id)); // can't use %d as $item->id is too big, so sanitise by removing non-numeric characters
           file_put_contents($out, json_encode($item));

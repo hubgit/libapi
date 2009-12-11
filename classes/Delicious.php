@@ -40,6 +40,9 @@ class Delicious extends API {
     
     if (!$query = $q['tag'])
       return FALSE;
+      
+    if (!$max = $q['max'])
+      $max = 1000000; // TODO: is there a limit on the API?
 
     if (isset($q['output']))
       $this->output_dir = $this->get_output_dir($q['output'] . '/' . preg_replace('/\W/', '_', $query)); // FIXME: proper sanitising
@@ -60,6 +63,7 @@ class Delicious extends API {
     $page = 1;
     $n = 100;
 
+    $count = 0;
     do{
       $xml = $this->get_data('http://delicious.com/tag/' . urlencode($query), array(
         'setcount' => $n,

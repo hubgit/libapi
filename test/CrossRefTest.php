@@ -22,4 +22,19 @@ class CrossRefTest extends PHPUnit_Framework_TestCase {
     $this->assertEquals($this->doi, (string) $record->{'journal_article'}->{'doi_data'}->doi);
     return $record;
   }
+  
+  public function testCitedBy(){
+    list($items, $meta) = $this->api->citedby(array('doi' => $this->doi));
+    
+    //debug($items);
+    //debug($meta);
+    
+    $this->assertType(PHPUnit_Framework_Constraint_IsType::TYPE_ARRAY, $items);
+    $this->assertArrayHasKey('10.1038/nchem.381', $items);
+
+    $this->assertType(PHPUnit_Framework_Constraint_IsType::TYPE_ARRAY, $meta);
+    $this->assertGreaterThan(0, $meta['total']);
+    
+    return $items;
+  }
 }
