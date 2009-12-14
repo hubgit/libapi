@@ -10,6 +10,25 @@ class AmazonTest extends PHPUnit_Framework_TestCase {
   }
 
   public function testSearchMP3(){
-    $result = $this->api->search('MP3Downloads', 'Nirvana - Nevermind');
+    $results = array();
+    
+    $page = 1;
+    do {
+      list($items, $meta) = $this->api->search(array(
+        'SearchIndex' => 'MP3Downloads', 
+        'Keywords' => 'Nirvana - Nevermind',
+        'ItemPage' => $page,
+        ));
+        
+      if (!$items)
+        break;
+        
+      foreach ($items as $key => $item)
+        $results[$key] = $item;
+        
+    } while (++$page <=  $meta['pages']);
+      
+    $this->assertGreaterThan(20, $meta['total']);
+    $this->assertEquals(count($results), $meta['total']);
   }
 }

@@ -40,10 +40,9 @@ class API {
     //debug($data);
     //debug($http_response_header);
 
-    global $http_status;
     $h = explode(' ', $http_response_header[0], 3);
-    $http_status = $h[1];
-    debug($http_status);
+    $this->http_status = $h[1];
+    debug('Status: ' . $this->http_status);
 
     return $this->format_data($format, $data);
   }
@@ -69,7 +68,7 @@ class API {
     $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
     debug('Status: ' . $status);  
-    debug($data);
+    //debug($data);
 
     curl_close($curl);
     return $this->format_data($format, $data); 
