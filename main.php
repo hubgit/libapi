@@ -20,17 +20,16 @@ require 'Config.php';
 
 date_default_timezone_set(Config::get('TIMEZONE'));
 
+/* set up directories */
+Config::set('MISC_DIR', LIBAPI_ROOT . '/misc');
+
 if (empty(Config::$properties['DATA_DIR']))
   Config::set('DATA_DIR', LIBAPI_ROOT . '/data');
 
 if (empty(Config::$properties['LOG']))
-  Config::set('LOG', DATA_DIR . '/debug.log');
-
-Config::set('MISC_DIR', LIBAPI_ROOT . '/misc');
+  Config::set('LOG', Config::get('DATA_DIR') . '/debug.log');
 
 require LIBAPI_ROOT . '/API.php';
 require LIBAPI_ROOT . '/DB.php';
 
 spl_autoload_register(array('API', '__autoload'));
-
-  

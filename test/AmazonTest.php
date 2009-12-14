@@ -10,7 +10,6 @@ class AmazonTest extends PHPUnit_Framework_TestCase {
   }
 
   public function testSearchMP3(){
-    //return true;
     $results = array();
     
     $page = 1;

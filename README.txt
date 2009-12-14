@@ -1,10 +1,12 @@
-A collection of text processing APIs.
+A collection of classes for accessing web APIs.
+
+Each API may provide several standard (below) or non-standard methods.
 
 * analyse: sentiment analysis
 
-* bookmarks: list of bookmarks for the given identifier
+* bookmarks: a list of bookmarks for the given identifier
 
-* citedby: APIs that return citation counts for a DOI
+* citedby: citation counts for an identifier
 Returns ((int) citedbycount, (string) url for citedby page) if successful.
 
 * content: fetch content
@@ -19,7 +21,7 @@ Returns ((string) place_name, ((float) lat, (float) lon)) if the string can be g
 * metadata: metadata about an object, given an identifier
 
 * search: search results for a given term
-Returns an array of search results
+Returns ((array) search results, (array) metadata about the results e.g. the total number of results).
 
 ===
 
@@ -32,5 +34,3 @@ See the scripts in the 'test' folder for an example of how to call a particular 
 ===
 
 Examples:
-
-* To back up a user's Twitter posts: set TWITTER_AUTH in Config.php, edit the screen name in test/backup/twitter.php then run test/backup/twitter.php on the command line. The data will be saved in the 'data' directory, unless you've defined DATA in Config.php
