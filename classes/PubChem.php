@@ -1,7 +1,7 @@
 <?php
 
 class PubChem extends API{
-  function search($q){
+  function search($q, $params = array()){
     unset($this->count, $this->webenv, $this->querykey);
     
     $this->db = 'pccompound';
@@ -27,7 +27,7 @@ class PubChem extends API{
     if (strpos($term, '"') === FALSE && !preg_match('/\[[CS]ID\]/', $term))
       $term = sprintf('"%s"', $term);
 
-    $params = array(
+    $default = array(
       'db' => $this->db,
       'term' => $term,
       'retmax' => 1,
@@ -35,14 +35,18 @@ class PubChem extends API{
       'usehistory' => 'y',
       );
       
+    $params = array_merge($default, $params);
     $xml = $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi', $params, 'xml');
 
     if (!is_object($xml))
       exit('Error searching PubChem');
 
     $this->count = (int) $xml->Count;
-    $this->webenv = (string) $xml->WebEnv;
-    $this->querykey = (int) $xml->QueryKey;
+    
+    if ($params['usehistory'] == 'y'){
+      $this->webenv = (string) $xml->WebEnv;
+      $this->querykey = (int) $xml->QueryKey;
+    }
     
     return $xml;
   }
@@ -60,6 +64,8 @@ class PubChem extends API{
       $default['query_key'] = $this->querykey;
       $default['WebEnv'] = $this->webenv;
     }
+    else
+      throw new Exception('No IDs or query history to fetch');
 
     $xml = $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi', array_merge($default, $params), 'xml');
     //debug($xml);
@@ -163,7 +169,7 @@ class PubChem extends API{
     $this->webenv = $xpath->query('PCT-Entrez_webenv', $node)->item(0)->nodeValue;
     $this->querykey = $xpath->query('PCT-Entrez_query-key', $node)->item(0)->nodeValue;
     
-    return $node;
+    return simplexml_import_dom($node);
   }
   
   function image($params){
