@@ -33,7 +33,7 @@ class Amazon extends API {
   }
   
   function search($params){
-    $default = array('Operation' => 'ItemSearch', 'ResponseGroup' => 'Small');
+    $default = array('Operation' => 'ItemSearch', 'ResponseGroup' => 'ItemAttributes');
       
     $xml = $this->call(array_merge($default, $params));
       

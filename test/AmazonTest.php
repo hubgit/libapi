@@ -10,6 +10,7 @@ class AmazonTest extends PHPUnit_Framework_TestCase {
   }
 
   public function testSearchMP3(){
+    //return true;
     $results = array();
     
     $page = 1;
@@ -30,5 +31,32 @@ class AmazonTest extends PHPUnit_Framework_TestCase {
       
     $this->assertGreaterThan(20, $meta['total']);
     $this->assertEquals(count($results), $meta['total']);
+  }
+  
+  public function testSearchBooksUK(){
+    $host = $this->api->host;
+    $this->api->host = 'ecs.amazonaws.co.uk';
+    
+    $results = array();
+    $page = 1;
+    do {
+      list($items, $meta) = $this->api->search(array(
+        'SearchIndex' => 'Books', 
+        'Author' => 'Tim Key',
+        'ItemPage' => $page,
+        ));
+        
+      if (!$items)
+        break;
+        
+      foreach ($items as $key => $item)
+        $results[$key] = $item;
+        
+    } while (++$page <=  $meta['pages']);
+      
+    $this->assertGreaterThan(2, $meta['total']);
+    $this->assertEquals(count($results), $meta['total']);
+    
+    $this->api->host = $host;
   }
 }
