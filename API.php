@@ -109,9 +109,12 @@ class API {
   }
   
   function get_input_dir($dir){
-    $dir = Config::get('DATA_DIR') . $dir;
+    if (strpos($dir, '/') !== 0) // path doesn't start with '/', so treat as relative to DATA_DIR
+      $dir = Config::get('DATA_DIR') . '/' . $dir;
+      
     if (!file_exists($dir) || !is_dir($dir))
       return FALSE;
+      
     return $dir;
   }
 
@@ -120,7 +123,7 @@ class API {
     
     if (strpos($dir, '/') !== 0) // path doesn't start with '/', so treat as relative to DATA_DIR
       $dir = Config::get('DATA_DIR') . '/' . $dir;
-
+    
     if (!file_exists($dir))
       mkdir($dir, 0755, TRUE); // TRUE = recursive
       

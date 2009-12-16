@@ -16,6 +16,8 @@ class PubMed extends API {
       'usehistory' => 'y',
       'retmax' => 1,
       'term' => $q,
+      'tool' => Config::get('EUTILS_TOOL'),
+      'email' => Config::get('EUTILS_EMAIL'),
       );
 
     $xml = $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi', array_merge($default, $params), 'xml');
@@ -35,6 +37,8 @@ class PubMed extends API {
     $default = array(
       'db' => 'pubmed',
       'retmode' => 'xml',
+      'tool' => Config::get('EUTILS_TOOL'),
+      'email' => Config::get('EUTILS_EMAIL'),
       );
       
     if (!empty($ids)){
@@ -127,6 +131,8 @@ class PubMed extends API {
         'retmax' => 1,
         'usehistory' => 'n',
         'term' => $q['doi'] . '[DOI]',
+        'tool' => Config::get('EUTILS_TOOL'),
+        'email' => Config::get('EUTILS_EMAIL'),
         ), 'xml');
 
       debug($xml);
@@ -142,6 +148,8 @@ class PubMed extends API {
       'db' => 'pubmed',
       'retmode' => 'xml',
       'id' => $pmid,
+      'tool' => Config::get('EUTILS_TOOL'),
+      'email' => Config::get('EUTILS_EMAIL'),
       ), 'xml');
 
     //debug($xml);

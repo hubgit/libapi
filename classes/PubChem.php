@@ -1,6 +1,9 @@
 <?php
 
 class PubChem extends API{
+  public $doc = 'http://pubchem.ncbi.nlm.nih.gov/';
+  public $def = array('EUTILS_TOOL', 'EUTILS_EMAIL');
+  
   function search($q, $params = array()){
     unset($this->count, $this->webenv, $this->querykey);
     
@@ -33,6 +36,8 @@ class PubChem extends API{
       'retmax' => 1,
       'retmode' => 'xml',
       'usehistory' => 'y',
+      'tool' => Config::get('EUTILS_TOOL'),
+      'email' => Config::get('EUTILS_EMAIL'),
       );
       
     $params = array_merge($default, $params);
@@ -55,10 +60,14 @@ class PubChem extends API{
     $default = array(
       'db' => $this->db,
       'retmode' => 'xml',
+      'retmax' => 20,
+      'retstart' => 1,
+      'tool' => Config::get('EUTILS_TOOL'),
+      'email' => Config::get('EUTILS_EMAIL'),
       );
       
     if (!empty($ids)){
-      $default['id'] = implode(',', is_array($ids) ? $ids : array($ids));
+      $default['id'] = is_array($ids) ? implode(',', $ids) : (string) $ids;
     }
     else if ($this->webenv){
       $default['query_key'] = $this->querykey;
@@ -81,7 +90,7 @@ class PubChem extends API{
   }
   
   function parse($doc){
-    debug($doc);
+     debug($doc);
      $result = array(
        'id' => (int) $doc->Id,
        'synonyms' => array(),
@@ -173,6 +182,7 @@ class PubChem extends API{
   }
   
   function image($params){
+    debug($params);
     $default = array(
       'width' => 100,
       'height' => 100,
@@ -180,7 +190,7 @@ class PubChem extends API{
       
     $params = array_merge($default, $params);
     
-    $this->output_dir = $this->$this->get_output_dir('cache/pubchem/images');
+    $this->output_dir = $this->get_output_dir('cache/pubchem/images');
     $file = sprintf('%s/%s.png', $this->output_dir, $this->base64_encode_file(http_build_query($params)));
     
     if (!file_exists($file))
