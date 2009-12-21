@@ -99,7 +99,10 @@ class API {
       case 'json':
         return 'application/json, */*;q=0.2';
       case 'xml':
-       return 'application/xml, */*;q=0.2';
+      case 'dom':
+        return 'application/xml, */*;q=0.2';
+      case 'html':
+        return 'text/html, */*;q=0.2';        
       case 'rdf':
         return 'application/rdf+xml, */*;q=0.2';
       case 'raw':
@@ -158,12 +161,12 @@ class API {
 
       case 'html':
       default:
-        print htmlspecialchars($input, NULL, 'UTF-8');
+        print htmlspecialchars($input, NULL, 'UTF-8'); // ENT_QUOTES? filter_var + FILTER_SANITIZE_SPECIAL_CHARS?
       break;
 
       case 'attribute':
       case 'attr':
-        print htmlspecialchars($input, NULL, 'UTF-8');
+        print htmlspecialchars($input, NULL, 'UTF-8'); // ENT_QUOTES? filter_var + FILTER_SANITIZE_SPECIAL_CHARS?
       break;  
     }
   }
@@ -182,5 +185,26 @@ class API {
       foreach ($nodes as $node)
         $items[] = (string) $node;
     return $items; 
+  }
+  
+  function opensearch($url, $params){
+    $xml = $this->get_data($url, $params, 'xml');
+
+    //debug($xml);
+
+    if (!is_object($xml))
+      return FALSE;
+
+    $xml->registerXPathNamespace('atom', 'http://www.w3.org/2005/Atom');
+    $xml->registerXPathNamespace('dc', 'http://purl.org/dc/elements/1.1/');
+    $xml->registerXPathNamespace('opensearch', 'http://a9.com/-/spec/opensearch/1.1/');
+
+    $meta = array(
+      'total' => (int) current($xml->xpath('opensearch:totalResults')),
+      'page' => (int) current($xml->xpath('opensearch:startIndex')),
+      'items' => (int) current($xml->xpath('opensearch:itemsPerPage')),
+      );
+
+    return array($xml, $meta);
   }
 }
