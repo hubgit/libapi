@@ -47,7 +47,7 @@ class Guardian extends API {
     return $items;
   }
   
-  function search_guardian($q, $params = array()){
+  function search($q, $params = array()){
     if (!$q)
       return FALSE;
 
