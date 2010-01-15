@@ -7,6 +7,7 @@ class WorldCat extends API {
   function search($q, $params = array()){
     if (!$q)
       return FALSE;
+      
     $default = array(
       'q' => $q,
       'wskey' => Config::get('WORLDCAT'),

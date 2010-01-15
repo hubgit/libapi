@@ -15,7 +15,7 @@ class ChemSpider extends API {
     }
     
     function image($csid){
-      debug('CSID: ' $csid);
+      debug('CSID: ' . $csid);
       $params = array(
         'id' => $csid,
         'token' => Config::get('CHEMSPIDER'),
