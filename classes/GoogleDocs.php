@@ -4,6 +4,8 @@ class GoogleDocs extends Google {
   public $doc = 'http://docs.google.com/';
   public $def = array('GOOGLE_AUTH');
   
+  // FIXME: using curl rather than file_get_contents
+  
   function upload($data, $type = 'text/plain', $title = 'Untitled Document', $params = array()){    
     $headers = array(
       'Content-Type' => $type,
@@ -11,18 +13,18 @@ class GoogleDocs extends Google {
       );
     
     $http = array('method' => 'POST', 'content' => $data, 'header' => $this->headers($headers));
-    $result = $this->get_data_curl('http://docs.google.com/feeds/default/private/full', $params, 'xml', $http);
+    $result = $this->get_data_curl('https://docs.google.com/feeds/default/private/full', $params, 'xml', $http);
     
     if (!isset($result->id))
       return false;
     
-    preg_match('!http://docs\.google\.com/feeds/id/(.+)!', (string) $result->id, $matches);
+    preg_match('!/feeds/id/(.+)!', (string) $result->id, $matches);
     return $matches[1]; // document id
   }
   
   function delete($id){
     $http = array('method' => 'DELETE', 'header' => $this->headers(array('If-Match' => '*')));
-    $result = $this->get_data_curl('http://docs.google.com/feeds/default/private/full/' . $id, array('delete' => 'true'), 'xml', $http);
+    $result = $this->get_data_curl('https://docs.google.com/feeds/default/private/full/' . $id, array('delete' => 'true'), 'xml', $http);
     return $result;
   }
   
