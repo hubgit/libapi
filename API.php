@@ -72,9 +72,9 @@ class API {
     
 
     $data = curl_exec($curl);  
-    $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    $this->http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
-    debug('Status: ' . $status);  
+    debug('Status: ' . $this->http_status);  
     debug($data);
 
     curl_close($curl);

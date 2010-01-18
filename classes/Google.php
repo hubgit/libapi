@@ -3,7 +3,22 @@
 class Google extends API {
   public $def = array('GOOGLE_AUTH', 'GOOGLE_REFERER');
   
-  function authorise($service = 'wise', $source = 'libapi', $account_type = 'GOOGLE'){ // 'wise' = Google Docs
+  function headers($items = array()){
+    $default = array(
+      'GData-Version' => '3.0',
+      'Authorization' => 'GoogleLogin auth=' . $this->token,
+      );
+      
+    $headers = array_merge($default, $items);
+          
+    foreach ($headers as $key => &$value)
+      $value = $key . ': ' . $value;
+    
+    return implode("\n", $headers);
+  }
+  
+  function authorise($service = 'writely', $source = 'libapi', $account_type = 'GOOGLE'){ // 'writely' = Docs, 'wise' = Spreadsheets
+    debug('Authorising');
     $auth = explode(':', Config::get('GOOGLE_AUTH'));
   
     $params = array(
@@ -49,6 +64,4 @@ class Google extends API {
 
     return array($json->responseData->results, array('total' => (int) $json->responseData->cursor->estimatedResultCount));
   }
-
-  
 }
