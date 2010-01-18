@@ -1,11 +1,35 @@
 <?php
 
 class Google extends API {
-  public $doc = 'http://reader.google.com/';
   public $def = array('GOOGLE_AUTH', 'GOOGLE_REFERER');
   
+  function authorise($service = 'wise', $source = 'libapi', $account_type = 'GOOGLE'){ // 'wise' = Google Docs
+    $auth = explode(':', Config::get('GOOGLE_AUTH'));
+  
+    $params = array(
+      'Email' => $auth[0], 
+      'Passwd' => $auth[1], 
+      'service' => $service,
+      'source' => $soure,
+      'accountType' => $account_type);
+      
+    $http = array('method' => 'POST', 'content' => http_build_query($params));
+    $result = $this->get_data_curl('https://www.google.com/accounts/ClientLogin', array(), 'raw', $http);
+    
+    preg_match('/(?:^|\n)SID=(.+?)\n/s', $result, $matches);
+    $this->cookie = implode('; ', array(
+      'SID=' . $matches[1],
+      'domain=.google.com',
+      'path=/',
+      'expires=160000000000',
+      ));
+      
+    preg_match('/\nAuth=(.+?)\n/s', $result, $matches);
+    $this->token = $matches[1];
+  }
+  
   // http://code.google.com/apis/ajaxsearch/documentation/#fonje
-  function search_google($q, $params = array()){      
+  function search($q, $params = array()){      
     if (!$q)
       return FALSE;
 
@@ -25,67 +49,6 @@ class Google extends API {
 
     return array($json->responseData->results, array('total' => (int) $json->responseData->cursor->estimatedResultCount));
   }
+
   
-  function auth(){
-    $auth = explode(':', Config::get('GOOGLE_AUTH'));
-  
-    $params = array('Email' => $auth[0], 'Passwd' => $auth[1]);
-    $context = stream_context_create(array('http' => array('method' => 'POST', 'content' => http_build_query($params))));
-    $result = file_get_contents('https://www.google.com/accounts/ClientLogin', NULL, $context);
-    $sid = array_pop(explode('=', array_shift(explode("\n", $result))));
-
-    $cookie = array(
-      'SID=' . $sid,
-      'domain=.google.com',
-      'path=/',
-      'expires=160000000000',
-      );
-
-    return array('header' => sprintf("Cookie: %s\r\n", implode('; ', $cookie))); 
-  }
-
-  function content_by_feed($q){
-    if (!$query = $q['feed'])
-      return FALSE;
-    
-    if (isset($q['output']))
-      $this->output_dir = $this->get_output_dir($q['output']);
-
-    $http = $this->auth();
-  
-    $n = 100;
-  
-    $items = array();
-    $continuation = '';
-  
-    do{
-      $xml = $this->get_data('http://www.google.com/reader/atom/feed/' . urlencode($query), array(
-        'n' => $n,
-        'c' => $continuation,
-        ), 'xml', $http);
-
-      //debug($xml);
-
-      if (!is_object($xml))
-        break;
-      
-      $xml->registerXPathNamespace('atom', 'http://www.w3.org/2005/Atom');
-      $xml->registerXPathNamespace('gr', 'http://www.google.com/schemas/reader/atom/');
-    
-      foreach ($xml->xpath('/atom:feed/atom:entry') as $item){
-        if ($this->output_dir)
-          file_put_contents(sprintf('%s/%s.xml', $this->output_dir, base64_encode($item->id)), $item->asXML()); 
-        else
-          $items[] = $item;
-      }
-
-      $continuation = (string) current($xml->xpath('/atom:feed/gr:continuation'));
-      debug('Continuation: ' . $continuation);
-    
-      //sleep(1);
-
-    } while ($continuation);
-  
-    return $items;
-  }
 }
