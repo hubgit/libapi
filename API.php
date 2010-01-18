@@ -65,9 +65,21 @@ class API {
     if (isset($http['header']))
       curl_setopt($curl, CURLOPT_HTTPHEADER, array($http['header']));
       
-    if (isset($http['method']) && $http['method'] == 'POST'){
-      curl_setopt($curl, CURLOPT_POST, TRUE);
-      curl_setopt($curl, CURLOPT_POSTFIELDS, $http['content']);
+    if (isset($http['method'])){
+      switch($http['method']){
+        case 'POST':
+          curl_setopt($curl, CURLOPT_POST, TRUE);
+          curl_setopt($curl, CURLOPT_POSTFIELDS, $http['content']);
+        break;
+        
+        case 'DELETE':
+          curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+        break;
+        
+        case 'GET':
+        default:
+        break;
+      }
     }
     
 

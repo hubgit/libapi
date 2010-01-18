@@ -12,12 +12,17 @@ class GoogleDocs extends Google {
     
     $http = array('method' => 'POST', 'content' => $data, 'header' => $this->headers($headers));
     $result = $this->get_data_curl('http://docs.google.com/feeds/default/private/full', $params, 'xml', $http);
-    return (string) $result->id;
+    
+    if (!isset($result->id))
+      return false;
+    
+    preg_match('!http://docs\.google\.com/feeds/id/(.+)!', (string) $result->id, $matches);
+    return $matches[1]; // document id
   }
   
   function delete($id){
-    $http = array('method' => 'DELETE', 'header' => $this->headers());
-    $result = $this->get_data_curl('/feeds/default/private/full/' . $id, array('delete' => 'true'), 'xml', $http);
+    $http = array('method' => 'DELETE', 'header' => $this->headers(array('If-Match' => '*')));
+    $result = $this->get_data_curl('http://docs.google.com/feeds/default/private/full/' . $id, array('delete' => 'true'), 'xml', $http);
     return $result;
   }
   

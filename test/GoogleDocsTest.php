@@ -25,29 +25,16 @@ class GoogleDocsTest extends PHPUnit_Framework_TestCase {
   public function testUpload($token){
     $this->api->token = $token;
     
-    $text = file_get_contents(dirname(__FILE__) . '/text/biology.txt');    
-    $uri = $this->api->upload($text, 'text/plain', 'Test Document');
+    debug('Uploading document');
+    $data = file_get_contents(dirname(__FILE__) . '/text/biology.txt');    
+    $id = $this->api->upload($data, 'text/plain', 'Test Document');
     
     $this->assertEquals(201, $this->api->http_status);
-
-    preg_match('!http://docs\.google\.com/feeds/id/(.+)!', $uri, $matches);
-    $id = $matches[1];
     $this->assertFalse(empty($id));
-    
-    debug($id);
 
-    return array($token, $id);
-  }
-  
-  /**
-   * @depends testUpload
-   */
-  public function testDelete(array $params){
-    list($token, $id) = $params;
-    $this->api->token = $token;
-    
+    debug('Deleting ' . $id);
     $this->api->delete($id);
-    $this->assertEquals(0, $this->api->http_status);
+    $this->assertEquals(200, $this->api->http_status);
   }
   
   /**
@@ -56,9 +43,15 @@ class GoogleDocsTest extends PHPUnit_Framework_TestCase {
   public function testOCR($token){
     $this->api->token = $token;
     
-    $png = file_get_contents(dirname(__FILE__) . '/text/biology.png');
-    $result = $this->api->upload($png, 'image/png', 'Test OCR Image', array('ocr' => 'true'));
+    debug('Uploading image for OCR');
+    $data = file_get_contents(dirname(__FILE__) . '/text/biology.png');
+    $id = $this->api->upload($data, 'image/png', 'Test OCR Image', array('ocr' => 'true'));
     
+    debug('Deleting ' . $id);
     $this->assertEquals(201, $this->api->http_status);
+    $this->assertFalse(empty($id));
+    
+    $this->api->delete($id);
+    $this->assertEquals(200, $this->api->http_status);
   }
 }
