@@ -38,7 +38,7 @@ class API {
 
     $data = file_get_contents($url, NULL, $context);
     //debug($data);
-    //debug($http_response_header);
+    debug($http_response_header);
 
     $h = explode(' ', $http_response_header[0], 3);
     $this->http_status = $h[1];
@@ -59,16 +59,23 @@ class API {
       CURLOPT_CONNECTTIMEOUT => 60, // 1 minute
       CURLOPT_TIMEOUT => 60*60*24, // 1 day
       CURLOPT_RETURNTRANSFER => 1, // return contents
+      //CURLOPT_SSL_VERIFYPEER => FALSE, // FIXME: temporary fix for curl without SSL certificates
     ));
 
     if (isset($http['header']))
       curl_setopt($curl, CURLOPT_HTTPHEADER, array($http['header']));
+      
+    if (isset($http['method']) && $http['method'] == 'POST'){
+      curl_setopt($curl, CURLOPT_POST, TRUE);
+      curl_setopt($curl, CURLOPT_POSTFIELDS, $http['content']);
+    }
+    
 
     $data = curl_exec($curl);  
     $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
     debug('Status: ' . $status);  
-    //debug($data);
+    debug($data);
 
     curl_close($curl);
     return $this->format_data($format, $data); 
