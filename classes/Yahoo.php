@@ -16,20 +16,19 @@ class Yahoo extends API {
   }
 
   // http://developer.yahoo.com/maps/rest/V1/geocode.html
-  function geocode($q){
+  function geocode($text){
     $dom = $this->get_data('http://local.yahooapis.com/MapsService/V1/geocode', array(
-      'location' => $q,
+      'location' => $text,
       'appid' => Config::get('YAHOO'),
     ), 'dom');
   
-    //debug($dom);
+    //debug($dom->saveXML());
   
     if (!is_object($dom))
       return FALSE;
       
     $xpath = new DOMXPath($dom);    
     $xpath->registerNamespace('y', 'urn:yahoo:maps');
-    
   
     $results = $dom->getElementsByTagNameNS('urn:yahoo:maps', 'Result');
     if (empty($results))
@@ -39,7 +38,7 @@ class Yahoo extends API {
   
     $name = array();
     foreach (array('Address', 'City', 'State', 'Zip', 'Country') as $field)
-      if ($node = $place->getElementsByTagNameNS('urn:yahoo:maps', $field))
+      if (($node = $place->getElementsByTagNameNS('urn:yahoo:maps', $field)) && $node->item(0)->nodeValue)
         $name[$field] = $node->item(0)->nodeValue;
   
     if (isset($name['State']) && isset($name['Zip'])){
