@@ -149,13 +149,13 @@ class Yahoo extends API {
     return array($entities, $references);
   }
   
-  function terms($q, $query = NULL){
+  function entities($q){
     if (!$text = $q['text'])
       return FALSE;
 
     $params = array(
       'context' => $text,
-      'query' => $query, // context for extraction (search terms)
+      'query' => $q['context'], // context for extraction (search terms)
       'output' => 'json',
       'appid' => Config::get('YAHOO'),
     );
@@ -163,7 +163,7 @@ class Yahoo extends API {
     $http = array('method' => 'POST', 'content' => http_build_query($params), 'header' => 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8');
     $json = $this->get_data('http://api.search.yahoo.com/ContentAnalysisService/V1/termExtraction', array(), 'json', $http);
 
-    debug($json);
+    //debug($json);
 
     if (!is_object($json))
       return array();
