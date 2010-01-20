@@ -16,9 +16,13 @@ class API {
   static function __autoload($class){
     $file = sprintf('%s/classes/%s', LIBAPI_ROOT, $class);
     if (file_exists($file . '.private.php'))
-      require_once($file . '.private.php');
+      return require_once($file . '.private.php');
     else if (file_exists($file . '.php'))
-      require_once($file . '.php');
+      return require_once($file . '.php');
+    
+    $file = sprintf('%s/lib/%s.php', LIBAPI_ROOT, $class);
+    if (file_exists($file))
+      return require_once($file);
   }
   
   function check_def($def){
@@ -187,6 +191,27 @@ class API {
       case 'attr':
         print htmlspecialchars($input, NULL, 'UTF-8'); // ENT_QUOTES? filter_var + FILTER_SANITIZE_SPECIAL_CHARS?
       break;  
+    }
+  }
+  
+  function p($input, $format = 'html'){
+    if (is_integer($input))
+      return print $input;
+       
+    switch ($format){
+      case 'raw':
+        print $input;
+      break;
+      
+      case 'html':
+      default:
+        print htmlspecialchars($input, NULL, 'UTF-8'); // FIXME: filter_var?
+      break;
+      
+      case 'attr':
+      case 'attribute':
+        print htmlspecialchars($input, ENT_QUOTES, 'UTF-8'); // FIXME: filter_var?
+      break;
     }
   }
   

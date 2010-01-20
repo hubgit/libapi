@@ -16,7 +16,10 @@ class PubChem extends API{
     else if ($q['inchikey'])
       $q['term'] = sprintf('"%s"[InChIKey]', preg_replace('/^inchikey=/i', '', $q['inchikey']));
     else if ($q['inchi'])
-      return $this->pug($q['inchi']); 
+      return $this->pug($q['inchi']);
+    else if ($q['name'])
+      $q['term'] = sprintf('%s[IUPACName]', $q['name']); // TODO
+      
       
     if (!$term = $q['term'])
       return FALSE;
@@ -27,7 +30,7 @@ class PubChem extends API{
     debug($term);
   
     // put free text queries in quotes
-    if (strpos($term, '"') === FALSE && !preg_match('/\[[CS]ID\]/', $term))
+    if (strpos($term, '"') === FALSE && !preg_match('/\[[CS]ID\]/', $term)) // && strpos($term, '[') === FALSE)
       $term = sprintf('"%s"', $term);
 
     $default = array(

@@ -19,12 +19,14 @@ class BingMaps extends API {
     $request = $this->request($text, 1);
     $result = $client->Geocode($request);
    
-    //debug($result);
+    debug($result); //exit();
 
     if (!is_object($result) || $result->GeocodeResult->ResponseSummary->StatusCode != 'Success')
       return FALSE;
 
     $data = $result->GeocodeResult->Results->GeocodeResult;
+    if (!is_array($data->Locations->GeocodeLocation))
+      $data->Locations->GeocodeLocation = array($data->Locations->GeocodeLocation);
     $location = $data->Locations->GeocodeLocation[0];
 
     return array(
