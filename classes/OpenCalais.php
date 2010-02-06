@@ -6,7 +6,7 @@ class OpenCalais extends API {
    
    function query($params){
       $http = array('method'=> 'POST', 'content' => http_build_query($params), 'header' => 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8');
-      return$this->get_data('http://api.opencalais.com/enlighten/rest/', array(), 'json', $http);
+      return $this->get_data('http://api.opencalais.com/enlighten/rest/', array(), 'json', $http);
    }
    
    function entities($q){
@@ -100,5 +100,18 @@ class OpenCalais extends API {
      }
 
      return $categories;
+   }
+   
+   function geocode($text){
+     list($entities, $references) = $this->entities(array('text' => $text));
+     debug($entities); //exit();
+     $types = array('Organization', 'Facility', 'City', 'ProvinceOrState', 'Country');
+     $address = array();
+     foreach ($types as $type)
+       if (isset($entities[$type]))
+         foreach ($entities[$type] as $entity)
+           $address[$type] = $entity['title'];
+     
+     return array('address' => implode('; ', $address));     
    }
 }

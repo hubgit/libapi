@@ -4,12 +4,23 @@ class Flickr extends API {
   public $doc = 'http://www.flickr.com/services/api/flickr.photos.getInfo.htm';
   public $def = array('FLICKR', 'FLICKR_SECRET');
   
+  private $frobfile;
+  private $tokenfile;
+  private $frob;
+  private $token;
+  
   function __construct(){ 
     parent::__construct();
+   
+    $this->auth_dir = $this->get_output_dir('flickr/auth');
     
-    $this->frobfile = '/tmp/flickr-frob';
-           
-    if (!defined('FLICKR_TOKEN'))
+    $this->frobfile = $this->auth_dir . '/frob.txt';
+    $this->tokenfile = $this->auth_dir . '/token.txt'; // warning: stored in libapi data dir - should store locally, or set read permissions?
+    
+    if (file_exists($this->tokenfile))
+      $this->token = file_get_contents($this->tokenfile);
+    	        
+    if (!$this->token)
     	$this->get_token();
   }
   
@@ -69,22 +80,23 @@ class Flickr extends API {
     if (!$result['auth']['token']['_content'] || $result['auth']['perms']['_content'] != 'read')
       exit('Unable to get authentication token');
     
-    $this->write_config('FLICKR_TOKEN', $result['auth']['token']['_content']);
+    $this->token = $result['auth']['token']['_content'];
+    
+    file_put_contents($this->tokenfile, $this->token) or die('Could not write to ' . $this->tokenfile);
   }
   
-    // fetch a temporary frob for authentication
+  // fetch a temporary frob for authentication
   function get_frob(){
-    unlink($this->frobfile);
+    if (file_exists($this->frobfile))
+      unlink($this->frobfile);
+    
     $result = $this->api('flickr.auth.getFrob');
     if (!$result['frob']['_content'])
       exit('No frob returned');
       
     $frob = $result['frob']['_content'];
     file_put_contents($this->frobfile, $frob);
-    $this->show_authentication_url($frob);
-   }
-   
-   function show_authentication_url($frob){ 
+    
     $params = array(
       'api_key' => Config::get('FLICKR'),
       'frob' => $frob,
@@ -94,16 +106,12 @@ class Flickr extends API {
     $params['api_sig'] = $this->sign($params);
     
     $url = 'http://www.flickr.com/services/auth/' . '?' . http_build_query($params);
-    debug('Sign in to Flickr in your browser and allow this application to access your photos:' . "\n$url");
+    debug("Sign in to Flickr in your browser and allow this application to access your photos:\n$url");
     //exec(sprintf("gnome-open %s" , escapeshellarg($url)));
     exit();
   }
-  
-  function write_config($key, $value){
-    define($key, $value);
-    file_put_contents(dirname(__FILE__) . '/../config.inc.php', sprintf("\ndefine('%s', '%s');\n", $key, $value), FILE_APPEND) or die('Could not write to config.php');
-  }
 
+  // http://idgettr.com/
   function content_by_user($q){
     if (!$user = $q['user'])
       return FALSE;
@@ -142,8 +150,8 @@ class Flickr extends API {
           if (file_exists($out))
             continue;
           
-          $result = $api->run($photo);
-          $item = $result['flickr'];
+          $item = $this->metadata($photo);
+          //$item = $result['flickr'];
         
           if ($item['originalformat']){
             $format = $item['originalformat'];
@@ -188,7 +196,7 @@ class Flickr extends API {
       'secret' => $q['secret'],
       ), 'php');
 
-    //debug($data);
+    debug($data);
 
     if (!is_array($data) || $data['stat'] != 'ok')
       return FALSE;

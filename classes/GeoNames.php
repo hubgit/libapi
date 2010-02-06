@@ -3,12 +3,12 @@
 class GeoNames extends API {
   public $doc = 'http://www.geonames.org/export/geonames-search.html';
 
-  function geocode($q){
+  function geocode($text){
     $json = $this->get_data('http://ws.geonames.org/searchJSON', array(
-      'q' => $q,
+      'q' => $text,
       'maxRows' => 1,
       'lang' => 'en',
-      'style' => 'full',
+      //'style' => 'full',
     ));
   
     debug($json);

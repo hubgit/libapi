@@ -16,20 +16,19 @@ class Yahoo extends API {
   }
 
   // http://developer.yahoo.com/maps/rest/V1/geocode.html
-  function geocode($q){
+  function geocode($text){
     $dom = $this->get_data('http://local.yahooapis.com/MapsService/V1/geocode', array(
-      'location' => $q,
+      'location' => $text,
       'appid' => Config::get('YAHOO'),
     ), 'dom');
   
-    //debug($dom);
+    //debug($dom->saveXML());
   
     if (!is_object($dom))
       return FALSE;
       
     $xpath = new DOMXPath($dom);    
     $xpath->registerNamespace('y', 'urn:yahoo:maps');
-    
   
     $results = $dom->getElementsByTagNameNS('urn:yahoo:maps', 'Result');
     if (empty($results))
@@ -39,7 +38,7 @@ class Yahoo extends API {
   
     $name = array();
     foreach (array('Address', 'City', 'State', 'Zip', 'Country') as $field)
-      if ($node = $place->getElementsByTagNameNS('urn:yahoo:maps', $field))
+      if (($node = $place->getElementsByTagNameNS('urn:yahoo:maps', $field)) && $node->item(0)->nodeValue)
         $name[$field] = $node->item(0)->nodeValue;
   
     if (isset($name['State']) && isset($name['Zip'])){
@@ -150,13 +149,13 @@ class Yahoo extends API {
     return array($entities, $references);
   }
   
-  function terms($q, $query = NULL){
+  function entities($q){
     if (!$text = $q['text'])
       return FALSE;
 
     $params = array(
       'context' => $text,
-      'query' => $query, // context for extraction (search terms)
+      'query' => $q['context'], // context for extraction (search terms)
       'output' => 'json',
       'appid' => Config::get('YAHOO'),
     );
@@ -164,7 +163,7 @@ class Yahoo extends API {
     $http = array('method' => 'POST', 'content' => http_build_query($params), 'header' => 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8');
     $json = $this->get_data('http://api.search.yahoo.com/ContentAnalysisService/V1/termExtraction', array(), 'json', $http);
 
-    debug($json);
+    //debug($json);
 
     if (!is_object($json))
       return array();

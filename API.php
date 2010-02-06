@@ -16,9 +16,13 @@ class API {
   static function __autoload($class){
     $file = sprintf('%s/classes/%s', LIBAPI_ROOT, $class);
     if (file_exists($file . '.private.php'))
-      require_once($file . '.private.php');
+      return require_once($file . '.private.php');
     else if (file_exists($file . '.php'))
-      require_once($file . '.php');
+      return require_once($file . '.php');
+    
+    $file = sprintf('%s/lib/%s.php', LIBAPI_ROOT, $class);
+    if (file_exists($file))
+      return require_once($file);
   }
   
   function check_def($def){
@@ -38,7 +42,7 @@ class API {
 
     $data = file_get_contents($url, NULL, $context);
     //debug($data);
-    //debug($http_response_header);
+    debug($http_response_header);
 
     $h = explode(' ', $http_response_header[0], 3);
     $this->http_status = $h[1];
@@ -59,16 +63,35 @@ class API {
       CURLOPT_CONNECTTIMEOUT => 60, // 1 minute
       CURLOPT_TIMEOUT => 60*60*24, // 1 day
       CURLOPT_RETURNTRANSFER => 1, // return contents
+      //CURLOPT_SSL_VERIFYPEER => FALSE, // FIXME: temporary fix for curl without SSL certificates
     ));
 
     if (isset($http['header']))
       curl_setopt($curl, CURLOPT_HTTPHEADER, array($http['header']));
+      
+    if (isset($http['method'])){
+      switch($http['method']){
+        case 'POST':
+          curl_setopt($curl, CURLOPT_POST, TRUE);
+          curl_setopt($curl, CURLOPT_POSTFIELDS, $http['content']);
+        break;
+        
+        case 'DELETE':
+          curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+        break;
+        
+        case 'GET':
+        default:
+        break;
+      }
+    }
+    
 
     $data = curl_exec($curl);  
-    $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    $this->http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
-    debug('Status: ' . $status);  
-    //debug($data);
+    debug('Status: ' . $this->http_status);  
+    debug($data);
 
     curl_close($curl);
     return $this->format_data($format, $data); 
@@ -168,6 +191,27 @@ class API {
       case 'attr':
         print htmlspecialchars($input, NULL, 'UTF-8'); // ENT_QUOTES? filter_var + FILTER_SANITIZE_SPECIAL_CHARS?
       break;  
+    }
+  }
+  
+  function p($input, $format = 'html'){
+    if (is_integer($input))
+      return print $input;
+       
+    switch ($format){
+      case 'raw':
+        print $input;
+      break;
+      
+      case 'html':
+      default:
+        print htmlspecialchars($input, NULL, 'UTF-8'); // FIXME: filter_var?
+      break;
+      
+      case 'attr':
+      case 'attribute':
+        print htmlspecialchars($input, ENT_QUOTES, 'UTF-8'); // FIXME: filter_var?
+      break;
     }
   }
   
