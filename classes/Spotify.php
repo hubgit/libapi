@@ -48,7 +48,7 @@ class Spotify extends API {
       'artist' => (string) $track->artist->name,
       'album' => (string) $track->album->name,
       'released' => (string) $track->album->released,
-      'tracks' => implode(' ', $tracks),
+      'tracks' => $tracks, //implode(' ', $tracks),
       //'territories' => (string) $track->album->availability->territories,
       );    
 
