@@ -51,7 +51,8 @@ class Google extends API {
     $default = array(
       'q' => $q,
       'v' => '1.0',
-      'rsz' => 'large',    
+      'rsz' => 'large',  
+      'key' => Config::get('GOOGLE'),  
     );
 
     $http = array('header' => 'Referer: ' . Config::get('GOOGLE_REFERER'));

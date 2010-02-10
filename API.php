@@ -43,6 +43,9 @@ class API {
     $data = file_get_contents($url, NULL, $context);
     //debug($data);
     debug($http_response_header);
+    
+    $this->http_response_header = $http_response_header;
+    $this->parse_http_response_header();
 
     $h = explode(' ', $http_response_header[0], 3);
     $this->http_status = $h[1];
@@ -62,7 +65,7 @@ class API {
     curl_setopt_array($curl, $curl_params + array(
       CURLOPT_CONNECTTIMEOUT => 60, // 1 minute
       CURLOPT_TIMEOUT => 60*60*24, // 1 day
-      CURLOPT_RETURNTRANSFER => 1, // return contents
+      CURLOPT_RETURNTRANSFER => TRUE, // return contents
       //CURLOPT_SSL_VERIFYPEER => FALSE, // FIXME: temporary fix for curl without SSL certificates
     ));
 
@@ -85,10 +88,10 @@ class API {
         break;
       }
     }
-    
 
     $data = curl_exec($curl);  
     $this->http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    $this->http_info = array(curl_getinfo($curl));
 
     debug('Status: ' . $this->http_status);  
     debug($data);
@@ -134,7 +137,40 @@ class API {
     }
   }
   
-  function get_input_dir($dir){
+  function parse_http_response_header(){
+    $this->http_headers = array();
+    
+    $item = array();
+    $status = 0;
+
+    foreach ($this->http_response_header as $header){
+      if (preg_match('/HTTP\/.+?\s+(\d+)\s+(.+)/', $header, $matches)){
+        if ($status)
+          $this->save_http_header($status, $item);
+
+        $status = $matches[1];
+        $item = array();
+        continue;
+      }
+
+      preg_match('/(.+?):\s+(.+)/', $header, $matches);
+      $item[str_replace('-', '_', strtolower($matches[1]))][] = $matches[2];
+    }
+
+    $this->save_http_header($status, $item);
+  }
+  
+  function save_http_header($status, $item){  
+    // convert arrays to strings if only one item
+    foreach ($item as &$data)
+      if (count($data) === 1)
+        $data = $data[0];
+    
+    $item['status'] = $status;
+    $this->http_headers[] = $item;
+  }
+  
+  function get_input_dir($dir = ''){
     if (strpos($dir, '/') !== 0) // path doesn't start with '/', so treat as relative to DATA_DIR
       $dir = Config::get('DATA_DIR') . '/' . $dir;
       
@@ -144,7 +180,7 @@ class API {
     return $dir;
   }
 
-  function get_output_dir($dir){
+  function get_output_dir($dir = ''){
     #$dir = preg_replace('/[^a-z0-9\(\)\_\-\+ ]/i', '_', $dir); // FIXME: proper sanitising
     
     if (strpos($dir, '/') !== 0) // path doesn't start with '/', so treat as relative to DATA_DIR
@@ -196,7 +232,6 @@ class API {
       break;
     }
   }
- 
   
   function xpath_item($xml, $query){
     $nodes = $xml->xpath($query);
