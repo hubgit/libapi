@@ -176,44 +176,27 @@ class API {
     return base64_decode(strtr($t, '-_', '+/'));
   }
   
-  function output($input, $context = 'html'){
-    switch($context){
-      case 'raw':
-        print $input;
-      break;
-
-      case 'html':
-      default:
-        print htmlspecialchars($input, NULL, 'UTF-8'); // ENT_QUOTES? filter_var + FILTER_SANITIZE_SPECIAL_CHARS?
-      break;
-
-      case 'attribute':
-      case 'attr':
-        print htmlspecialchars($input, NULL, 'UTF-8'); // ENT_QUOTES? filter_var + FILTER_SANITIZE_SPECIAL_CHARS?
-      break;  
-    }
-  }
-  
-  function p($input, $format = 'html'){
+  static function o($input, $context = 'html'){
     if (is_integer($input))
       return print $input;
        
-    switch ($format){
+    switch ($context){
       case 'raw':
         print $input;
       break;
       
       case 'html':
       default:
-        print htmlspecialchars($input, NULL, 'UTF-8'); // FIXME: filter_var?
+        print htmlspecialchars($input, NULL, 'UTF-8'); // FIXME: filter_var + FILTER_SANITIZE_SPECIAL_CHARS?
       break;
       
       case 'attr':
       case 'attribute':
-        print htmlspecialchars($input, ENT_QUOTES, 'UTF-8'); // FIXME: filter_var?
+        print htmlspecialchars($input, ENT_QUOTES, 'UTF-8'); // FIXME: filter_var + FILTER_SANITIZE_SPECIAL_CHARS?
       break;
     }
   }
+ 
   
   function xpath_item($xml, $query){
     $nodes = $xml->xpath($query);
