@@ -3,7 +3,7 @@
 class Config {
   static $properties = array(
     'TIMEZONE' => 'Europe/London',
-    'DATA_DIR' => '/path/to/libapi-data',
+    'DATA_DIR' => '/tmp/libapi-data',
     'DEBUG' => 'PRINT', // OFF, FILE, PRINT
     'LOG' => '',
     
@@ -13,10 +13,10 @@ class Config {
     'DB_PASS' => '',
     
     /* API keys */  
-    'GOOGLE_MAPS' => '', 
-    'YAHOO' => '',
-    'FLICKR' => '',
-    'FLICKR_SECRET' => '',
+    //'GOOGLE_MAPS' => '', 
+    //'YAHOO' => '',
+    //'FLICKR' => '',
+    //'FLICKR_SECRET' => '',
     );
     
     /* DO NOT EDIT BELOW HERE */

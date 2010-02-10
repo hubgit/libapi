@@ -7,9 +7,9 @@ class Yahoo extends API {
   # http://developer.yahoo.com/yql/
   function yql($query, $args = array(), $format = 'json'){
     if (!empty($args))
-      $query = vsprintf($query, is_array($args) ? $args : array($args));
+      $query = vsprintf($query, is_array($args) ? $args : array($args)); // FIXME: htmlspecialchars($arg, ENT_QUOTES, 'UTF-8'))
 
-    return$this->get_data('http://query.yahooapis.com/v1/public/yql', array(
+    return $this->get_data('http://query.yahooapis.com/v1/public/yql', array(
       'q' => $query,
       'format' => $format,
       ), $format);
