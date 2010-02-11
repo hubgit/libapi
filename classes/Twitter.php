@@ -3,6 +3,30 @@
 class Twitter extends API {
   public $doc = 'http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-statuses-user_timeline';
   public $def = 'TWITTER_AUTH'; // http://apiwiki.twitter.com/Authentication - username:password for basic authentication
+  
+  function followers($q){
+    if (!$user = $q['user'])
+      return FALSE;
+
+    if (!$cursor = $q['cursor'])
+      $cursor = '-1';
+
+    $json = $this->get_data('http://twitter.com/followers/ids.json', array('screen_name' => $user, 'cursor' => $cursor));
+    $this->cursor = $json->next_cursor;
+    return $json->ids;      
+  }
+  
+  function friends($q){
+    if (!$user = $q['user'])
+      return FALSE;
+
+    if (!$cursor = $q['cursor'])
+      $cursor = '-1';
+
+    $json = $this->get_data('http://twitter.com/friends/ids.json', array('screen_name' => $user, 'cursor' => $cursor));
+    $this->cursor = $json->next_cursor;
+    return $json->ids;      
+  }
 
   function content_by_user($q){
     if (!$user = $q['user'])
@@ -10,6 +34,7 @@ class Twitter extends API {
       
     if (!$max = $q['max'])
       $max = 3200; // maximum 3200 items available through the API
+      
     
     $this->output_dir = isset($q['output']) ? $this->get_output_dir($q['output']) : NULL;
 
@@ -32,7 +57,7 @@ class Twitter extends API {
         'page' => $page,
         ));
   
-      //debug($json);
+      debug($json);
     
       if (!is_array($json) || empty($json))
         break;
@@ -48,7 +73,10 @@ class Twitter extends API {
     
       if ($this->get_output_dir && $page == 1) // always in descending order
         file_put_contents($this->output_dir . '/latest', $json[0]->id);
-  
+      
+      if (($page * $n) >= $max)
+       break;
+      
       sleep(1);
       $page++;
     } while (!empty($json));

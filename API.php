@@ -66,6 +66,7 @@ class API {
       CURLOPT_CONNECTTIMEOUT => 60, // 1 minute
       CURLOPT_TIMEOUT => 60*60*24, // 1 day
       CURLOPT_RETURNTRANSFER => TRUE, // return contents
+      //CURLOPT_FAILONERROR => TRUE,
       //CURLOPT_SSL_VERIFYPEER => FALSE, // FIXME: temporary fix for curl without SSL certificates
     ));
 
@@ -77,6 +78,12 @@ class API {
         case 'POST':
           curl_setopt($curl, CURLOPT_POST, TRUE);
           curl_setopt($curl, CURLOPT_POSTFIELDS, $http['content']);
+        break;
+        
+        case 'PUT':
+          curl_setopt($curl, CURLOPT_PUT, TRUE);
+          curl_setopt($curl, CURLOPT_INFILE, $http['file']);
+          curl_setopt($curl, CURLOPT_INFILESIZE, filesize($http['file']));        
         break;
         
         case 'DELETE':
