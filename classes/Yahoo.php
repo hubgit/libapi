@@ -2,7 +2,7 @@
 
 class Yahoo extends API {
   public $doc = '';
-  public $def = 'YAHOO';
+  //public $def = 'YAHOO';
   
   # http://developer.yahoo.com/yql/
   function yql($query, $args = array(), $format = 'json'){

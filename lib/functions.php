@@ -143,3 +143,34 @@ function send_content_type_header($format, $params = array(), $charset = 'utf-8'
   
   header(sprintf('Content-type: %s; charset="%s"', $types[$format], $charset));
 }
+
+function innerXML($node){
+  if (!is_object($node))
+    return FALSE;
+    
+  if (get_class($node) == 'SimpleXMLElement')
+    $node = dom_import_simplexml($node);
+  
+  $dom = new DOMDocument;
+  if ($node->hasChildNodes())
+    foreach ($node->childNodes as $child)
+      $dom->appendChild($dom->importNode($child, TRUE));
+  else
+    return $node->textContent;
+
+  return $dom->saveXML($dom->documentElement);
+}
+
+function outerXML($node){
+  if (!is_object($node))
+    return FALSE;
+    
+  if (get_class($node) == 'SimpleXMLElement')
+    $node = dom_import_simplexml($node);
+    
+  $dom = new DOMDocument;
+  $dom->appendChild($dom->importNode($node, TRUE));
+
+  return $dom->saveXML($dom->documentElement);
+}
+
