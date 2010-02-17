@@ -211,7 +211,7 @@ class API {
       $dir = Config::get('DATA_DIR') . '/' . $dir;
     
     if (!file_exists($dir))
-      mkdir($dir, 0755, TRUE); // TRUE = recursive
+      mkdir($dir, 0777, TRUE); // TRUE = recursive // 0755?
       
     if (!is_dir($dir))
       exit('Could not create output folder ' . $dir);
