@@ -13,6 +13,6 @@ class BeliefTest extends PHPUnit_Framework_TestCase {
   public function testConcepts(){
     $result = $this->api->concepts(array('text' => $this->text));
     
-    $this->assertEquals(29, count($result));
+    $this->assertEquals(29, count($result->recommendations));
   }
 }

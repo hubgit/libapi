@@ -15,10 +15,10 @@ class GoogleCalendarTest extends PHPUnit_Framework_TestCase {
       'start-max' => strtotime('2009-02-08'),
       'ctz' => 'Europe/London',
       'max-results' => 10,
-      ));     
+      ));  
       
     debug($items);
     
-    $this->assertEquals(10, count($items);
+    $this->assertEquals(10, count($items));
   }
 }

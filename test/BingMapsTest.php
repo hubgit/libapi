@@ -11,7 +11,7 @@ class BingMapsTest extends PHPUnit_Framework_TestCase {
   
   public function testSearch(){
     list($results, $meta) = $this->api->search(array('text' => 'Microsoft near Redmond', 'n' => 3));    
-    $this->assertEquals($query['n'], count($results)); 
+    $this->assertEquals(3, count($results)); 
   }
 
   public function testGeocode(){
