@@ -57,7 +57,7 @@ class PubChemTest extends PHPUnit_Framework_TestCase {
       'cid' => $this->cid,
       ));
     
-    $this->assertType(PHPUnit_Framework_Constraint_IsType::STRING, $image);
+    $this->assertType(PHPUnit_Framework_Constraint_IsType::TYPE_STRING, $image);
   }
   
   public function testSearchInChI(){

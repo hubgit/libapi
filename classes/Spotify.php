@@ -4,7 +4,7 @@ class Spotify extends API {
   public $doc = 'http://developer.spotify.com/en/metadata-api/overview/';
   public $server = 'http://ws.spotify.com';
   
-  function album($q, $params = array()){
+  function track($q){
     if (!$q)
       return FALSE;
     
@@ -28,7 +28,16 @@ class Spotify extends API {
     if (!isset($xml->track))
       return FALSE;
     
-    $track = $xml->track[0];
+    return $xml->track;
+  }
+  
+  function album($q){
+    if (!$q)
+      return FALSE;
+    
+    $tracks = $this->track($q);
+    $track = $tracks[0];
+    
     $album_href = (string) $track->album['href'];
     
     $albums = array();
