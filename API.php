@@ -38,6 +38,10 @@ class API {
     debug($url);
 
     //$http['header'] .= (empty($http['header']) ? '' : "\n") . 'Accept: ' . accept_header($format);
+    
+    if (isset($http['file']))
+      $http['content'] = file_get_contents($http['file']);
+      
     $context = empty($http) ? NULL : stream_context_create(array('http' => $http));
 
     $data = file_get_contents($url, NULL, $context);
@@ -54,12 +58,13 @@ class API {
     return $this->format_data($format, $data);
   }
 
-  function get_data_curl($url, $params = array(), $format = 'json', $http = array(), $curl_params = array()){
+  function get_data_curl($url, $params = array(), $format = 'json', $http = array(), $curl_params = array()){  
     debug($params);
     if (!empty($params))
       $url .= '?' . http_build_query($params);
 
     $curl = curl_init($url);
+    debug($url);
 
     // array_merge doesn't preserve numeric keys
     curl_setopt_array($curl, $curl_params + array(
@@ -82,8 +87,18 @@ class API {
         
         case 'PUT':
           curl_setopt($curl, CURLOPT_PUT, TRUE);
+          if (is_string($http['file']))
+            $http['file'] = fopen($http['file'], 'r');
+            
+          if (!isset($http['file']) && isset($http['content'])){
+            $http['file'] = tmpfile();
+            fwrite($http['file'], $http['content']);
+            fseek($http['file'], 0);
+          }
+            
+          $fstat = fstat($http['file']);
           curl_setopt($curl, CURLOPT_INFILE, $http['file']);
-          curl_setopt($curl, CURLOPT_INFILESIZE, filesize($http['file']));        
+          curl_setopt($curl, CURLOPT_INFILESIZE, $fstat['size']);        
         break;
         
         case 'DELETE':
@@ -104,6 +119,8 @@ class API {
     debug($data);
 
     curl_close($curl);
+    if (isset($http['file']))
+      fclose($http['file']);
     return $this->format_data($format, $data); 
   }
 
