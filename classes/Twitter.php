@@ -2,30 +2,38 @@
 
 class Twitter extends API {
   public $doc = 'http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-statuses-user_timeline';
-  public $def = 'TWITTER_AUTH'; // http://apiwiki.twitter.com/Authentication - username:password for basic authentication
+  //public $def = 'TWITTER_AUTH'; // http://apiwiki.twitter.com/Authentication - username:password for basic authentication
   
   function followers($q){
-    if (!$user = $q['user'])
+    if ((!$user = $q['user']) && (!$id = $q['id']))
       return FALSE;
 
     if (!$cursor = $q['cursor'])
       $cursor = '-1';
 
-    $json = $this->get_data('http://twitter.com/followers/ids.json', array('screen_name' => $user, 'cursor' => $cursor));
+    $json = $this->get_data('http://twitter.com/followers/ids.json', array('screen_name' => $user, 'user_id' => $id, 'cursor' => $cursor));
     $this->cursor = $json->next_cursor;
     return $json->ids;      
   }
   
   function friends($q){
-    if (!$user = $q['user'])
+    if ((!$user = $q['user']) && (!$id = $q['id']))
       return FALSE;
 
     if (!$cursor = $q['cursor'])
       $cursor = '-1';
 
-    $json = $this->get_data('http://twitter.com/friends/ids.json', array('screen_name' => $user, 'cursor' => $cursor));
+    $json = $this->get_data('http://twitter.com/friends/ids.json', array('screen_name' => $user, 'user_id' => $id, 'cursor' => $cursor));
     $this->cursor = $json->next_cursor;
     return $json->ids;      
+  }
+  
+  function user($q){
+    if ((!$user = $q['user']) && (!$id = $q['id']))
+      return FALSE;
+    
+    $json = $this->get_data('http://twitter.com/users/show.json', array('screen_name' => $user, 'user_id' => $id,));
+    return $json;      
   }
 
   function content_by_user($q){
