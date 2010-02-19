@@ -184,11 +184,11 @@ function outerXML($node){
 function strpos_all($haystack, $needle){
   $offset = 0;
   $positions = array();
-
+  
   $length = mb_strlen($needle); // length in chars
 
   do {
-    $i = mb_stripos($haystack, $needle, $offset);
+    $i = mb_strpos($haystack, $needle, $offset);
     if ($i === FALSE)
       break;
 
