@@ -1,12 +1,19 @@
 <?php
 
-function debug($arg){
+function debug($arg){  
   switch (Config::get('DEBUG')){
     case 'PRINT':
       return print(print_r($arg, TRUE) . "\n");
     break;
     
     case 'OFF':
+    break;
+    
+    case 'FIRE':
+      $fire = FirePHP::getInstance(TRUE);
+      if (is_string($arg))
+        $arg = sprintf('%s %.4f %s', date('H:i:s'), microtime(TRUE) - $_SERVER['REQUEST_TIME'], $arg);
+      $fire->log($arg);
     break;
     
     default:
@@ -174,3 +181,20 @@ function outerXML($node){
   return $dom->saveXML($dom->documentElement);
 }
 
+function strpos_all($haystack, $needle){
+  $offset = 0;
+  $positions = array();
+
+  $length = mb_strlen($needle); // length in chars
+
+  do {
+    $i = mb_stripos($haystack, $needle, $offset);
+    if ($i === FALSE)
+      break;
+
+    $positions[] = $i; // mb_stripos returns the offset in chars
+    $offset = $i + $length;
+  } while (1);
+
+  return $positions;
+}
