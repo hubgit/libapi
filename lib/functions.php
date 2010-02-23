@@ -194,3 +194,4 @@ function positions($haystack, $needle, $modifiers = 'u'){
     
   return $positions;
 }
+
