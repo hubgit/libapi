@@ -294,16 +294,20 @@ class API {
     return array($xml, $meta);
   }
   
-  function validate($args, $required){
+  function validate(&$args, $required, $default = array()){
     if (is_string($required))
       $required = array($required);
       
-    foreach ($required as $key){
-      if (!isset($args[$key])){
-        trigger_error(sprintf('Missing required argument "%s"', $key), E_USER_ERROR);
-        return FALSE;
-      }
-    }
-    return TRUE;
+    foreach ($required as $key)
+      if (!isset($args[$key]))
+        if (isset($default[$key]))
+          $args[$key] = $default[$key];
+        else
+          trigger_error(sprintf('Missing required argument "%s"', $key), E_USER_ERROR);
+  }
+  
+  function set_default(&$args, $key, $value){
+    if (!isset($args[$key]))
+      $args[$key] = $value;
   }
 }
