@@ -219,9 +219,9 @@ class API {
     return $dir;
   }
   
-  function get_latest($q, $default = 1){
-    if (isset($q['from']))
-      return $q['from'];
+  function get_latest($args, $default = 1){
+    if (isset($args['from']))
+      return $args['from'];
     else if ($this->output_dir && file_exists($this->output_dir . '/latest'))
       return file_get_contents($this->output_dir . '/latest');
     else
