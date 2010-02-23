@@ -3,12 +3,11 @@
 class GoogleReader extends Google {
   public $doc = 'http://reader.google.com/';
 
-  function content_by_feed($q){
-    if (!$query = $q['feed'])
-      return FALSE;
+  function content_by_feed($args){
+    $this->validate($args, 'feed'); extract($args);
     
-    if (isset($q['output']))
-      $this->output_dir = $this->get_output_dir($q['output']);
+    if ($output)
+      $this->output_dir = $this->get_output_dir($output);
 
     $this->authorise();
             

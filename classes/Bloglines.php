@@ -4,19 +4,18 @@ class Bloglines extends API {
   public $doc = 'http://www.bloglines.com/search';
   public $def = array('BLOGLINES', 'BLOGLINES_USER'); 
   
-  function citedby($q){
-    if (!$q['url'] && $q['doi']))
-      $q['url'] = 'http://dx.doi.org/' . $q['doi'];
+  function citedby($args){
+    if (!$args['uri'] && $args['doi'])
+      $args['uri'] = 'http://dx.doi.org/' . $args['doi'];
 
-    if (!$url = $q['url'])
-      return FALSE;
+    $this->validate($args, 'uri'); extract($args);
 
     $xml = $this->get_data('http://www.bloglines.com/search', array(
       'format' => 'publicapi',
       'apiuser' => Config::get('BLOGLINES_USER'),
       'apikey' => Config::get('BLOGLINES'),
       's' => 'f',
-      'q' => 'bcite:' . $q['url'],
+      'q' => 'bcite:' . $uri,
     ), 'xml');
     
     //debug($xml);

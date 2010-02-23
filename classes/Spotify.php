@@ -71,44 +71,8 @@ class Spotify extends API {
   }
 
   function lookup($q = array()){
-    if (!$q['uri'])
-      return FALSE;
+    $this->validate($args, 'uri'); extract($args);
 
-    return $this->get_data($this->server . '/lookup/1/', $q);
+    return $this->get_data($this->server . '/lookup/1/', array('uri' => $uri));
   }
-
-  /*
-  function album_old($q){
-    if (!$q)
-      return FALSE;
-
-    $tracks = $this->track($q);
-    $track = $tracks[0];
-
-    $album_href = (string) $track->album['href'];
-
-    $albums = array();
-    foreach ($xml->track as $track)
-      if ((string) $track->album['href'] == $album_href)
-        $albums[$album_href][(int) $track->{'track-number'}] = (string) $track['href'];
-
-    $tracks = array();
-    foreach ($albums as $id => $items){
-      ksort($items);
-      foreach ($items as $item)
-        $tracks[] = $item;
-    }
-
-    $album = array(
-      'href' => $album_href,
-      'artist' => (string) $track->artist->name,
-      'album' => (string) $track->album->name,
-      'released' => (string) $track->album->released,
-      'tracks' => $tracks, //implode(' ', $tracks),
-      //'territories' => (string) $track->album->availability->territories,
-      );
-
-    return $album;
-  }
-  */
 }

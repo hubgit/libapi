@@ -52,16 +52,13 @@ class PubMed extends API {
     return $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi', array_merge($default, $params), 'xml');
   }
 
-  function content($q){
-    if (!$term = $q['term'])
-      return FALSE;
-      
-    if (!$max = $q['max'])
-      $max = 100000000; // is there a limit?
+  function content($args){
+    $this->validate($args, 'term', array('max' => 10000000)); extract($args); // TODO: is there a limit?
     
-    $this->output_dir = isset($q['output']) ? $this->get_output_dir($q['output']) : NULL;
+    if ($output)
+      $this->output_dir = $this->get_output_dir($output);
   
-    $from = $this->get_latest($q, 0); // 0 = 1970-01-01T00:00:00Z
+    $from = $this->get_latest($args, 0); // 0 = 1970-01-01T00:00:00Z
 
     $to = date('Y/m/d', time() + 60*60*24*365*10); // 10 years in future
 
@@ -123,14 +120,15 @@ class PubMed extends API {
   
   // fetch an individual item from PubMed by DOI or PMID
   // TODO: clean up
-  function metadata($q){
-    if (!$q['pmid'] && $q['doi']){
+  function metadata($args){
+    extract($args);
+    if (!$pmid && $doi){
       $xml = $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi', array(
         'db' => 'pubmed',
         'retmode' => 'xml',
         'retmax' => 1,
         'usehistory' => 'n',
-        'term' => $q['doi'] . '[DOI]',
+        'term' => $doi . '[DOI]',
         'tool' => Config::get('EUTILS_TOOL'),
         'email' => Config::get('EUTILS_EMAIL'),
         ), 'xml');
@@ -138,10 +136,10 @@ class PubMed extends API {
       debug($xml);
 
       if ((int) $xml->Count > 0)  
-        $q['pmid'] = (int) $xml->IdList->Id[0];
+        $pmid = (int) $xml->IdList->Id[0];
     }
 
-    if (!$pmid = $q['pmid'])
+    if (!$pmid)
       return FALSE;
 
     $xml = $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi', array(

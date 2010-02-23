@@ -4,9 +4,8 @@ class Amplify extends API {
   public $doc = 'http://community.openamplify.com/content/apidocs.aspx';
   public $def = 'AMPLIFY';
   
-  function analyse($q){
-    if (!$text = $q['text'])
-      return FALSE;
+  function analyse($args){
+    $this->validate($args, 'text'); extract($args);
 
     $dom = $this->get_data('http://portaltnx.openamplify.com/AmplifyWeb/AmplifyThis', array(
       'apiKey' => Config::get('AMPLIFY'),

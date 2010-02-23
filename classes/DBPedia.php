@@ -3,13 +3,8 @@
 class DBPedia extends API {
   public $doc = 'http://lookup.dbpedia.org/api/search.asmx';
   
-  function search($q){
-    if (!$text = $q['text'])
-      return FALSE;
-    
-    $class = $q['class'];
-    $n = $q['n'] ? $q['n'] : 10;
-      
+  function search($args){
+    $this->validate($args, 'text', array('n' => 10)); extract($args);      
     
     $client = new SOAPClient('http://lookup.dbpedia.org/api/search.asmx?WSDL');
     try {

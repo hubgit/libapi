@@ -4,13 +4,12 @@ class Bibsonomy extends API {
   public $doc = '';
   public $def = array('BIBSONOMY_USER', 'BIBSONOMY');
 
-  function metadata($q){
-    if (!$q['uri'] && $q['doi'])
-      $q['uri'] = 'http://dx.doi.org/' . $q['doi'];
+  function metadata($args){
+    if (!$args['uri'] && $args['doi'])
+      $args['uri'] = 'http://dx.doi.org/' . $args['doi'];
     
-    if (!$uri = $q['uri'])
-      return FALSE;
-    
+    $this->validate($args, 'uri'); extract($args);
+
     $xml = $this->get_data('http://scraper.bibsonomy.org/service', array(
       'url' => $uri,
       'format' => 'rdf+xml',

@@ -3,9 +3,8 @@
 class Whatizit extends API {
   public $doc = 'http://www.ebi.ac.uk/webservices/whatizit/';
 
-  function entities($q){ 
-    if (!$text = $q['text'])
-      return FALSE;
+  function entities($args){ 
+    $this->validate($args, 'text'); extract($args);
     
     /* Proteins and Gene Ontology terms */
    
@@ -130,3 +129,4 @@ class Whatizit extends API {
 
       return "$return\n\n--------------------------------------------\n\n";
   }
+}

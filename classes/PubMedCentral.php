@@ -3,9 +3,8 @@
 class PubMedCentral extends API {
   public $doc = 'http://www.pubmedcentral.nih.gov/utils/';
 
-  function citedby($q){
-    if (!$pmid = $q['pmid'])
-      return FALSE;
+  function citedby($args){
+    $this->validate($args, 'pmid'); extract($args);
     
     $xml = $this->get_data('http://www.pubmedcentral.nih.gov/utils/entrez2pmcciting.cgi', array(
       'view' => 'xml',

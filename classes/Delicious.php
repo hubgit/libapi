@@ -4,9 +4,8 @@ class Delicious extends API {
   public $doc = 'http://delicious.com/';
   //public $def = 'DELICIOUS_AUTH'; // only for fetching a user's content
    
-  function get_bookmarks_for_item($q){
-    if (!$uri = $q['uri'])
-      return FALSE;
+  function get_bookmarks_for_item($args){
+    $this->validate($args, 'uri'); extract($args);
 
     $json = $this->get_data('http://badges.del.icio.us/feeds/json/url/data', array('url' => $uri));
     //debug($json);
@@ -35,17 +34,13 @@ class Delicious extends API {
   }
   
   # http://delicious.com/tag
-  function content_by_tag($q){
+  function content_by_tag($args){
     require_once 'lib/css2xpath.inc.php';
     
-    if (!$query = $q['tag'])
-      return FALSE;
+    $this->validate($args, 'tag', array('max' => 1000000)); extract($args); // TODO: is there a limit on the API?
       
-    if (!$max = $q['max'])
-      $max = 1000000; // TODO: is there a limit on the API?
-
-    if (isset($q['output']))
-      $this->output_dir = $this->get_output_dir($q['output'] . '/' . preg_replace('/\W/', '_', $query)); // FIXME: proper sanitising
+    if ($output)
+      $this->output_dir = $this->get_output_dir($output . '/' . preg_replace('/\W/', '_', $tag)); // FIXME: proper sanitising
 
     $css2xpath = new CSS2XPath();
 
@@ -65,7 +60,7 @@ class Delicious extends API {
 
     $count = 0;
     do{
-      $xml = $this->get_data('http://delicious.com/tag/' . urlencode($query), array(
+      $xml = $this->get_data('http://delicious.com/tag/' . urlencode($tag), array(
         'setcount' => $n,
         'page' => $page,
         ), 'html', $http);
@@ -120,13 +115,13 @@ class Delicious extends API {
     return $items;
   }
   
-  function content_by_user($q){
-    $this->check_def('DELICIOUS_AUTH');
+  function content_by_user($args){
+    extract($args);
+          
+    if (isset($output))
+      $this->output_dir = $this->get_output_dir($output);
       
-    if (isset($q['output']))
-      $this->output_dir = $this->get_output_dir($q['output']);
-      
-    $from = $this->get_latest($q, 0); // 0 = 1970-01-01T00:00:00Z
+    $from = $this->get_latest($args, 0); // 0 = 1970-01-01T00:00:00Z
 
     $auth = explode(':', Config::get('DELICIOUS_AUTH'));
 

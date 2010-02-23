@@ -4,27 +4,27 @@ class PubChem extends API{
   public $doc = 'http://pubchem.ncbi.nlm.nih.gov/';
   public $def = array('EUTILS_TOOL', 'EUTILS_EMAIL');
   
-  function search($q, $params = array()){
+  function search($args, $params = array()){
     unset($this->count, $this->webenv, $this->querykey);
     
     $this->db = 'pccompound';
     
-    if ($q['cid'])
-      $q['term'] = sprintf('%d[CID]', $q['cid']);
-    else if ($q['sid'])
-      $q['term'] = sprintf('%d[SID]', $q['sid']);
-    else if ($q['inchikey'])
-      $q['term'] = sprintf('"%s"[InChIKey]', preg_replace('/^inchikey=/i', '', $q['inchikey']));
-    else if ($q['inchi'])
-      return $this->pug($q['inchi']);
-    else if ($q['name'])
-      $q['term'] = sprintf('%s[IUPACName]', $q['name']); // TODO
+    if ($args['cid'])
+      $args['term'] = sprintf('%d[CID]', $args['cid']);
+    else if ($args['sid'])
+      $args['term'] = sprintf('%d[SID]', $args['sid']);
+    else if ($args['inchikey'])
+      $args['term'] = sprintf('"%s"[InChIKey]', preg_replace('/^inchikey=/i', '', $args['inchikey']));
+    else if ($args['inchi'])
+      return $this->pug($args['inchi']);
+    else if ($args['name'])
+      $args['term'] = sprintf('%s[IUPACName]', $args['name']); // TODO
       
       
-    if (!$term = $q['term'])
+    if (!$term = $args['term'])
       return FALSE;
       
-    if ($q['sid'])
+    if ($args['sid'])
       $this->db = 'pcsubstance';
       
     debug($term);

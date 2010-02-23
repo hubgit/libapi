@@ -37,12 +37,9 @@ class BingMaps extends API {
       );
   }
   
-  function search($q){
-    if (!$text = $q['text'])
-      return false;
-    
-    $n = isset($q['n']) ? $q['n'] : 10;
-    
+  function search($args){
+    $this->validate($args, 'text', array('n' => 10)); extract($args);
+        
     $client = new SoapClient($this->server . '/searchservice/searchservice.svc?wsdl');
     $request = $this->request($text, $n);
     $result = $client->Search($request);
@@ -55,9 +52,9 @@ class BingMaps extends API {
     return array($result->SearchResult->ResultSets->SearchResultSet->Results->SearchResultBase, array('raw' => $result));
   }
   
-  function parse($q){
-    $q['n'] = 1;
-    $result = $this->search($q);
+  function parse($args){
+    $args['n'] = 1;
+    $result = $this->search($args);
     
     if (!is_array($result->SearchResult->ResultSets->SearchResultSet))
       $result->SearchResult->ResultSets->SearchResultSet = array($result->SearchResult->ResultSets->SearchResultSet);

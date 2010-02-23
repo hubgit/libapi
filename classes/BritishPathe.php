@@ -1,17 +1,18 @@
 <?php
 
 class BritishPathe extends API {
-  function content($q){
-    if (isset($q['output']))
-      $this->output_dir = $this->get_output_dir($q['output']);
-  
-    $id = isset($q['start']) ? (int) $q['start'] : 1;
-  
+  function content($args){
+    $this->validate($args, 'start', array('start' => 1)); extract($args);
+    
+    if ($output)
+      $this->output_dir = $this->get_output_dir($output);
+    
     $items = array();
     $attempts = array();
   
     global $http_status;
   
+    $id = $start;
     do{      
       $html = $this->get_data('http://www.britishpathe.com/record.php', array(
         'id' => $id,

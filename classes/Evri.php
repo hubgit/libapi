@@ -3,9 +3,8 @@
 class Evri extends API {
   public $doc = 'http://www.evri.com/developer/rest';
   
-  function entities($q){
-    if (!$text = $q['text'])
-      return FALSE;
+  function entities($args){
+    $this->validate($args, 'text'); extract($args);
       
     $params = array(
       'uri' => 'http://www.example.com/',

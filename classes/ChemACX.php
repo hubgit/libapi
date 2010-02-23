@@ -3,9 +3,8 @@
 class ChemACX extends API {
   public $doc = 'http://chemacx.cambridgesoft.com/';
 
-  function content_chemacx($q){
-    if (!$id = $q['id'])
-      return FALSE;
+  function content_chemacx($args){
+    $this->validate($args, 'id'); extract($args);
       
     $data = $this->get_data('http://chemacx.cambridgesoft.com/chemacx/chemacx/chemacx_action.asp', array(
       'dbname' => 'chemacx',

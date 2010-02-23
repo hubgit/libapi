@@ -112,14 +112,13 @@ class Flickr extends API {
   }
 
   // http://idgettr.com/
-  function content_by_user($q){
-    if (!$user = $q['user'])
-      return FALSE;
+  function content_by_user($args){
+    $this->validate($args, 'user'); extract($args);
     
-    if (isset($q['output']))
-      $this->output_dir = $this->get_output_dir($q['output']);
+    if ($output)
+      $this->output_dir = $this->get_output_dir($output);
     
-    $from = $this->get_latest($q, 0); // 0 = 1970-01-01T00:00:00Z
+    $from = $this->get_latest($args, 0); // 0 = 1970-01-01T00:00:00Z
    
     $n = 500;
     $page = 1; // pages start at 1
@@ -184,10 +183,9 @@ class Flickr extends API {
   }
   
   // http://www.flickr.com/services/api/flickr.photos.getInfo.htm
-  function metadata($q){    
-    if (!$id = $q['id'])
-     return FALSE;
-
+  function metadata($args){    
+    $this->validate($args, 'id'); extract($args);
+    
     $data = $this->get_data('http://api.flickr.com/services/rest/', array(
       'api_key' => Config::get('FLICKR'),
       'format' => 'php_serial',

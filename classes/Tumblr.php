@@ -4,11 +4,11 @@ class Tumblr extends API {
   public $doc = 'http://www.tumblr.com/docs/api';
   //public $def = 'TUMBLR_AUTH'; // http://www.tumblr.com/docs/api#authenticate
 
-  function content_by_user($q){
-    if (!$user = $q['user'])
-      return FALSE;
+  function content_by_user($args){
+    $this->validate($args, 'user'); extract($args);
     
-    $this->output_dir = isset($q['output']) ? $this->get_output_dir($q['output']) : NULL;
+    if ($output)
+      $this->output_dir = $this->get_output_dir($output);
 
     $items = array();
     $count = 0;
@@ -23,12 +23,7 @@ class Tumblr extends API {
       $xml = $this->get_data(sprintf('http://%s.tumblr.com/api/read', $user), $params, 'xml');
       
       $total = (int) $xml->posts['total'];
-      $max = isset($q['max']) ? min($q['max'], $total) : $total;
-  
-      //debug($xml);
-       
-      //if (!is_object($xml) || !is_array($xml->posts->post) || empty($xml->posts->post))
-        //break;
+      $max = isset($max) ? min($max, $total) : $total;
           
       foreach ($xml->posts->post as $item){ 
         debug($item);

@@ -4,15 +4,14 @@ class NPR extends API {
   public $doc = 'http://www.npr.org/api/'; # Note that full-text content is not available for some topics.
   public $def = 'NPR';
 
-  function content($q){
-    if (!$query = $q['npr-topic']) // eg 1007 = 'Health & Science' // http://www.npr.org/api/mappingCodes.php
+  function content($args){
+    $this->validate($args, 'npr_topic'); extract($args);
+        
+    if (!is_numeric($npr_topic))
       return FALSE;
     
-    if (!is_numeric($query))
-      return FALSE;
-    
-    if (isset($q['output']))
-      $this->output_dir = $this->get_output_dir($q['output']);
+    if ($output)
+      $this->output_dir = $this->get_output_dir($output);
   
     $n = 20;
     $page = 0; // results start at 0
@@ -24,7 +23,7 @@ class NPR extends API {
       //print "$start\n";
       
       $json = $this->get_data('http://api.npr.org/query', array(
-        'id' => $query,
+        'id' => $npr_topic,
         'fields' => 'title,storyDate,text',
         'numResults' => $n,
         'startNum' => ($n * $page) + 1,

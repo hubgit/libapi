@@ -30,22 +30,21 @@ class GoogleMaps extends API {
       );
   }
   
-  function search($q){
-    if (!$text = $q['text'])
-      return false;
-      
-     $json = $this->get_data('http://ajax.googleapis.com/ajax/services/search/local', array(
-        'v' => '1.0',
-        'key' => Config::get('GOOGLE_MAPS'),
-        'rsz' => 'large',
-        'q' => $text,
-     )); 
-     
+  function search($args){
+    $this->validate($args, 'text'); extract($args);
+
+    $json = $this->get_data('http://ajax.googleapis.com/ajax/services/search/local', array(
+      'v' => '1.0',
+      'key' => Config::get('GOOGLE_MAPS'),
+      'rsz' => 'large',
+      'q' => $text,
+      )); 
+
     debug($json);
 
     if (!is_object($json) || $json->responseStatus != 200)
-       return FALSE;
-        
+      return FALSE;
+
     return array($json->responseData->results, array('total' => $json->responseData->cursor->estimatedResultCount));
   }
 }

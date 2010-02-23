@@ -4,43 +4,31 @@ class Twitter extends API {
   public $doc = 'http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-statuses-user_timeline';
   public $def = 'TWITTER_AUTH'; // http://apiwiki.twitter.com/Authentication - username:password for basic authentication
   
-  function followers($q){
-    if (!$user = $q['user'])
-      return FALSE;
-
-    if (!$cursor = $q['cursor'])
-      $cursor = '-1';
+  function followers($args){
+    $this->validate($args, array('user', 'cursor'), array('cursor' => '-1')); extract($args);
 
     $json = $this->get_data('http://twitter.com/followers/ids.json', array('screen_name' => $user, 'cursor' => $cursor));
     $this->cursor = $json->next_cursor;
     return $json->ids;      
   }
   
-  function friends($q){
-    if (!$user = $q['user'])
-      return FALSE;
-
-    if (!$cursor = $q['cursor'])
-      $cursor = '-1';
+  function friends($args){
+    $this->validate($args, array('user', 'cursor'), array('cursor' => '-1')); extract($args);
 
     $json = $this->get_data('http://twitter.com/friends/ids.json', array('screen_name' => $user, 'cursor' => $cursor));
     $this->cursor = $json->next_cursor;
     return $json->ids;      
   }
 
-  function content_by_user($q){
-    if (!$user = $q['user'])
-      return FALSE;
-      
-    if (!$max = $q['max'])
-      $max = 3200; // maximum 3200 items available through the API
-      
+  function content_by_user($args){
+    $this->validate($args, array('user', 'max'), array('max' => 3200)); extract($args); // maximum 3200 items available through the API    
     
-    $this->output_dir = isset($q['output']) ? $this->get_output_dir($q['output']) : NULL;
+    if ($output)
+      $this->output_dir = $this->get_output_dir($output);
 
     $auth = explode(':', Config::get('TWITTER_AUTH'));
       
-    $from = $this->get_latest($q, 1); // 1 = earliest status id
+    $from = $this->get_latest($args, 1); // 1 = earliest status id
    
     $n = min($max, 200); // max 200
     $page = 1; // pages start at 1

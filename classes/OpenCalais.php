@@ -9,9 +9,8 @@ class OpenCalais extends API {
       return $this->get_data('http://api.opencalais.com/enlighten/rest/', array(), 'json', $http);
    }
    
-   function entities($q){
-     if (!$text = $q['text'])
-       return FALSE;
+   function entities($args){
+     $this->validate($args, 'text'); extract($args);
 
      $json = $this->query(array(
         'content' => sprintf('<Document><Body>%s</Body></Document>', htmlspecialchars($text)),
@@ -56,9 +55,8 @@ class OpenCalais extends API {
      return array($entities, $references);
    }
    
-   function categories($q){
-     if (!$text = $q['text'])
-       return FALSE;
+   function categories($args){
+     $this->validate($args, 'text'); extract($args);
 
      $json = $this->query(array(
        'content' => sprintf('<Document><Body>%s</Body></Document>', htmlspecialchars($text)),

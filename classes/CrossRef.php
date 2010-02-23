@@ -4,9 +4,8 @@ class CrossRef extends API {
   public $doc = 'http://www.crossref.org/citedby.html';
   public $def = 'CROSSREF_AUTH'; // http://www.crossref.org/requestaccount/
 
-  function citedby($q){
-    if (!$doi = $q['doi'])
-      return FALSE;
+  function citedby($args){
+    $this->validate($args, 'doi'); extract($args);
 
     $auth = explode(':', Config::get('CROSSREF_AUTH'));
 
@@ -35,12 +34,14 @@ class CrossRef extends API {
     return array($items, array('total' => count($items)));
   }
 
-  function metadata($q){
-    if (!$q['uri'] && $q['doi'])
-      $q['uri'] = 'info:doi/' . $q['doi'];
-
-    if (!($uri = $q['uri']) && empty($q['openurl']))
-      return FALSE;
+  function metadata($args){
+    if (!$args['uri'] && $args['doi'])
+      $args['uri'] = 'http://dx.doi.org/' . $args['doi'];
+    
+    extract($args);
+    
+    if (!$uri && !$openurl)
+      trigger_error('URI or OpenURL needed', E_USER_ERROR);
 
     $params = array(
       'noredirect' => 'true',
@@ -51,8 +52,8 @@ class CrossRef extends API {
     if ($uri)
       $params['id'] = $uri;
 
-    if (!empty($q['openurl']))
-      $params = array_merge($params, $q['openurl']);
+    if ($openurl)
+      $params = array_merge($params, $openurl);
 
     $xml = $this->get_data('http://www.crossref.org/openurl/', $params, 'xml');
     //debug($xml);

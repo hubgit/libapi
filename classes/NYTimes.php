@@ -4,15 +4,14 @@ class NYTimes extends API {
  public $doc = 'http://developer.nytimes.com/docs/article_search_api';
  public $def = 'NYTIMES';
 
-  function content($q){
-    if (isset($q['nytimes-facet']))
-      $query = sprintf('des_facet:[%s]', $q['nytimes-facet']);
+  function content($args){    
+    if ($args['nytimes_facet'])
+      $args['query'] = sprintf('des_facet:[%s]', $args['nytimes_facet']);
     
-    if (!isset($query))
-      return FALSE;
+    $this->validate($args, 'query'); extract($args);
     
-    if (isset($q['output']))
-      $this->output_dir = $this->get_output_dir($q['output']);
+    if ($output)
+      $this->output_dir = $this->get_output_dir($output);
   
     $n = 10;
     $page = 0; // results start at 0
