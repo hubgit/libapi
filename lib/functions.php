@@ -181,20 +181,16 @@ function outerXML($node){
   return $dom->saveXML($dom->documentElement);
 }
 
-function strpos_all($haystack, $needle){
-  $offset = 0;
+function positions($haystack, $needle, $modifiers = 'u'){
+  if (empty($needle))
+    return array();
+    
   $positions = array();
   
-  $length = mb_strlen($needle); // length in chars
-
-  do {
-    $i = mb_strpos($haystack, $needle, $offset);
-    if ($i === FALSE)
-      break;
-
-    $positions[] = $i; // mb_stripos returns the offset in chars
-    $offset = $i + $length;
-  } while (1);
-
+  preg_match_all('/' . preg_quote($needle, '/') . '/' . $modifiers, $haystack, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER);
+  if (!empty($matches))
+    foreach ($matches as $match)
+      $positions[] = $match[0][1];
+    
   return $positions;
 }
