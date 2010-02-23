@@ -4,20 +4,28 @@ class TFL extends API {
   //public $doc = '';
   //public $def = '';
 
-  function stop_data($q){
+  function stop($q){
     if (!$stopcode = $q['stopcode'])
       return FALSE;
 
-    $json = $this->get_data('http://www.tfl.gov.uk/tfl/gettingaround/maps/buses/tfl-bus-map/dotnet/StopInfo.aspx', array('stopcode' => $stopcode));  
-    //debug($json);
-
-    if (!is_object($json))
+    return $this->get_data('http://www.tfl.gov.uk/tfl/gettingaround/maps/buses/tfl-bus-map/dotnet/StopInfo.aspx', array('stopcode' => $stopcode));  
+  }
+  
+  function route($q){
+    if (!($route = $q['route']) || !($run = $q['run']))
       return FALSE;
 
-    return $json;
+    return $this->get_data('http://www.tfl.gov.uk/tfl/gettingaround/maps/buses/tfl-bus-map/dotnet/FullRoute.aspx', array('route' => $route, 'run' => $run));  
+  }
+  
+  function route_search($q){
+    if (!($latitude = $q['latitude']) || !($longitude = $q['longitude']))
+      return FALSE;
+
+    return $this->get_data('http://www.tfl.gov.uk/tfl/gettingaround/maps/buses/tfl-bus-map/dotnet/Search.aspx', array('Lat' => $latitude, 'Lng' => $longitude));  
   }
 
-  function stop_route_timetable($q){
+  function timetable($q){
     if (!$route = $q['route'])
       return FALSE;
 
