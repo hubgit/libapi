@@ -32,8 +32,10 @@ class API {
   
   function get_data($url, $params = array(), $format = 'json', $http = array()){
     debug($params);
-    if (!empty($params))
+    if (!empty($params)){
+      ksort($params);
       $url .= '?' . http_build_query($params);
+    }
 
     debug($url);
 
@@ -41,6 +43,11 @@ class API {
     
     if (isset($http['file']))
       $http['content'] = file_get_contents($http['file']);
+      
+    if (!isset($http['proxy'])){
+      $http['proxy'] = 'tcp://proxy.local:80';
+      $http['request_fulluri'] = TRUE;
+    }
       
     $context = empty($http) ? NULL : stream_context_create(array('http' => $http));
 
@@ -134,6 +141,8 @@ class API {
         return DOMDocument::loadXML($data);
       case 'html':
         return simplexml_import_dom(@DOMDocument::loadHTML($data));
+      case 'html-dom':
+        return @DOMDocument::loadHTML($data);
       case 'rdf':
         return simplexml_load_string($data, NULL, LIBXML_NOCDATA); // TODO: parse RDF
       case 'php':
