@@ -3,9 +3,8 @@
 class BioCreative extends API {
   public $doc = 'http://bcms.bioinfo.cnio.es/';
 
-  function entities($q){ 
-    if (!$pmid = $q['pmid'])
-      return FALSE;
+  function entities($args){ 
+    $this->validate($args, 'pmid'); extract($args);
     
     $http = array('method'=> 'POST', 'content' => xmlrpc_encode_request('Annotations.getAnnotations', $pmid), 'header' => 'Content-Type: text/xml');
     $data = $this->get_data('http://bcms.bioinfo.cnio.es/xmlrpc/', array(), 'raw', $http);

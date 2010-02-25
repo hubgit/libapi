@@ -4,12 +4,11 @@ class Guardian extends API {
   public $doc = 'http://api.guardianapis.com/docs';
   public $def = 'GUARDIAN';
 
-  function content($q){
-    if (!$query = $q['guardian-filter'])
-      return FALSE;
+  function content($args){
+    $this->validate($args, 'guardian_filter'); extract($args);
     
-    if (isset($q['output']))
-      $this->output_dir = $this->get_output_dir($q['output']);
+    if ($output)
+      $this->output_dir = $this->get_output_dir($output);
   
     $n = 50;
     $page = 0; // results start at 0
@@ -25,7 +24,7 @@ class Guardian extends API {
       $json = $this->get_data('http://api.guardianapis.com/content/search', array(
         'api_key' => Config::get('GUARDIAN'),
         'content-type' => 'article',
-        'filter' => $query,
+        'filter' => $guardian_filter,
         'format' => 'json',
         'count' => $n,
         'start-index' => $start,

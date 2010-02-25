@@ -3,10 +3,9 @@
 class iHOP extends API {
   public $doc = 'http://www.ihop-net.org/UniPub/iHOP/webservices/';
 
-  function entities_from_pmid($q){
-    if (!$pmid = $q['pmid'])
-      return FALSE;
-     
+  function entities_from_pmid($args){
+    $this->validate($args, 'pmid'); extract($args);
+
     $xml = $this->get_data('http://ubio.bioinfo.cnio.es/biotools/iHOP/cgi-bin/getPubMed', array('pmid' => $pmid), 'xml');
   
     //debug($xml);

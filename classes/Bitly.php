@@ -4,12 +4,11 @@ class Bitly extends API {
   public $doc = 'http://bit.ly/apidocs';
   public $def = array('BITLY_USER', 'BITLY');
   
-  function metadata($q){
-    if (!$q['uri'] && $q['doi'])
-      $q['uri'] = 'http://dx.doi.org/' . $q['doi'];
+  function metadata($args){
+    if (!$args['uri'] && $args['doi'])
+      $args['uri'] = 'http://dx.doi.org/' . $args['doi'];
         
-    if (!$uri = $q['uri'])
-      return FALSE;
+    $this->validate($args, 'uri'); extract($args);
     
     if (strpos($uri, 'http://bit.ly/') !== 0)
       $uri = $this->shorten($uri);

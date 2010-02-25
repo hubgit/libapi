@@ -4,25 +4,23 @@ class TFL extends API {
   //public $doc = '';
   //public $def = '';
 
-  function stop_data($q){
-    if (!$stopcode = $q['stopcode'])
-      return FALSE;
-
-    $json = $this->get_data('http://www.tfl.gov.uk/tfl/gettingaround/maps/buses/tfl-bus-map/dotnet/StopInfo.aspx', array('stopcode' => $stopcode));  
-    //debug($json);
-
-    if (!is_object($json))
-      return FALSE;
-
-    return $json;
+  function stop($args){
+    $this->validate($args, 'stopcode'); extract($args);   
+    return $this->get_data('http://www.tfl.gov.uk/tfl/gettingaround/maps/buses/tfl-bus-map/dotnet/StopInfo.aspx', array('stopcode' => $stopcode));  
+  }
+  
+  function route($args){
+    $this->validate($args, array('route', 'run')); extract($args);
+    return $this->get_data('http://www.tfl.gov.uk/tfl/gettingaround/maps/buses/tfl-bus-map/dotnet/FullRoute.aspx', array('route' => $route, 'run' => $run));  
+  }
+  
+  function route_search($args){
+    $this->validate($args, array('latitude', 'longitude')); extract($args);
+    return $this->get_data('http://www.tfl.gov.uk/tfl/gettingaround/maps/buses/tfl-bus-map/dotnet/Search.aspx', array('Lat' => $latitude, 'Lng' => $longitude));  
   }
 
-  function stop_route_timetable($q){
-    if (!$route = $q['route'])
-      return FALSE;
-
-    if (!$stopcode = $q['stopcode'])
-      return FALSE;
+  function timetable($args){
+    $this->validate($args, array('route', 'stopcode')); extract($args);
 
     $xml = $this->get_data(sprintf('http://www.tfl.gov.uk/tfl/syndication/feeds/html/timetables/buses/%s_%s.htm', $route, $stopcode), NULL, 'html');
     // debug($xml);

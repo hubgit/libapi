@@ -3,9 +3,8 @@
 class ISI extends API {
   public $doc = 'http://isiwebofknowledge.com/products_tools/products/related/trlinks/'; # requires IP authentication
 
-  function citedby($q){
-    if (!$doi = $q['doi'])
-      return FALSE;
+  function citedby($args){
+    $this->validate($args, 'article'); extract($args);
     
     $query = sprintf('<map name="%s"><val name="doi">%s</val></map>', htmlspecialchars($doi), htmlspecialchars($doi));
   
@@ -42,7 +41,8 @@ class ISI extends API {
     $xpath = new DOMXpath($dom);
     $xpath->registerNamespace('isi', 'http://www.isinet.com/xrpc41');
   
-    if (!empty($xpath->query("isi:fn/isi:error")))
+    $nodes = $xpath->query("isi:fn/isi:error");
+    if (!empty($nodes))
       return FALSE;
     
     $meta = array(

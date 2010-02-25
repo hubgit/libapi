@@ -56,8 +56,7 @@ class Yahoo extends API {
   
   // http://developer.yahoo.com/geo/geoplanet/
   function geo_metadata($q){ 
-    if (!$id = $q['woeid'])
-     return FALSE;
+    $this->validate($args, 'woeid'); extract($args);
 
     $suffix = isset($q['suffix']) ? '/' . $q['suffix'] : '';
 
@@ -96,9 +95,8 @@ class Yahoo extends API {
   }
   
   # http://developer.yahoo.com/geo/placemaker/
-  function placemaker($q){
-    if (!$text = $q['text'])
-      return FALSE;
+  function placemaker($args){
+    $this->validate($args, 'text'); extract($args);
 
     $params = array(
       'appid' => Config::get('YAHOO'),
@@ -149,13 +147,12 @@ class Yahoo extends API {
     return array($entities, $references);
   }
   
-  function entities($q){
-    if (!$text = $q['text'])
-      return FALSE;
+  function entities($args){
+    $this->validate($args, 'text'); extract($args);
 
     $params = array(
       'context' => $text,
-      'query' => $q['context'], // context for extraction (search terms)
+      'query' => $context, // context for extraction (search terms)
       'output' => 'json',
       'appid' => Config::get('YAHOO'),
     );

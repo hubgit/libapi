@@ -219,9 +219,9 @@ class API {
     return $dir;
   }
   
-  function get_latest($q, $default = 1){
-    if (isset($q['from']))
-      return $q['from'];
+  function get_latest($args, $default = 1){
+    if (isset($args['from']))
+      return $args['from'];
     else if ($this->output_dir && file_exists($this->output_dir . '/latest'))
       return file_get_contents($this->output_dir . '/latest');
     else
@@ -292,5 +292,22 @@ class API {
       );
 
     return array($xml, $meta);
+  }
+  
+  function validate(&$args, $required, $default = array()){
+    if (is_string($required))
+      $required = array($required);
+      
+    foreach ($required as $key)
+      if (!isset($args[$key]))
+        if (isset($default[$key]))
+          $args[$key] = $default[$key];
+        else
+          trigger_error(sprintf('Missing required argument "%s"', $key), E_USER_ERROR);
+  }
+  
+  function set_default(&$args, $key, $value){
+    if (!isset($args[$key]))
+      $args[$key] = $value;
   }
 }

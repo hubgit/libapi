@@ -4,9 +4,8 @@ class Zemanta extends API {
   public $doc = 'http://developer.zemanta.com/';
   public $def = 'ZEMANTA';
 
-  function entities($q, $query = NULL){
-    if (!$text = $q['text'])
-      return FALSE;
+  function entities($args, $query = NULL){
+    $this->validate($args, 'text'); extract($args);
     
     $params = array(
       'text' => $text,
@@ -17,7 +16,7 @@ class Zemanta extends API {
     );
   
     $http = array('method' => 'POST', 'content' => http_build_query($params), 'header' => 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8');
-    $json = $this->Config::get('YAHOO')get_data('http://api.zemanta.com/services/rest/0.0/', array(), 'json', $http);
+    $json = $this->get_data('http://api.zemanta.com/services/rest/0.0/', array(), 'json', $http);
   
     debug($json);
   

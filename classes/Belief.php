@@ -3,9 +3,8 @@
 class Belief extends API {
   public $doc = 'http://beliefnetworks.net/bnws/core.html';
   
-  function concepts($q){
-    if (!$text = $q['text'])
-      return FALSE;
+  function concepts($args){
+    $this->validate($args, 'text'); extract($args);
       
     $params = array(
       'text' => $text,

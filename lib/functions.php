@@ -1,12 +1,19 @@
 <?php
 
-function debug($arg){
+function debug($arg){  
   switch (Config::get('DEBUG')){
     case 'PRINT':
       return print(print_r($arg, TRUE) . "\n");
     break;
     
     case 'OFF':
+    break;
+    
+    case 'FIRE':
+      $fire = FirePHP::getInstance(TRUE);
+      if (is_string($arg))
+        $arg = sprintf('%s %.4f %s', date('H:i:s'), microtime(TRUE) - $_SERVER['REQUEST_TIME'], $arg);
+      $fire->log($arg);
     break;
     
     default:
@@ -174,3 +181,19 @@ function outerXML($node){
   return $dom->saveXML($dom->documentElement);
 }
 
+
+function positions($haystack, $needle, $modifiers = 'u'){
+  if (empty($needle))
+    return array();
+    
+  $positions = array();
+  
+  $pattern = sprintf('/%s/%s', preg_quote($needle, '/'), $modifiers);
+  preg_match_all($pattern, $haystack, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER);
+  
+  if (!empty($matches))
+    foreach ($matches as $match)
+      $positions[] = mb_strlen(mb_strcut($haystack, 0, $match[0][1])); // convert bytes to chars: PREG_OFFSET_CAPTURE returns byte offset, not chars, even with the 'u' modifier
+
+  return $positions;
+}

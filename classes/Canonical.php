@@ -4,10 +4,9 @@ class Canonical extends API {
   public $doc = 'http://googlewebmastercentral.blogspot.com/2009/02/specify-your-canonical.html';
   // TODO: cononical short URL
 
-  function metadata($q){  
-    if (!$url = $q['url'])
-      return FALSE;
-    
+  function metadata($args){  
+    $this->validate($args, 'url'); extract($args);
+
     $curl = curl_init($url);
 
     curl_setopt_array($curl, array(

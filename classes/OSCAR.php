@@ -3,10 +3,9 @@
 class OSCAR extends API {
   public $url = 'http://127.0.0.1:8181';
   
-  function entities($q){
-    if (!$text = $q['text'])
-      return FALSE;
-    
+  function entities($args){
+    $this->validate($args, 'text'); extract($args);
+
     $params = array(
       'contents' => $text,
       'output' => 'markedup',

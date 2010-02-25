@@ -4,9 +4,8 @@ class Scopus extends API {
   public $doc = 'http://searchapidocs.scopus.com';
   public $def = 'SCOPUS_KEY';
 
-  function citedby($q){
-    if (!$doi = $q['doi'])
-      return FALSE;
+  function citedby($args){
+    $this->validate($args, 'doi'); extract($args);
     
     $data = $this->get_data('http://www.scopus.com/scsearchapi/search.url', array(
       'search' => sprintf('DOI("%s")', $doi),

@@ -4,9 +4,8 @@ class Alchemy extends API {
   public $doc = 'http://www.alchemyapi.com/api';
   public $def = 'ALCHEMY';
   
-  function entities($q){
-    if (!$text = $q['text'])
-      return FALSE;
+  function entities($args){
+    $this->validate($args, 'text'); extract($args);
       
     $params = array(
       'apikey' => Config::get('ALCHEMY'),

@@ -1,9 +1,8 @@
 <?php
 
 class GoPubMed extends API {
-  function entities($q){ 
-    if (!$text = $q['text'])
-      return FALSE;
+  function entities($args){ 
+    $this->validate($args, 'text'); extract($args);
     
     static $client;
     if (!is_object($client))
@@ -29,9 +28,8 @@ class GoPubMed extends API {
     return array($entities, $references);
   }
 
-  function entities_from_pmid($q){ 
-    if (!$pmid = $q['pmid'])
-      return FALSE;
+  function entities_from_pmid($args){ 
+    $this->validate($args, 'pmid'); extract($args);
      
     $xml = $this->get_data('http://www.gopubmed.org/GoMeshPubMed/gomeshpubmed/Search/Xml', array('q' => $pmid . '[PMID]'), 'xml');
   
