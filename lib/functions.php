@@ -181,17 +181,19 @@ function outerXML($node){
   return $dom->saveXML($dom->documentElement);
 }
 
+
 function positions($haystack, $needle, $modifiers = 'u'){
   if (empty($needle))
     return array();
     
   $positions = array();
   
-  preg_match_all('/' . preg_quote($needle, '/') . '/' . $modifiers, $haystack, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER);
+  $pattern = sprintf('/%s/%s', preg_quote($needle, '/'), $modifiers);
+  preg_match_all($pattern, $haystack, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER);
+  
   if (!empty($matches))
     foreach ($matches as $match)
-      $positions[] = $match[0][1];
-    
+      $positions[] = mb_strlen(mb_strcut($haystack, 0, $match[0][1])); // convert bytes to chars: PREG_OFFSET_CAPTURE returns byte offset, not chars, even with the 'u' modifier
+
   return $positions;
 }
-
