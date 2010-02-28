@@ -4,7 +4,7 @@ class Spotify extends API {
   public $doc = 'http://developer.spotify.com/en/metadata-api/overview/';
   public $server = 'http://ws.spotify.com';
 
-  function get_data($uri, $params = array()){
+  function get_cached_data($uri, $params = array()){
     $suffix = empty($params) ? NULL : '?' . http_build_query($params);
 
     $cache_dir = $this->get_output_dir('spotify/cache');
@@ -24,7 +24,7 @@ class Spotify extends API {
     if (!$q)
       return FALSE;
 
-    $xml = $this->get_data($this->server . '/search/1/track.xml', array('q' => $q));
+    $xml = $this->get_cached_data($this->server . '/search/1/track.xml', array('q' => $q));
     if (!$items = $xml->track)
       return FALSE;
       
@@ -46,7 +46,7 @@ class Spotify extends API {
     if (!$q)
       return FALSE;
 
-    $xml = $this->get_data($this->server . '/search/1/album.xml', array('q' => $q));
+    $xml = $this->get_cached_data($this->server . '/search/1/album.xml', array('q' => $q));
     if (!$items = $xml->album)
       return FALSE;
 
@@ -73,6 +73,6 @@ class Spotify extends API {
   function lookup($q = array()){
     $this->validate($args, 'uri'); extract($args);
 
-    return $this->get_data($this->server . '/lookup/1/', array('uri' => $uri));
+    return $this->get_cached_data($this->server . '/lookup/1/', array('uri' => $uri));
   }
 }
