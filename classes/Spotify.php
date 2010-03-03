@@ -43,6 +43,7 @@ class Spotify extends API {
   }
 
   function album($q){
+    print_r($q); exit();
     if (!$q)
       return FALSE;
 

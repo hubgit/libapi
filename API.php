@@ -44,10 +44,10 @@ class API {
     if (isset($http['file']))
       $http['content'] = file_get_contents($http['file']);
       
-    if (!isset($http['proxy'])){
-      $http['proxy'] = 'tcp://proxy.local:80';
-      $http['request_fulluri'] = TRUE;
-    }
+    //if (!isset($http['proxy'])){
+      //$http['proxy'] = 'tcp://proxy.local:80';
+      //$http['request_fulluri'] = TRUE;
+    //}
       
     $context = empty($http) ? NULL : stream_context_create(array('http' => $http));
 
@@ -124,7 +124,9 @@ class API {
 
     debug('Status: ' . $this->http_status);  
     debug($data);
-
+    
+    //file_put_contents(sys_get_temp_dir() . '/curl.xml', $data);
+    
     curl_close($curl);
     if (isset($http['file']))
       fclose($http['file']);

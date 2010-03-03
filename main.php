@@ -9,6 +9,8 @@ mb_regex_encoding('UTF-8');
 
 libxml_use_internal_errors(FALSE); // true = hide parsing errors; use libxml_get_errors() to display later.
 
+include 'FirePHPCore/FirePHP.class.php';
+
 require LIBAPI_ROOT . '/lib/functions.php';
 require LIBAPI_ROOT . '/Config.php';
 
