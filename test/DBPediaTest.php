@@ -10,9 +10,8 @@ class DBPediaTest extends PHPUnit_Framework_TestCase {
   }
 
   public function testSearch(){  
-    list($results, $meta) = $this->api->search(array('text' => 'London'));   
-    //debug($results);   
-    $this->assertGreaterThan(3000, count($results));
+    $results = $this->api->search(array('text' => 'London'));   
+    $this->assertEquals(10, $results->length);
   }
   
 }

@@ -311,12 +311,13 @@ class API {
     if (is_string($required))
       $required = array($required);
       
+    foreach ($default as $key => $value)
+      if (!isset($args[$key]))
+        $args[$key] = $value;
+        
     foreach ($required as $key)
       if (!isset($args[$key]))
-        if (isset($default[$key]))
-          $args[$key] = $default[$key];
-        else
-          trigger_error(sprintf('Missing required argument "%s"', $key), E_USER_ERROR);
+        trigger_error(sprintf('Missing required argument "%s"', $key), E_USER_ERROR);
   }
   
   function set_default(&$args, $key, $value){
