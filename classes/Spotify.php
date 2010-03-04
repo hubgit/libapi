@@ -13,7 +13,7 @@ class Spotify extends API {
     if (file_exists($cache_file) && ((filemtime($cache_file) - time()) < 60*60*24)) // use the cache file if it's less than one day old
       $xml = simplexml_load_file($cache_file);
     else
-      if (is_object($xml = parent::get_data($uri, $params, 'xml')))
+      if (is_object($xml = $this->get_data($uri, $params, 'xml')))
         file_put_contents($cache_file, $xml->asXML());
 
     debug($xml);
@@ -39,6 +39,7 @@ class Spotify extends API {
       'artist' => (string) $item->artist->name,
       'album' => (string) $item->album->name,
       'track' => (string) $item->name,
+      'raw' => $item,
       );
   }
 
@@ -54,11 +55,14 @@ class Spotify extends API {
       $items = array($items);
 
     $uri = (string) $items[0]['href'];
-    $item = $this->lookup(array('uri' => $uri, 'extras' => 'track')); // 'trackdetails'
+    $item = $this->lookup(array('uri' => $uri, 'extras' => 'track')); // 'trackdetail'
+    if (!is_object($item))
+      return FALSE;
 
     $tracks = array();
-    foreach ($item->tracks->track as $track)
-      $tracks[] = (string) $track['href'];
+    if (!empty($item->tracks->track))
+      foreach ($item->tracks->track as $track)
+        $tracks[] = (string) $track['href'];
 
     return array(
       'href' => $uri,
@@ -70,7 +74,7 @@ class Spotify extends API {
       );
   }
 
-  function lookup($q = array()){
+  function lookup($args = array()){
     $this->validate($args, 'uri'); extract($args);
 
     return $this->get_cached_data($this->server . '/lookup/1/', array('uri' => $uri));
