@@ -94,6 +94,24 @@ class Yahoo extends API {
     return array($json->ysearchresponse->resultset_web, array('total' => (int) $json->ysearchresponse->totalhits));
   }
   
+  function pagedata($q, $params = array()){
+    if (!$q)
+      return FALSE;
+    
+    $default = array(
+      'format' => 'json',
+      'appid' => Config::get('YAHOO'),
+    );
+    
+    $json = $this->get_data('http://boss.yahooapis.com/ysearch/se_pagedata/v1/' . urlencode($q), array_merge($default, $params));
+    if (!is_object($json))
+      return FALSE;
+      
+    debug($json);
+
+    return array($json->ysearchresponse->resultset_se_pagedata, array('total' => (int) $json->ysearchresponse->totalhits));
+  }
+  
   # http://developer.yahoo.com/geo/placemaker/
   function placemaker($args){
     $this->validate($args, 'text'); extract($args);

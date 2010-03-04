@@ -63,6 +63,6 @@ class Google extends API {
     if (!is_object($json))
       return FALSE;
 
-    return array($json->responseData->results, array('total' => (int) $json->responseData->cursor->estimatedResultCount));
+    return array($json->responseData->results, array('total' => (int) $json->responseData->cursor->estimatedResultCount, 'cursor' => $json->responseData->cursor));
   }
 }

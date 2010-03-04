@@ -43,7 +43,6 @@ class Spotify extends API {
   }
 
   function album($q){
-    print_r($q); exit();
     if (!$q)
       return FALSE;
 
@@ -58,8 +57,9 @@ class Spotify extends API {
     $item = $this->lookup(array('uri' => $uri, 'extras' => 'track')); // 'trackdetails'
 
     $tracks = array();
-    foreach ($item->tracks->track as $track)
-      $tracks[] = (string) $track['href'];
+    if (!empty($item->tracks->track))
+      foreach ($item->tracks->track as $track)
+        $tracks[] = (string) $track['href'];
 
     return array(
       'href' => $uri,
@@ -67,11 +67,12 @@ class Spotify extends API {
       'album' => (string) $item->name,
       'released' => (string) $item->released,
       'tracks' => $tracks,
+      'raw' => $xml,
       //'territories' => (string) $items[0]->availability->territories,
       );
   }
 
-  function lookup($q = array()){
+  function lookup($args = array()){
     $this->validate($args, 'uri'); extract($args);
 
     return $this->get_data($this->server . '/lookup/1/', array('uri' => $uri));
