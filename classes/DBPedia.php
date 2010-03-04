@@ -4,27 +4,22 @@ class DBPedia extends API {
   public $doc = 'http://lookup.dbpedia.org/api/search.asmx';
   
   function search($args){
-    $this->validate($args, 'text', array('n' => 10)); extract($args);      
+    $this->validate($args, 'text', array('n' => 10, 'class' => 'x')); extract($args);      
+
+    $params = array(
+      'QueryString' => $text,
+      'QueryClass' => $class,
+      'MaxHits' => $n,
+    );
     
-    $client = new SOAPClient('http://lookup.dbpedia.org/api/search.asmx?WSDL');
-    try {
-      $result = $client->KeywordSearch(array(
-        'QueryString' => $text,
-        'QueryClass' => $class,
-        'MaxHits' => $n,
-        ));
-    } catch (SOAPException $e){ debug($e); return FALSE; }
+    $dom = $this->get_data('http://lookup.dbpedia.org/api/search.asmx/KeywordSearch', $params, 'dom'); 
+    //debug($dom->saveXML());   
     
-    //debug($result);
-    
-    if (!is_object($result) || empty($result->KeywordSearchResult->Result))
+    if (!is_object($dom))
       return FALSE;
       
-    $items = $result->KeywordSearchResult->Result;
-    
-    if (!is_array($items))
-      $items = array($items);
-    
-    return array($items);
+    $xpath = new DOMXPath($dom);
+    $xpath->registerNamespace('db', 'http://lookup.dbpedia.org/');
+    return $xpath->query('db:Result');
   }  
 }
