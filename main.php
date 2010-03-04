@@ -9,6 +9,7 @@ mb_regex_encoding('UTF-8');
 
 libxml_use_internal_errors(FALSE); // true = hide parsing errors; use libxml_get_errors() to display later.
 
+ob_start();
 include 'FirePHPCore/FirePHP.class.php';
 
 require LIBAPI_ROOT . '/lib/functions.php';
@@ -26,6 +27,7 @@ if (empty(Config::$properties['LOG']))
   Config::set('LOG', Config::get('DATA_DIR') . '/debug.log');
 
 require LIBAPI_ROOT . '/API.php';
+require LIBAPI_ROOT . '/lib/O.php';
 //require LIBAPI_ROOT . '/lib/DB.php';
 //require LIBAPI_ROOT . '/lib/CSV.php';
 
