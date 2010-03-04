@@ -40,6 +40,7 @@ class GoogleDocsTest extends PHPUnit_Framework_TestCase {
   /**
    * @depends testAuthorise
    */
+  /*
   public function testOCR($token){
     $this->api->token = $token;
     
@@ -54,4 +55,5 @@ class GoogleDocsTest extends PHPUnit_Framework_TestCase {
     $this->api->delete($id);
     $this->assertEquals(200, $this->api->http_status);
   }
+  */
 }

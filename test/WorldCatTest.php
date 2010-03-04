@@ -18,6 +18,6 @@ class WorldCatTest extends PHPUnit_Framework_TestCase {
     $this->assertType(PHPUnit_Framework_Constraint_IsType::TYPE_ARRAY, $results);
     $this->assertType(PHPUnit_Framework_Constraint_IsType::TYPE_ARRAY, $meta);
           
-    $this->assertEquals(392204, $meta['total']);
+    $this->assertGreaterThan(300000, $meta['total']);
   }
 }

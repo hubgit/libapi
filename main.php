@@ -9,13 +9,16 @@ mb_regex_encoding('UTF-8');
 
 libxml_use_internal_errors(FALSE); // true = hide parsing errors; use libxml_get_errors() to display later.
 
-ob_start();
-include 'FirePHPCore/FirePHP.class.php';
-
 require LIBAPI_ROOT . '/lib/functions.php';
 require LIBAPI_ROOT . '/Config.php';
 
 date_default_timezone_set(Config::get('TIMEZONE'));
+
+// start output buffering if not on command line
+if (php_sapi_name() != 'cli' && !empty($_SERVER['REMOTE_ADDR']))
+  ob_start();
+  
+include 'FirePHPCore/FirePHP.class.php';
 
 /* set up directories */
 Config::set('MISC_DIR', LIBAPI_ROOT . '/misc');

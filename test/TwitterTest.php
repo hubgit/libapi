@@ -14,12 +14,12 @@ class TwitterTest extends PHPUnit_Framework_TestCase {
   
   public function testFollowers(){
     $items = $this->api->followers(array('user' => $this->username));
-    $this->assertEquals(128, count($items));
+    $this->assertGreaterThan(10, count($items));
   }
   
   public function testFriends(){
     $items = $this->api->friends(array('user' => $this->username));
-    $this->assertEquals(128, count($items));
+    $this->assertGreaterThan(10, count($items));
   }
 
   public function testContentByUser(){

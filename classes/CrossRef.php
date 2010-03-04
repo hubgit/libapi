@@ -36,7 +36,7 @@ class CrossRef extends API {
 
   function metadata($args){
     if (!$args['uri'] && $args['doi'])
-      $args['uri'] = 'http://dx.doi.org/' . $args['doi'];
+      $args['uri'] = 'doi:' . $args['doi'];
     
     extract($args);
     
@@ -56,7 +56,7 @@ class CrossRef extends API {
       $params = array_merge($params, $openurl);
 
     $xml = $this->get_data('http://www.crossref.org/openurl/', $params, 'xml');
-    //debug($xml);
+    debug($xml);
 
     if (!is_object($xml) || empty($xml->doi_record))
       return FALSE;
