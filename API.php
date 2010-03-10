@@ -310,7 +310,7 @@ class API {
   function validate(&$args, $required, $default = array()){
     if (is_string($required))
       $required = array($required);
-      
+          
     foreach ($default as $key => $value)
       if (!isset($args[$key]))
         $args[$key] = $value;

@@ -93,7 +93,7 @@ class PubChem extends API{
   }
   
   function parse($doc){
-     debug($doc);
+     //debug($doc);
      $result = array(
        'id' => (int) $doc->Id,
        'synonyms' => array(),

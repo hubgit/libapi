@@ -3,11 +3,10 @@
 class Spotify extends API {
   public $doc = 'http://developer.spotify.com/en/metadata-api/overview/';
   public $server = 'http://ws.spotify.com';
-
+  
   function get_cached_data($uri, $params = array()){
-    $suffix = empty($params) ? NULL : '?' . http_build_query($params);
-
     $cache_dir = $this->get_output_dir('spotify/cache');
+    $suffix = empty($params) ? NULL : '?' . http_build_query($params);
     $cache_file = sprintf('%s/%s.xml', $cache_dir, md5($uri . $suffix));
 
     if (file_exists($cache_file) && ((filemtime($cache_file) - time()) < 60*60*24)) // use the cache file if it's less than one day old
@@ -43,11 +42,14 @@ class Spotify extends API {
       );
   }
 
-  function album($q){
+  function album($q, $raw = FALSE){
     if (!$q)
       return FALSE;
 
     $xml = $this->get_cached_data($this->server . '/search/1/album.xml', array('q' => $q));
+    if ($raw)
+      return $xml;
+      
     if (!$items = $xml->album)
       return FALSE;
 
@@ -70,7 +72,6 @@ class Spotify extends API {
       'album' => (string) $item->name,
       'released' => (string) $item->released,
       'tracks' => $tracks,
-      'raw' => $xml,
       //'territories' => (string) $items[0]->availability->territories,
       );
   }

@@ -53,6 +53,16 @@ class PubMed extends API {
   }
 
   function content($args){
+    /*
+    $args = filter_var_array($args, array(
+      'max' => array(
+        'filter' => FILTER_VALIDATE_INT,
+        'flags'  => FILTER_REQUIRE_SCALAR,
+        'options' => array('default' => 10000000), // TODO: is there a limit?
+       ),
+    ));
+    */
+    
     $this->validate($args, 'term', array('max' => 10000000)); extract($args); // TODO: is there a limit?
     
     if ($output)
