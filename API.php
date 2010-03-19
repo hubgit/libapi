@@ -125,7 +125,7 @@ class API {
     $this->http_info = array(curl_getinfo($curl));
 
     debug('Status: ' . $this->http_status);  
-    debug($data);
+    //debug($data);
     
     //file_put_contents(sys_get_temp_dir() . '/curl.xml', $data);
     
@@ -207,7 +207,7 @@ class API {
     $this->http_headers[] = $item;
   }
   
-  function get_input_dir($dir = ''){
+  static function get_input_dir($dir = ''){
     if (strpos($dir, '/') !== 0) // path doesn't start with '/', so treat as relative to DATA_DIR
       $dir = Config::get('DATA_DIR') . '/' . $dir;
       
@@ -217,7 +217,7 @@ class API {
     return $dir;
   }
 
-  function get_output_dir($dir = ''){
+  static function get_output_dir($dir = ''){
     #$dir = preg_replace('/[^a-z0-9\(\)\_\-\+ ]/i', '_', $dir); // FIXME: proper sanitising
     
     if (strpos($dir, '/') !== 0) // path doesn't start with '/', so treat as relative to DATA_DIR
