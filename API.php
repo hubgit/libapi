@@ -43,7 +43,7 @@ class API {
     
     if (isset($http['file']))
       $http['content'] = file_get_contents($http['file']);
-      
+  
     /*
     if (!isset($http['proxy'])){
       $http['proxy'] = 'tcp://proxy.local:80';

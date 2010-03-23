@@ -58,7 +58,7 @@ class Yahoo extends API {
   function geo_metadata($q){ 
     $this->validate($args, 'woeid'); extract($args);
 
-    $suffix = isset($q['suffix']) ? '/' . $q['suffix'] : '';
+    $suffix = isset($suffix) ? '/' . $suffix : '';
 
     $json = $this->get_data('http://where.yahooapis.com/v1/place/' . $id . $suffix, array(
       'appid' => Config::get('YAHOO'),
