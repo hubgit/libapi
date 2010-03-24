@@ -51,6 +51,50 @@ class PubMed extends API {
 
     return $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi', array_merge($default, $params), 'xml');
   }
+  
+  function related($pmid, $params = array()){
+    if (!is_array($pmid))
+      $pmid = array($pmid);
+    
+    $default = array(
+       'db' => 'pubmed',
+       'dbfrom' => 'pubmed',
+       'id' => implode(',', $pmid),
+       'retmode' => 'xml',
+      'tool' => Config::get('EUTILS_TOOL'),
+      'email' => Config::get('EUTILS_EMAIL'),
+     );
+     
+    $xml = $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi', array_merge($default, $params), 'xml');
+    //debug($xml);
+    if (!is_object($xml))
+      return FALSE;
+      
+      
+     $items = array();
+     foreach ($xml->LinkSet->LinkSetDb->Link as $link)
+       $items[] = (string) $link->Id;
+    
+    $this->count = count($items);
+    return $items;
+  }
+  
+  function fulltext($pmid){
+    $params = array(
+      'db' => 'pubmed', 
+      'retmode' => 'xml', 
+      'id' => $pmid,
+      'tool' => Config::get('EUTILS_TOOL'),
+      'email' => Config::get('EUTILS_EMAIL'),
+    );
+    
+    $xml = $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi', $params, 'xml');
+    if (!is_object($xml))
+      return FALSE;
+    
+    $nodes = $xml->xpath("DocSum/Item[@Name='DOI']");
+    return empty($nodes) ? 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi?cmd=prlinks&dbfrom=pubmed&retmode=ref&id=' . $pmid : 'http://dx.doi.org/' . (string) $nodes[0];
+  }
 
   function content($args){
     $this->validate($args, 'term', array('max' => 10000000)); extract($args); // TODO: is there a limit?

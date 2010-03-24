@@ -17,9 +17,29 @@ class PubMedCentral extends API {
       return FALSE;
     
     $items = array();
-    foreach ($xml->REFORM->PMID as $item)
+    foreach ($xml->REFORM->PMCID as $item)
       $items[] = (int) $item;
     
     return array($items, array('total' => count($items)));
+  }
+  
+  function pmc_to_entrez($args){
+    $this->validate($args, 'ids'); extract($args);
+    
+    $xml = $this->get_data('http://www.pubmedcentral.gov/utils/pmcentrez.cgi', array(
+      'view' => 'xml',
+      'id' => implode(',', $ids),
+      ), 'xml');
+    
+    //debug($xml);
+  
+    if (!is_object($xml))
+      return FALSE;
+    
+    $items = array();
+    foreach ($xml->REFORM as $item)
+      $items[] = (int) $item->PMID;
+    
+    return $items;
   }
 }
