@@ -26,12 +26,13 @@ class Wikipedia extends API {
   }
   
 
-  function categories($q){
-    if (!$title = $q['title'])
-      return FALSE;
+  function categories($args){
+    $this->validate($args, 'title'); extract($args);
 
     if (is_array($title)) // fetch multiple titles at once
       $title = implode('|', $title);
+      
+    $http = array('header' => 'User-Agent: libapi'); 
 
     $json = $this->get_data('http://en.wikipedia.org/w/api.php', array(
       'action' => 'query',
@@ -41,7 +42,7 @@ class Wikipedia extends API {
       'cllimit' => 500,
       'clshow' => '!hidden',
       'titles' => $title,
-      ));
+      ), 'json', $http);
 
     //debug($json);
 
@@ -65,9 +66,8 @@ class Wikipedia extends API {
     return $categories;
   } 
 
-  function content($q){
-    if (!$title = $q['title'])
-      return FALSE;
+  function content($args){
+    $this->validate($args, 'title'); extract($args);
 
     $json = $this->get_data('http://en.wikipedia.org/w/api.php', array(
       'action' => 'parse',
