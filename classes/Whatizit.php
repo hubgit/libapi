@@ -6,9 +6,9 @@ class Whatizit extends API {
   function entities($args){ 
     $this->validate($args, 'text'); extract($args);
     
-    /* Proteins and Gene Ontology terms */
+    /* Proteins */
    
-    $xml = $this->soap('whatizitSwissprotGo2', $text);
+    $xml = $this->soap('whatizitSwissprot', $text);
     if (!is_object($xml))
       return FALSE;
           
@@ -17,6 +17,7 @@ class Whatizit extends API {
     foreach ($xml->xpath('//ebi:uniprot') as $item)
       $entities['Protein'][(string) $item] = (string) $item['ids'];
 
+    /*
     foreach ($xml->xpath('//ebi:go') as $item){
       $id = (string) $item['concept'];
       $entities['GO'][$id] = (string) $item['term'];
@@ -28,6 +29,7 @@ class Whatizit extends API {
         'entity' => $id,
         );
     }
+    */
   
     /* Chemical compounds */
   
@@ -79,11 +81,9 @@ class Whatizit extends API {
     
     try{
       $result = $client->contact($params);
-    } catch (SoapFault $exception) { debug($exception); exit(); return FALSE; }
-  
-    //debug($result);
-  
-    libxml_use_internal_errors(TRUE);
+    } catch (SoapFault $exception) { debug($exception); exit(); return FALSE; } // FIXME: better error handling/logging
+    
+    libxml_use_internal_errors(TRUE); // FIXME: better error handling/logging
   
     libxml_clear_errors();
     $xml = simplexml_load_string($result->return);
@@ -101,9 +101,8 @@ class Whatizit extends API {
     return $xml;
   }
 
-  // temporary - for debugging XML errors
-  function display_xml_error($error, $xml)
-  {
+  // for debugging XML errors
+  function display_xml_error($error, $xml) {
       $return  = $xml[$error->line - 1] . "\n";
       $return .= str_repeat('-', $error->column) . "^\n";
 
