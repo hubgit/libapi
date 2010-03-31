@@ -38,6 +38,7 @@ class API {
     }
 
     debug($url);
+    debug($http);
 
     //$http['header'] .= (empty($http['header']) ? '' : "\n") . 'Accept: ' . accept_header($format);
     
@@ -140,15 +141,15 @@ class API {
       case 'json':
         return json_decode($data);
       case 'xml':
-        return simplexml_load_string($data, NULL, LIBXML_NOCDATA);
+        return simplexml_load_string($data, NULL, LIBXML_NOCDATA | LIBXML_NONET);
       case 'dom':
-        return DOMDocument::loadXML($data);
+        return DOMDocument::loadXML($data, LIBXML_NOCDATA | LIBXML_NONET);
       case 'html':
-        return simplexml_import_dom(@DOMDocument::loadHTML($data));
+        return simplexml_import_dom(@DOMDocument::loadHTML($data, LIBXML_NOCDATA | LIBXML_NONET));
       case 'html-dom':
         return @DOMDocument::loadHTML($data);
       case 'rdf':
-        return simplexml_load_string($data, NULL, LIBXML_NOCDATA); // TODO: parse RDF
+        return simplexml_load_string($data, NULL, LIBXML_NOCDATA | LIBXML_NONET); // TODO: parse RDF
       case 'php':
         return unserialize($data);
       case 'raw':
