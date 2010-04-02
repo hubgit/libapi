@@ -32,7 +32,5 @@ if (empty(Config::$properties['LOG']))
 
 require LIBAPI_ROOT . '/API.php';
 require LIBAPI_ROOT . '/lib/O.php';
-//require LIBAPI_ROOT . '/lib/DB.php';
-//require LIBAPI_ROOT . '/lib/CSV.php';
 
 spl_autoload_register(array('API', '__autoload'));
