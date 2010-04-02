@@ -6,6 +6,7 @@ class PubMed extends API {
   public $count;
   public $webenv;
   public $querykey;
+ 
   
   function search($q, $params = array()){
     unset($this->count, $this->webenv, $this->querykey);
@@ -20,17 +21,16 @@ class PubMed extends API {
       'email' => Config::get('EUTILS_EMAIL'),
       );
 
-    $xml = $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi', array_merge($default, $params), 'xml');
+    $dom = $this->get_cached_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi', array_merge($default, $params), 'dom');
 
-    //debug($xml);
-    if (!is_object($xml))
+    if (!is_object($dom))
       return FALSE;
 
-    $this->count = (int) $xml->Count;
-    $this->webenv = (string) $xml->WebEnv;
-    $this->querykey = (int) $xml->QueryKey;
+    $this->count = (int) $dom->getElementsByTagName("Count")->item(0)->nodeValue;
+    $this->webenv = $dom->getElementsByTagName("WebEnv")->item(0)->nodeValue;
+    $this->querykey = (int) $dom->getElementsByTagName("QueryKey")->item(0)->nodeValue;
 
-    return $xml;
+    return $dom;
   }
 
   function fetch($ids = NULL, $params = array()){
@@ -49,7 +49,7 @@ class PubMed extends API {
       $default['WebEnv'] = $this->webenv;
     }
 
-    return $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi', array_merge($default, $params), 'xml');
+    return $this->get_cached_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi', array_merge($default, $params), 'dom');
   }
   
   function related($pmid, $params = array()){
@@ -61,19 +61,19 @@ class PubMed extends API {
        'dbfrom' => 'pubmed',
        'id' => implode(',', $pmid),
        'retmode' => 'xml',
-      'tool' => Config::get('EUTILS_TOOL'),
-      'email' => Config::get('EUTILS_EMAIL'),
+       'tool' => Config::get('EUTILS_TOOL'),
+       'email' => Config::get('EUTILS_EMAIL'),
      );
      
-    $xml = $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi', array_merge($default, $params), 'xml');
-    //debug($xml);
-    if (!is_object($xml))
+    $dom = $this->get_cached_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi', array_merge($default, $params), 'dom');
+    if (!is_object($dom))
       return FALSE;
       
+    $xpath = new DOMXPath($dom);      
       
-     $items = array();
-     foreach ($xml->LinkSet->LinkSetDb->Link as $link)
-       $items[] = (string) $link->Id;
+    $items = array();
+    foreach ($xpath->query("LinkSet/LinkSetDb/Link") as $link)
+      $items[] = $link->getElementsByTagName("Id")->item(0)->nodeValue;
     
     $this->count = count($items);
     return $items;
@@ -88,12 +88,14 @@ class PubMed extends API {
       'email' => Config::get('EUTILS_EMAIL'),
     );
     
-    $xml = $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi', $params, 'xml');
-    if (!is_object($xml))
+    $dom = $this->get_cached_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi', $params, 'dom');
+    if (!is_object($dom))
       return FALSE;
+      
+    $xpath = new DOMXPath($dom);  
     
-    $nodes = $xml->xpath("DocSum/Item[@Name='DOI']");
-    return empty($nodes) ? 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi?cmd=prlinks&dbfrom=pubmed&retmode=ref&id=' . $pmid : 'http://dx.doi.org/' . (string) $nodes[0];
+    $nodes = $xpath->query("DocSum/Item[@Name='DOI']");
+    return $node->length ? 'http://dx.doi.org/' . $nodes->item(0)->nodeValue : 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi?cmd=prlinks&dbfrom=pubmed&retmode=ref&id=' . $pmid;
   }
 
   function content($args){
@@ -140,23 +142,18 @@ class PubMed extends API {
           //'sort' => 'pub+date',
           );
      
-        $xml = $this->fetch(NULL, $params);
+        $dom = $this->fetch(NULL, $params);
     
-        if (!is_object($xml))
+        if (!is_object($dom))
           return FALSE;
-      
-        //debug($xml);
     
-        foreach ($xml->PubmedArticle as $article){           
-          $id = (int) $article->MedlineCitation->PMID;
-          $status = (string) $article->MedlineCitation['Status'];
-          //if ($status == 'In-Data-Review') // FIXME
-            //continue;
-          
-          if ($this->output_dir){
-            $out = sprintf('%s/%d.xml', $this->output_dir, $id); // id = integer
-            file_put_contents($out, $article->asXML());
-          }
+        foreach ($dom->getElementsByTagName('PubmedArticle') as $article){
+          $medline = $dom->getElementsByTagName('MedlineCitation')->item(0);          
+          $id = (int) $medline->getElementsByTagName('PMID')->item(0);
+          $status = $medline->getAttribute('Status');
+
+          if ($this->output_dir)
+            $article->save(sprintf('%s/%d.xml', $this->output_dir, $id));
           else
             $items[$id] = $article;
         }
@@ -177,7 +174,7 @@ class PubMed extends API {
   function metadata($args){
     extract($args);
     if (!$pmid && $doi){
-      $xml = $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi', array(
+      $dom = $this->get_cached_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi', array(
         'db' => 'pubmed',
         'retmode' => 'xml',
         'retmax' => 1,
@@ -185,46 +182,45 @@ class PubMed extends API {
         'term' => $doi . '[DOI]',
         'tool' => Config::get('EUTILS_TOOL'),
         'email' => Config::get('EUTILS_EMAIL'),
-        ), 'xml');
-
-      debug($xml);
-
-      if ((int) $xml->Count > 0)  
-        $pmid = (int) $xml->IdList->Id[0];
+        ), 'dom');
+      
+      
+      if ((int) $dom->getElementsByTagName('Count')->nodeValue > 0)  
+        $pmid = (int) $dom->getElementsByTagName('IdList')->item(0)->getElementsByTagName('Id')->item(0)->nodeValue;
     }
 
     if (!$pmid)
       return FALSE;
 
-    $xml = $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi', array(
+    $dom = $this->get_cached_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi', array(
       'db' => 'pubmed',
       'retmode' => 'xml',
       'id' => $pmid,
       'tool' => Config::get('EUTILS_TOOL'),
       'email' => Config::get('EUTILS_EMAIL'),
-      ), 'xml');
+      ), 'dom');
 
-    //debug($xml);
 
-    if (!is_object($xml))
+    if (!is_object($dom))
       return FALSE;
 
-    $article = $xml->PubmedArticle[0]->MedlineCitation->Article;
+    $article = $dom->getElementsByTagName('PubmedArticle')->item(0)->getElementsByTagName('MedlineCitation')->item(0)->getElementsByTagName('Article')->item(0);
+    $xpath = new DOMXpath($article);
 
-    $doi = (string) current($xml->xpath("//ArticleIdList/ArticleId[@IdType='doi']"));
-    $pmid = (int) current($xml->xpath("//ArticleIdList/ArticleId[@IdType='pubmed']"));
+    $doi = $xpath->query("//ArticleIdList/ArticleId[@IdType='doi']")->item(0)->nodeValue;
+    $pmid = (int) $xpath->query("//ArticleIdList/ArticleId[@IdType='pubmed']")->item(0)->nodeValue;
 
     $authors = array();
-    foreach ($article->AuthorList->Author as $author)
-      $authors[] = implode(' ', array((string) $author->Initials, (string) $author->LastName));
+    foreach ($xpath->query("AuthorList/Author") as $author)
+      $authors[] = implode(' ', array($author->getElementsByTagName('Initials')->item(0)->nodeValue, $author->getElementsByTagName('LastName')->item(0)->nodeValue));
 
     return array(
-      'pmid' => xpath_item($article, "//ArticleIdList/ArticleId[@IdType='pubmed']"),
-      'title' => xpath_item($article, "ArticleTitle"),
-      'journal' => xpath_item($article, "Journal/Title"),
-      'year' => xpath_item($article, "Journal/JournalIssue/PubDate/Year"),
-      'abstract' => xpath_item($article, "Abstract/AbstractText"),
-      'doi' => xpath_item($article, "//ArticleIdList/ArticleId[@IdType='doi']"),
+      'pmid' => $xpath->query("//ArticleIdList/ArticleId[@IdType='pubmed']")->item(0)->nodeValue,
+      'title' => $xpath->query("ArticleTitle")->item(0)->textContent,
+      'journal' => $xpath->query("Journal/Title")->item(0)->textContent,
+      'year' => $xpath->query("Journal/JournalIssue/PubDate/Year")->item(0)->nodeValue,
+      'abstract' => $xpath->query("Abstract/AbstractText")->item(0)->textContent,
+      'doi' => $xpath->query("//ArticleIdList/ArticleId[@IdType='doi']")->item(0)->nodeValue,
       'authors' => $authors,
       'raw' => $article,
       );

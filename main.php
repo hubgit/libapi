@@ -17,8 +17,9 @@ date_default_timezone_set(Config::get('TIMEZONE'));
 // start output buffering if not on command line
 if (php_sapi_name() != 'cli' && !empty($_SERVER['REMOTE_ADDR']))
   ob_start();
-  
-include 'FirePHPCore/FirePHP.class.php';
+
+if (Config::get('DEBUG') == 'FIRE')
+  require 'FirePHPCore/FirePHP.class.php';
 
 /* set up directories */
 Config::set('MISC_DIR', LIBAPI_ROOT . '/misc');
