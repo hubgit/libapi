@@ -2,32 +2,21 @@
 
 class iHOP extends API {
   public $doc = 'http://www.ihop-net.org/UniPub/iHOP/webservices/';
+  
+  public $entities = array();
 
-  function entities_from_pmid($args){
-    $this->validate($args, 'pmid'); extract($args);
-
-    $xml = $this->get_data('http://ubio.bioinfo.cnio.es/biotools/iHOP/cgi-bin/getPubMed', array('pmid' => $pmid), 'xml');
-  
-    //debug($xml);
-  
-    if (!is_object($xml))
-      return array();
-  
+  function entities_from_pmid($pmid){
+    $this->get_data('http://ubio.bioinfo.cnio.es/biotools/iHOP/cgi-bin/getPubMed', array('pmid' => $pmid), 'xml');  
     $xml->registerXPathNamespace('ihop', 'http://www.pdg.cnb.uam.es/UniPub/iHOP/xml');
   
-    $sentences = $xml->xpath("ihop:iHOPsentence");
+    $sentences = $this->data->xpath("ihop:iHOPsentence");
     if (empty($sentences))
       return FALSE; 
-  
-    $entities = array();
-    $references = array();
-  
+
     foreach ($xml->xpath("ihop:iHOPsentence/ihop:iHOPatom/ihop:MeSHLink") as $item)
-      $entities['mesh'][(string) $item['meshId']] = (string) $item['term'];
+      $this->entities['mesh'][(string) $item['meshId']] = (string) $item['term'];
   
     foreach ($xml->xpath("ihop:iHOPsentence/ihop:iHOPatom/ihop:chemicalCompound") as $item)
-      $entities['chemical'][(string) $item['CID']] = (string) $item['name'];
-  
-    return array($entities, $references);
+      $this->entities['chemical'][(string) $item['CID']] = (string) $item['name'];
   }
 }

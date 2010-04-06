@@ -3,10 +3,10 @@
 class Zemanta extends API {
   public $doc = 'http://developer.zemanta.com/';
   public $def = 'ZEMANTA';
+  
+  public $entities = array();
 
-  function entities($args, $query = NULL){
-    $this->validate($args, 'text'); extract($args);
-    
+  function extract_entities($text){    
     $params = array(
       'text' => $text,
       'format' => 'json',
@@ -16,24 +16,16 @@ class Zemanta extends API {
     );
   
     $http = array('method' => 'POST', 'content' => http_build_query($params), 'header' => 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8');
-    $json = $this->get_data('http://api.zemanta.com/services/rest/0.0/', array(), 'json', $http);
-  
-    debug($json);
-  
-    if (!is_object($json) || $json->status != 'ok')
-      return FALSE;
+    $this->get_data('http://api.zemanta.com/services/rest/0.0/', array(), 'json', $http);
     
-    $entities = array();
-    $references = array();
-
-    foreach ($json->markup->links as $item){
-      $entities[] = array(
+    if ($this->data->status != 'ok')
+      throw new DataException('Response status not ok');
+    
+    foreach ($this->data->markup->links as $item)
+      $this->entities[] = array(
         'title' => $item->anchor,
         'score' => $item->confidence,
         'raw' => $item->target,
         );
-    }
-  
-    return array($entities, $references);
   }
 }

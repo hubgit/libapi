@@ -7,6 +7,27 @@ class PubMed extends API {
   public $webenv;
   public $querykey;
   
+  function search_soap($q, $params = array()){
+    unset($this->count, $this->webenv, $this->querykey);
+    
+    $default = array(
+      'db' => 'pubmed',
+      'retmode' => 'xml',
+      'usehistory' => 'y',
+      'retmax' => 1,
+      'term' => $q,
+      'tool' => Config::get('EUTILS_TOOL'),
+      'email' => Config::get('EUTILS_EMAIL'),
+      );
+      
+    $client = new SoapClient('http://www.ncbi.nlm.nih.gov/entrez/eutils/soap/v2.0/eutils.wsdl'); 
+    $this->data = $client->run_eSearch(array_merge($default, $params));
+    
+    $this->count = $this->data->Count;
+    $this->webenv = $this->data->WebEnv;
+    $this->querykey = $this->data->QueryKey;
+  }
+  
   function search($q, $params = array()){
     unset($this->count, $this->webenv, $this->querykey);
 
@@ -20,17 +41,11 @@ class PubMed extends API {
       'email' => Config::get('EUTILS_EMAIL'),
       );
 
-    $xml = $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi', array_merge($default, $params), 'xml');
+    $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi', array_merge($default, $params), 'xml');
 
-    //debug($xml);
-    if (!is_object($xml))
-      return FALSE;
-
-    $this->count = (int) $xml->Count;
-    $this->webenv = (string) $xml->WebEnv;
-    $this->querykey = (int) $xml->QueryKey;
-
-    return $xml;
+    $this->count = (int) $this->data->Count;
+    $this->webenv = (string) $this->data->WebEnv;
+    $this->querykey = (int) $this->data->QueryKey;
   }
 
   function fetch($ids = NULL, $params = array()){
@@ -61,8 +76,8 @@ class PubMed extends API {
        'dbfrom' => 'pubmed',
        'id' => implode(',', $pmid),
        'retmode' => 'xml',
-      'tool' => Config::get('EUTILS_TOOL'),
-      'email' => Config::get('EUTILS_EMAIL'),
+       'tool' => Config::get('EUTILS_TOOL'),
+       'email' => Config::get('EUTILS_EMAIL'),
      );
      
     $xml = $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi', array_merge($default, $params), 'xml');

@@ -1,46 +1,37 @@
 <?php
 
 class BritishPathe extends API {
-  function content($args){
-    $this->validate($args, 'start', array('start' => 1)); extract($args);
-    
-    if ($output)
-      $this->output_dir = $this->get_output_dir($output);
-    
+  public $results = array();
+  
+  function content($start = 1){        
     $items = array();
     $attempts = array();
-  
-    global $http_status;
-  
+    
     $id = $start;
     do{      
-      $html = $this->get_data('http://www.britishpathe.com/record.php', array(
+      $this->get_data('http://www.britishpathe.com/record.php', array(
         'id' => $id,
         'view' => 'print',
       ), 'html', array('timeout' => 120));
     
-      if ($http_status == 403)
+      if ($this->http_status == 403)
         break;
-    
-      //debug($html);
-    
-      if ($http_status != 200){
+        
+      if ($this->http_status != 200){
         if (++$attempts[$id] > 2) // tried to get this item twice, so move on
           $id++;
         continue;
       }
     
-      if (empty($html->body))
+      if (empty($this->data->body))
         break;
-      
-      $flat = $html->asXML();
-      
+            
       if ($this->output_dir)
-        file_put_contents(sprintf('%s/%d.html', $this->output_dir, $id), $flat); 
+        file_put_contents(sprintf('%s/%d.html', $this->output_dir, $id), $this->data->asXML()); 
       else
-        $items[] = $item;
+        $this->results[] = $item;
     
-      if ($this->get_output_dir && preg_match('!http://www\.britishpathe\.com/media/Reference/00000000/\d+/(\d+)\.jpg!', $flat, $matches)){
+      if ($this->output_dir && preg_match('!http://www\.britishpathe\.com/media/Reference/00000000/\d+/(\d+)\.jpg!', $this->data->asXML(), $matches)){
         $media_id = $matches[1];
         $image_url = sprintf('http://www.britishpathe.com/media/Reference/00000000/%08d/%08d.jpg', floor($media_id/1000) * 1000, $media_id);
         $video_url = sprintf('rtmp://streaming.britishpathe.com/vod/_definst_/flv:FLASH/00000000/%08d/%08d', floor($media_id/1000) * 1000, $media_id);
@@ -56,7 +47,5 @@ class BritishPathe extends API {
 
       sleep(1);
     } while ($id++ < 100000);
-  
-    return $items;
   }
 }

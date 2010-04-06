@@ -4,26 +4,26 @@ class Scopus extends API {
   public $doc = 'http://searchapidocs.scopus.com';
   public $def = 'SCOPUS_KEY';
 
-  function citedby($args){
-    $this->validate($args, 'doi'); extract($args);
-    
-    $data = $this->get_data('http://www.scopus.com/scsearchapi/search.url', array(
+  public $results = array();
+  public $total;
+  
+  function citedby($doi){    
+    $this->get_data('http://www.scopus.com/scsearchapi/search.url', array(
       'search' => sprintf('DOI("%s")', $doi),
       'callback' => 'test',
       'devId'=> SCOPUS_KEY,
       //'fields' => 'title,doctype,citedbycount,inwardurl,sourcetitle,issn,vol,issue,page,pubdate,eid,scp,doi,firstAuth,authlist,affiliations,abstract',
     ), 'raw');
   
-    $json = json_decode(preg_replace('/^test\(/', '', preg_replace('/\)$/', '', $data)));
+    $this->data = json_decode(preg_replace('/^test\(/', '', preg_replace('/\)$/', '', $this->data)));
   
-    //debug($json);
-  
-    if (!is_object($json) || !isset($json->PartOK)) // PartOK because developer key won't match referer header
+    if (!isset($json->PartOK)) // PartOK because developer key won't match referer header
       return FALSE;
   
     $result = $json->PartOK->Results[0];
-  
-    return array($result->inwardurl, array('total' => (int) $result->citedbycount));
+    
+    $this->results[] = $result->inwardurl;
+    $this->total = $result->citedbycount;
   }
 }
 

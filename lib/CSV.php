@@ -1,11 +1,10 @@
 <?php
 
-define(CSV_SEPARATOR, "\t");
-
 // singleton
 class CSV {
   static $input;
   static $output;
+  
   static $separator = "\t";
   
   static function open($file, $state = 'r'){
@@ -31,20 +30,20 @@ class CSV {
       CSV::read_line();
   }
   
-  static function read_line($separator = CSV_SEPARATOR){
-    return fgetcsv(CSV::$input, NULL, $separator);
+  static function read_line(){
+    return fgetcsv(CSV::$input, NULL, CSV::$separator);
   }
   
-  static function read($separator = CSV_SEPARATOR){
+  static function read(){
     $items = array();
-    while (($data = CSV::read_line($separator)) !== FALSE)
+    while (($data = CSV::read_line()) !== FALSE)
       $items[] = $data;
     return $items;
   }
   
-  static function write($data, $separator = CSV_SEPARATOR){
-    debug($data);
+  static function write($data){
+    //debug($data);
     if (!empty($data))
-      fputcsv(CSV::$output, $data, $separator);
+      fputcsv(CSV::$output, $data, CSV::$separator);
   }
 }

@@ -4,9 +4,7 @@ class Canonical extends API {
   public $doc = 'http://googlewebmastercentral.blogspot.com/2009/02/specify-your-canonical.html';
   // TODO: cononical short URL
 
-  function metadata($args){  
-    $this->validate($args, 'url'); extract($args);
-
+  function metadata($url){
     $curl = curl_init($url);
 
     curl_setopt_array($curl, array(
@@ -24,11 +22,11 @@ class Canonical extends API {
     $mime = curl_getinfo($curl, CURLINFO_CONTENT_TYPE);
   
     if (strstr($mime, 'html')){
-      $dom = @DOMDocument::loadHTMLFile($url); // fetch the HTML
-      if (!is_object($dom))
+      $this->get_data($url, NULL, 'html-dom');
+      if (!is_object($this->data))
         return $url; // return error?
         
-      $xpath = new DOMXPath($dom);
+      $xpath = new DOMXPath($this->data);
       $links = $xpath->query("//head/link[@rel='canonical']/@href");
       if (!empty($links))
         $url = $links->item(0)->nodeValue;

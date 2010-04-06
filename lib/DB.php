@@ -38,7 +38,7 @@ class DB {
 
     $result = mysql_query($sql, $this->link);
     if (mysql_errno($this->link))
-      exit(sprintf("MySQL error %d:\n\t%s\n", mysql_errno($this->link), mysql_error($this->link)));
+      throw new Exception(sprintf("MySQL error %d:\n\t%s\n", mysql_errno($this->link), mysql_error($this->link)));
 
     return $result;
   }

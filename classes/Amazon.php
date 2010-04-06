@@ -4,6 +4,10 @@ class Amazon extends API {
   public $host = 'ecs.amazonaws.com';
   public $path = '/onca/xml';
   
+  public $results = array();
+  public $total;
+  public $pages;
+  
   function sign($params){
     uksort($params, 'strnatcmp');
     
@@ -24,12 +28,10 @@ class Amazon extends API {
       
     $params = array_merge($default, $params); 
     $params['Signature'] = $this->sign($params);      
-    $xml = $this->get_data('http://' . $this->host . $this->path, $params, 'xml');
+    $this->get_data('http://' . $this->host . $this->path, $params, 'xml');
     
-    if (!is_object($xml) || (string) $xml->Items->Request->IsValid != 'True')
+    if ((string) $this->data->Items->Request->IsValid != 'True')
       return FALSE;
-      
-    return $xml;
   }
   
   function search($params){
@@ -38,13 +40,13 @@ class Amazon extends API {
       'ResponseGroup' => 'ItemAttributes',
       );
       
-    $xml = $this->call(array_merge($default, $params));
+    $this->call(array_merge($default, $params));
       
-    $items = array();
-    if (!empty($xml->Items->Item))
-      foreach ($xml->Items->Item as $item)
-        $items[(string) $item->ASIN] = $item;
-      
-    return array($items, array('total' => (int) $xml->Items->TotalResults, 'pages' => (int) $xml->Items->TotalPages));
+    if (!empty($this->data->Items->Item))
+      foreach ($this->data->Items->Item as $item)
+        $this->results[(string) $item->ASIN] = $item;
+        
+    $this->total = (int) $this->data->Items->TotalResults;
+    $this->pages = (int) $this->data->Items->TotalPages;       
   } 
 }

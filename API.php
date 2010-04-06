@@ -4,6 +4,14 @@ class API {
   public $input_dir;
   public $output_dir;
   
+  public $output;
+  
+  public $http_response_header;
+  public $http_headers;
+  
+  public $response;
+  public $data;
+  
   function __construct(){
     if (isset($this->def) && !empty($this->def))
       if (is_array($this->def))
@@ -23,11 +31,28 @@ class API {
     $file = sprintf('%s/lib/%s.php', LIBAPI_ROOT, $class);
     if (file_exists($file))
       return require_once($file);
+      
+    $file = sprintf('%s/extlib/%s.php', LIBAPI_ROOT, $class);
+    if (file_exists($file))
+      return require_once($file);
   }
   
   function check_def($def){
     if (Config::get($def) === FALSE)
       throw new Exception('Requirement not defined: ' . $def);
+  }
+  
+  function soap($wsdl, $method, $params){
+    $url = $wsdl . '#' . $method . '?' . http_build_query($params);
+    
+    if (is_null($this->data = $this->cache_get($url))){
+      $client = new SOAPClient($wsdl);      
+      $this->data = $client->$method($params);
+      
+      if (!is_null($this->data))
+        $this->cache_set($url, $this->data);
+    }
+    return $this->data;
   }
   
   function get_data($url, $params = array(), $format = 'json', $http = array()){
@@ -39,24 +64,19 @@ class API {
 
     debug($url);
     debug($http);
-
-    //$http['header'] .= (empty($http['header']) ? '' : "\n") . 'Accept: ' . accept_header($format);
     
     if (isset($http['file']))
       $http['content'] = file_get_contents($http['file']);
-  
-    /*
-    if (!isset($http['proxy'])){
-      $http['proxy'] = 'tcp://proxy.local:80';
-      $http['request_fulluri'] = TRUE;
-    }
-    */
+      
+    // TODO: set HTTP Accept headers according to format?
+    // TODO: allow setting default HTTP headers in Config.php
       
     $context = empty($http) ? NULL : stream_context_create(array('http' => $http));
 
-    $data = file_get_contents($url, NULL, $context);
-    //debug($data);
+    $this->response = file_get_contents($url, NULL, $context);
+    
     debug($http_response_header);
+    debug($this->response);
     
     $this->http_response_header = $http_response_header;
     $this->parse_http_response_header();
@@ -65,7 +85,7 @@ class API {
     $this->http_status = $h[1];
     debug('Status: ' . $this->http_status);
 
-    return $this->format_data($format, $data);
+    $this->data = $this->format_data($format, $this->response);
   }
 
   function get_data_curl($url, $params = array(), $format = 'json', $http = array(), $curl_params = array()){  
@@ -121,40 +141,73 @@ class API {
       }
     }
 
-    $data = curl_exec($curl);  
+    $this->response = curl_exec($curl);  
     $this->http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     $this->http_info = array(curl_getinfo($curl));
 
+    debug($this->response);
     debug('Status: ' . $this->http_status);  
-    //debug($data);
     
     //file_put_contents(sys_get_temp_dir() . '/curl.xml', $data);
     
     curl_close($curl);
     if (isset($http['file']))
       fclose($http['file']);
-    return $this->format_data($format, $data); 
+    
+    try {
+      $this->data = $this->format_data($format, $this->response);
+      $this->validate_data($format);
+    } 
+    catch (DataException $e) { $e->errorMessage(); }
+    catch (Exception $e) { debug($e->getMessage()); }
   }
 
-  function format_data($format, $data){
+  function format_data($format){
     switch ($format){
       case 'json':
-        return json_decode($data);
+        return json_decode($this->response);
       case 'xml':
-        return simplexml_load_string($data, NULL, LIBXML_NOCDATA | LIBXML_NONET);
+        return simplexml_load_string($this->response, NULL, LIBXML_NOCDATA | LIBXML_NONET);
       case 'dom':
-        return DOMDocument::loadXML($data, LIBXML_NOCDATA | LIBXML_NONET);
+        $dom = DOMDocument::loadXML($this->response, LIBXML_NOCDATA | LIBXML_NONET);
+        $this->xpath = new DOMXPath($dom);
+        return $dom;
       case 'html':
-        return simplexml_import_dom(@DOMDocument::loadHTML($data, LIBXML_NOCDATA | LIBXML_NONET));
+        return simplexml_import_dom(@DOMDocument::loadHTML($this->response, LIBXML_NOCDATA | LIBXML_NONET));
       case 'html-dom':
-        return @DOMDocument::loadHTML($data);
+        return @DOMDocument::loadHTML($this->response);
       case 'rdf':
-        return simplexml_load_string($data, NULL, LIBXML_NOCDATA | LIBXML_NONET); // TODO: parse RDF
+        return DOMDocument::loadXML($this->response, NULL, LIBXML_NOCDATA | LIBXML_NONET); // TODO: parse RDF
       case 'php':
-        return unserialize($data);
+        return unserialize($this->response);
+      case 'xmlrpc':
+        return xmlrpc_decode($this->response);
       case 'raw':
       default:
-        return $data;
+        return $this->response;
+    }
+  }
+  
+  function validate_data($format){
+    switch ($format){
+      case 'xml':
+      case 'dom':
+      case 'html':
+      case 'html-dom':
+      case 'rdf':
+        if (!is_object($this->data))
+          throw new DataException('No XML object');
+      break;
+      
+      case 'json':
+        if (!(is_object($this->data) || is_array($this->data)))
+          throw new DataException('No JSON object or array');
+      break;
+
+      default:
+        if (is_null($this->data))
+          throw new DataException('Data is NULL');
+      break;
     }
   }
 
@@ -219,7 +272,7 @@ class API {
   }
 
   static function get_output_dir($dir = ''){
-    #$dir = preg_replace('/[^a-z0-9\(\)\_\-\+ ]/i', '_', $dir); // FIXME: proper sanitising
+    //$dir = preg_replace('/[^a-z0-9\(\)\_\-\+ ]/i', '_', $dir); // FIXME: proper sanitising
     
     if (strpos($dir, '/') !== 0) // path doesn't start with '/', so treat as relative to DATA_DIR
       $dir = Config::get('DATA_DIR') . '/' . $dir;
@@ -250,64 +303,19 @@ class API {
     return base64_decode(strtr($t, '-_', '+/'));
   }
   
-  static function o($input, $context = 'html'){
-    if (is_integer($input))
-      return print $input;
-       
-    switch ($context){
-      case 'raw':
-        print $input;
-      break;
-      
-      case 'html':
-      default:
-        print htmlspecialchars($input, NULL, 'UTF-8'); // FIXME: filter_var + FILTER_SANITIZE_SPECIAL_CHARS?
-      break;
-      
-      case 'attr':
-      case 'attribute':
-        print htmlspecialchars($input, ENT_QUOTES, 'UTF-8'); // FIXME: filter_var + FILTER_SANITIZE_SPECIAL_CHARS?
-      break;
-    }
-  }
-  
-  function xpath_item($xml, $query){
-    $nodes = $xml->xpath($query);
-    if (!empty($nodes))
-      return (string) $nodes[0];
-    return FALSE;
-  }
-
-  function xpath_items($xml, $query){
-    $nodes = $xml->xpath($query);
-    $items = array();
-    if (!empty($nodes))
-      foreach ($nodes as $node)
-        $items[] = (string) $node;
-    return $items; 
-  }
-  
   function opensearch($url, $params){
-    $xml = $this->get_data($url, $params, 'xml');
+    $this->get_data($url, $params, 'dom');
 
-    //debug($xml);
+    $this->xpath->registerNamespace('atom', 'http://www.w3.org/2005/Atom');
+    $this->xpath->registerNamespace('dc', 'http://purl.org/dc/elements/1.1/');
+    $this->xpath->registerNamespace('opensearch', 'http://a9.com/-/spec/opensearch/1.1/');
 
-    if (!is_object($xml))
-      return FALSE;
-
-    $xml->registerXPathNamespace('atom', 'http://www.w3.org/2005/Atom');
-    $xml->registerXPathNamespace('dc', 'http://purl.org/dc/elements/1.1/');
-    $xml->registerXPathNamespace('opensearch', 'http://a9.com/-/spec/opensearch/1.1/');
-
-    $meta = array(
-      'total' => (int) current($xml->xpath('opensearch:totalResults')),
-      'page' => (int) current($xml->xpath('opensearch:startIndex')),
-      'items' => (int) current($xml->xpath('opensearch:itemsPerPage')),
-      );
-
-    return array($xml, $meta);
+    $this->total = $this->xpath->query('opensearch:totalResults')->item(0)->textContent;
+    $this->page = $this->xpath->query('opensearch:startIndex')->item(0)->textContent;
+    $this->itemsPerPage = $this->xpath->query('opensearch:itemsPerPage')->item(0)->textContent;
   }
   
+  /*
   function validate(&$args, $required, $default = array()){
     if (is_string($required))
       $required = array($required);
@@ -325,4 +333,5 @@ class API {
     if (!isset($args[$key]))
       $args[$key] = $value;
   }
+  */
 }

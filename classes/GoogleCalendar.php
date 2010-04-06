@@ -1,10 +1,9 @@
 <?php
 
 class GoogleCalendar extends API {
+  public $results;
+  
   function content($id, $params = array()){
-    if (!$id)
-      return FALSE;
-      
     $now = time();
     $week = 3600 * 24 * 7;
   
@@ -25,26 +24,20 @@ class GoogleCalendar extends API {
         $params['start-' . $item] = date(DATE_ATOM, $params['start-' . $item]); // '20100101T12:00:00'
   
     $url = sprintf('http://www.google.com/calendar/feeds/%s/public/full', urlencode($id));
-    $dom = $this->get_data($url, $params, 'dom');
-    //$dom->formatOutput = TRUE;
-    //debug($dom->saveXML());
+    $this->get_data($url, $params, 'dom');
     
-    $xpath = new DOMXPath($dom);
-    $xpath->registerNamespace('atom', 'http://www.w3.org/2005/Atom');
-    $xpath->registerNamespace('gd', 'http://schemas.google.com/g/2005');
+    $this->xpath->registerNamespace('atom', 'http://www.w3.org/2005/Atom');
+    $this->xpath->registerNamespace('gd', 'http://schemas.google.com/g/2005');
 
-    $items = array();
-    foreach ($xpath->query('atom:entry') as $entry){
-      $when = $xpath->query('gd:when', $entry)->item(0);
+    foreach ($this->xpath->query('atom:entry') as $entry){
+      $when = $this->xpath->query('gd:when', $entry)->item(0);
     
-      $items[] = array(
-        'title' => $xpath->query("atom:title[@type='text']", $entry)->item(0)->textContent,
-        'content' => $xpath->query("atom:content[@type='text']", $entry)->item(0)->textContent,
+      $this->results[] = array(
+        'title' => $this->xpath->query("atom:title[@type='text']", $entry)->item(0)->textContent,
+        'content' => $this->xpath->query("atom:content[@type='text']", $entry)->item(0)->textContent,
         'start' => strtotime($when->getAttribute('startTime')),
         'end' => strtotime($when->getAttribute('endTime')),
       );
     }
-    
-    return $items;
   }
 }

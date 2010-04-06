@@ -4,10 +4,9 @@ class WorldCat extends API {
   public $doc = 'http://worldcat.org/devnet/wiki/BasicAPIDetails';
   public $def = 'WORLDCAT'; // https://worldcat.org/config/
   
+  public $results = array();
+  
   function search($q, $params = array()){
-    if (!$q)
-      return FALSE;
-      
     $default = array(
       'q' => $q,
       'wskey' => Config::get('WORLDCAT'),
@@ -18,25 +17,20 @@ class WorldCat extends API {
     );
 
     // http://worldcat.org/webservices/catalog/search/opensearch?q=[query]&format=[atom|rss]&start=[start position]&count=[maximum number of records to return]&cformat=[citation format]&wskey=[your key]     
-    list($xml, $meta) = $this->opensearch('http://www.worldcat.org/webservices/catalog/search/opensearch', array_merge($default, $params));
+    $this->opensearch('http://www.worldcat.org/webservices/catalog/search/opensearch', array_merge($default, $params));
     
-    $items = array();
-    foreach ($xml->xpath('atom:entry') as $entry){
-      $entry->registerXPathNamespace('atom', 'http://www.w3.org/2005/Atom');
-      
+    foreach ($this->xpath->query('atom:entry') as $entry){      
       $item = array(
-        'title' => (string) current($entry->xpath('atom:title')),
-        'author' => (string) current($entry->xpath('atom:author/atom:name')),
-        'link' => (string) current($entry->xpath('atom:link/@href')),
+        'title' => $this->xpath->query('atom:title', $entry)->item(0)->textContent,
+        'author' => $this->xpath->query('atom:author/atom:name', $entry)->item(0)->textContent,
+        'link' => $this->xpath->query('atom:link/@href', $entry)->item(0)->textContent,
         'identifier' => array(),
         );
         
-      foreach ($entry->xpath('dc:identifier') as $identifier)
-        $item['identifier'][] = (string) $identifier;
+      foreach ($this->xpath->query('dc:identifier', $entry) as $identifier)
+        $item['identifier'][] = $identifier->textContent;
         
-      $items[] = $item;
-    }
-    
-    return array($items, $meta);
+      $this->results[] = $item;
+    }  
   }  
 }

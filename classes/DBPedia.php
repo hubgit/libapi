@@ -3,23 +3,18 @@
 class DBPedia extends API {
   public $doc = 'http://lookup.dbpedia.org/api/search.asmx';
   
-  function search($args){
-    $this->validate($args, 'text', array('n' => 10, 'class' => 'x')); extract($args);      
-
+  public $result = array();
+  
+  function search($text, $n = 10, $class = 'x'){
     $params = array(
       'QueryString' => $text,
       'QueryClass' => $class,
       'MaxHits' => $n,
     );
     
-    $dom = $this->get_data('http://lookup.dbpedia.org/api/search.asmx/KeywordSearch', $params, 'dom'); 
-    //debug($dom->saveXML());   
+    $this->get_data('http://lookup.dbpedia.org/api/search.asmx/KeywordSearch', $params, 'dom'); 
     
-    if (!is_object($dom))
-      return FALSE;
-      
-    $xpath = new DOMXPath($dom);
-    $xpath->registerNamespace('db', 'http://lookup.dbpedia.org/');
-    return $xpath->query('db:Result');
+    $this->xpath->registerNamespace('db', 'http://lookup.dbpedia.org/');
+    $this->results = $this->xpath->query('db:Result');
   }  
 }

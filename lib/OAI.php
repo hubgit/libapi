@@ -4,52 +4,43 @@ class OAI extends API{
   public $server;
   public $maxRecords;
   
+  public $items = array();
+  
+  private $xpath;
+  
   function __construct($server){
     $this->server = $server;
     $this->api = new API;
   }
   
   function query($verb, $path, $params = array()){
-    $items = array();
-    $token = new stdClass;
     do {
-      if ($token->length){
-        foreach ($params as $key => $value)
-          if ($key != 'verb')
-            unset($params[$key]);
-        $params['resumptionToken'] = $token->item(0)->nodeValue;
-      }
-
-      $xpath = $this->get($verb, $params);
+      $this->get($verb, $params);
       
-      $nodes = $xpath->query('oai:' . $verb . $path);
-      if (!empty($nodes))
-        foreach ($nodes as $node)
-          $items[] = $node;
+      $nodes = $this->xpath->query('oai:' . $verb . $path);
+      foreach ($nodes as $node)
+        $this->items[] = $node;
       
-      if ($this->maxRecords && (count($items) >= $this->maxRecords)){
-        array_splice($items, $this->maxRecords);
+      if ($this->maxRecords && (count($this->items) >= $this->maxRecords)){
+        array_splice($this->items, $this->maxRecords);
         break;
       }
       
-      $token = $xpath->query(sprintf('oai:%s/oai:resumptionToken', $verb));
-    } while ($token->length);
-
-    return $items;
+      try {
+        $params = array('resumptionToken' = $this->xpath->query(sprintf('oai:%s/oai:resumptionToken', $verb))->item(0)->nodeValue);   
+      } catch (Exception $e) { break; }
+    } while (1);
   }
   
   function get($verb, $params = array()){
     $params['verb'] = $verb;
     
-    $dom = $this->get_data($this->server, $params, 'dom');
-    debug($dom->saveXML());
+    $this->get_data($this->server, $params, 'dom');
     
-    $xpath = new DOMXpath($dom);
-    $xpath->registerNamespace('oai', 'http://www.openarchives.org/OAI/2.0/');
-    $xpath->registerNamespace('id', 'http://www.openarchives.org/OAI/2.0/oai-identifier');
-    $xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3'); 
-
-    return $xpath;
+    $this->xpath = new DOMXpath($this->data);
+    $this->xpath->registerNamespace('oai', 'http://www.openarchives.org/OAI/2.0/');
+    $this->xpath->registerNamespace('id', 'http://www.openarchives.org/OAI/2.0/oai-identifier');
+    $this->xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3'); 
   }
   
   function getSampleIdentifier(){

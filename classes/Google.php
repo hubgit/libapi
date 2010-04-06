@@ -45,9 +45,6 @@ class Google extends API {
   
   // http://code.google.com/apis/ajaxsearch/documentation/#fonje
   function search($q, $params = array()){      
-    if (!$q)
-      return FALSE;
-
     $default = array(
       'q' => $q,
       'v' => '1.0',
@@ -56,13 +53,10 @@ class Google extends API {
     );
 
     $http = array('header' => 'Referer: ' . Config::get('GOOGLE_REFERER'));
-    $json = $this->get_data('http://ajax.googleapis.com/ajax/services/search/web', array_merge($default, $params), 'json', $http);
+    $this->get_data('http://ajax.googleapis.com/ajax/services/search/web', array_merge($default, $params), 'json', $http);
 
-    //debug($json);
-
-    if (!is_object($json))
-      return FALSE;
-
-    return array($json->responseData->results, array('total' => (int) $json->responseData->cursor->estimatedResultCount, 'cursor' => $json->responseData->cursor));
+    $this->results = $this->data->responseData->results;
+    $this->total = $this->data->responseData->cursor->estimatedResultCount;
+    $this->cursor = $this->data->responseData->cursor;
   }
 }

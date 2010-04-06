@@ -4,9 +4,6 @@ class Wikipedia extends API {
   public $doc = 'http://en.wikipedia.org/w/api.php';
   
   function search($q, $params = array()){
-    if (!$q)
-      return FALSE;
-
     $default = array(
       'action' => 'opensearch',
       'format' => 'json',  
@@ -15,26 +12,18 @@ class Wikipedia extends API {
       'search' => $q,
     );
 
-    $json = $this->get_data('http://en.wikipedia.org/w/api.php', array_merge($default, $params), 'json', $http);
-
-    //debug($json);
-
-    if (!is_array($json))
-      return FALSE;
-
-    return array($json[1]);
+    $this->get_data('http://en.wikipedia.org/w/api.php', array_merge($default, $params), 'json', $http);
+    $this->results = $this->data[1];
   }
   
 
-  function categories($args){
-    $this->validate($args, 'title'); extract($args);
-
+  function categories($title){
     if (is_array($title)) // fetch multiple titles at once
       $title = implode('|', $title);
       
     $http = array('header' => 'User-Agent: libapi'); 
 
-    $json = $this->get_data('http://en.wikipedia.org/w/api.php', array(
+    $this->get_data('http://en.wikipedia.org/w/api.php', array(
       'action' => 'query',
       'format' => 'json',
       'prop' => 'categories',
@@ -44,14 +33,9 @@ class Wikipedia extends API {
       'titles' => $title,
       ), 'json', $http);
 
-    //debug($json);
-
-    if (!is_object($json))
-      return FALSE;
-
     $categories = array();
 
-    foreach ($json->query->pages as $id => $data){
+    foreach ($this->data->query->pages as $id => $data){
       $item = array(
         'id' => $data->pageid,
         'title' => $data->title,
@@ -66,29 +50,25 @@ class Wikipedia extends API {
     return $categories;
   } 
 
-  function content($args){
-    $this->validate($args, 'title'); extract($args);
-
-    $json = $this->get_data('http://en.wikipedia.org/w/api.php', array(
+  function content($title){
+    $this->get_data('http://en.wikipedia.org/w/api.php', array(
       'action' => 'parse',
-      'format' => 'json',
       'redirects' => 'true',
       'prop' => 'text|categories|displaytitle',
       'page' => $title,
+      'format' => 'json',
     ));
 
-    //debug($json);
-
-    if (!is_object($json) || !$json->parse->text)
-      return array();
+    if (!$this->data->parse->text)
+      return FALSE;
 
     $categories = array();
-    foreach ($json->parse->categories as $category)
+    foreach ($this->data->parse->categories as $category)
       $categories[] = $category->{'*'};
 
     return array(
-      'title' => $json->parse->displaytitle, 
-      'html' => $json->parse->text->{'*'}, 
+      'title' => $this->data->parse->displaytitle, 
+      'html' => $this->data->parse->text->{'*'}, 
       'categories' => $categories
       );
   }  

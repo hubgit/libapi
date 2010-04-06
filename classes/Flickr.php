@@ -186,7 +186,7 @@ class Flickr extends API {
   function metadata($args){    
     $this->validate($args, 'id'); extract($args);
     
-    $data = $this->get_data('http://api.flickr.com/services/rest/', array(
+    $this->get_data('http://api.flickr.com/services/rest/', array(
       'api_key' => Config::get('FLICKR'),
       'format' => 'php_serial',
       'method' => 'flickr.photos.getInfo',
@@ -194,9 +194,8 @@ class Flickr extends API {
       'secret' => $q['secret'],
       ), 'php');
 
-    debug($data);
 
-    if (!is_array($data) || $data['stat'] != 'ok')
+    if ($this->data['stat'] != 'ok')
       return FALSE;
 
     return $data['photo'];
@@ -207,23 +206,15 @@ class Flickr extends API {
     if (is_string($params))
       $params = array('text' => $params);  
 
-    $data = $this->get_data('http://api.flickr.com/services/rest/', array_merge(array(
+    $this->get_data('http://api.flickr.com/services/rest/', array_merge(array(
       'api_key' => Config::get('FLICKR'),
       'format' => 'php_serial',
       'method' => 'flickr.photos.search',
       'per_page' => 20,
       ), $params), 'php');
 
-    //debug($data);
-
-    if (!is_array($data))
-      return FALSE;
-      
-    $meta = array(
-      'total' => (int) $data['photos']['total'],
-      'pages' => (int) $data['photos']['pages'],
-      );
-
-    return array($data['photos']['photo'], $meta);
+    $this->total = (int) $this->data['photos']['total'];
+    $this->pages = (int) $this->data['photos']['pages'];
+    $this->results = $data['photos']['photo'];
   }
 }

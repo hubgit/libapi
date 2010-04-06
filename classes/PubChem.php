@@ -4,6 +4,8 @@ class PubChem extends API{
   public $doc = 'http://pubchem.ncbi.nlm.nih.gov/';
   public $def = array('EUTILS_TOOL', 'EUTILS_EMAIL');
   
+  public $results = array();
+  
   function search($args, $params = array()){
     unset($this->count, $this->webenv, $this->querykey);
     
@@ -19,7 +21,6 @@ class PubChem extends API{
       return $this->pug($args['inchi']);
     else if ($args['name'])
       $args['term'] = sprintf('%s[IUPACName]', $args['name']); // TODO
-      
       
     if (!$term = $args['term'])
       return FALSE;
@@ -44,19 +45,17 @@ class PubChem extends API{
       );
       
     $params = array_merge($default, $params);
-    $xml = $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi', $params, 'xml');
+    $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi', $params, 'xml');
 
-    if (!is_object($xml))
-      exit('Error searching PubChem');
+    if (!is_object($this->data))
+      throw new Exception('Error searching PubChem');
 
-    $this->count = (int) $xml->Count;
+    $this->count = (int) $this->data->Count;
     
     if ($params['usehistory'] == 'y'){
-      $this->webenv = (string) $xml->WebEnv;
-      $this->querykey = (int) $xml->QueryKey;
+      $this->webenv = (string) $this->data->WebEnv;
+      $this->querykey = (int) $this->data->QueryKey;
     }
-    
-    return $xml;
   }
   
   function fetch($ids = NULL, $params = array()){
@@ -79,17 +78,13 @@ class PubChem extends API{
     else
       throw new Exception('No IDs or query history to fetch');
 
-    $xml = $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi', array_merge($default, $params), 'xml');
-    //debug($xml);
+    $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi', array_merge($default, $params), 'xml');
 
-    if (!is_object($xml) || isset($xml->ERROR))
+    if (isset($xml->ERROR))
       return FALSE;
 
-    $items = array();
     foreach ($xml->DocSum as $item)
-      $items[] = $item;
-
-    return $items; 
+      $this->results[] = $item;
   }
   
   function parse($doc){
@@ -140,11 +135,9 @@ class PubChem extends API{
     
     $xml = sprintf(file_get_contents(Config::get('MISC_DIR') . '/pubchem/pug-inchi.xml'), htmlspecialchars($inchi));
     $http = array('method'=> 'POST', 'content' => $xml, 'header' => 'Content-Type: text/xml; charset=UTF-8');
-    $result = $this->get_data('http://pubchem.ncbi.nlm.nih.gov/pug/pug.cgi', array(), 'dom', $http);
-    //debug($result->saveXML());
+    $this->get_data('http://pubchem.ncbi.nlm.nih.gov/pug/pug.cgi', array(), 'dom', $http);
     
-    $xpath = new DOMXPath($result);
-    $status = $xpath->query("//PCT-Status")->item(0)->getAttribute("value");
+    $status = $this->xpath->query("//PCT-Status")->item(0)->getAttribute('value');
     debug('Status: ' . $status);
     if ($status != 'queued')
       exit('Error searching PubChem');
@@ -155,10 +148,9 @@ class PubChem extends API{
     $i = 0;
     do { // try 10 times to connect, every 6 seconds
       $http = array('method'=> 'POST', 'content' => $xml, 'header' => 'Content-Type: text/xml; charset=UTF-8');
-      $result = $this->get_data('http://pubchem.ncbi.nlm.nih.gov/pug/pug.cgi', array(), 'dom', $http);
+      $this->get_data('http://pubchem.ncbi.nlm.nih.gov/pug/pug.cgi', array(), 'dom', $http);
 
-      $xpath = new DOMXPath($result);
-      $status = $xpath->query("//PCT-Status")->item(0)->getAttribute("value");
+      $status = $this->xpath->query("//PCT-Status")->item(0)->getAttribute("value");
       debug('Status: ' . $status);
       if ($status == 'success')
         break;
@@ -169,17 +161,17 @@ class PubChem extends API{
     if ($i == 10)
       exit('Timed out fetching results from PubChem');
    
-    debug($result->saveXML());
-    $nodes = $xpath->query("//PCT-Entrez");
+    debug($this->data->saveXML());
+    $nodes = $this->xpath->query("//PCT-Entrez");
     if (!$nodes->length)
       return FALSE;
       
     $node = $nodes->item(0);
     
-    $this->db = $xpath->query('PCT-Entrez_db', $node)->item(0)->nodeValue;
-    $this->count = $xpath->query('PCT-Entrez_count', $node)->item(0)->nodeValue;
-    $this->webenv = $xpath->query('PCT-Entrez_webenv', $node)->item(0)->nodeValue;
-    $this->querykey = $xpath->query('PCT-Entrez_query-key', $node)->item(0)->nodeValue;
+    $this->db = $this->xpath->query('PCT-Entrez_db', $node)->item(0)->nodeValue;
+    $this->count = $this->xpath->query('PCT-Entrez_count', $node)->item(0)->nodeValue;
+    $this->webenv = $this->xpath->query('PCT-Entrez_webenv', $node)->item(0)->nodeValue;
+    $this->querykey = $this->xpath->query('PCT-Entrez_query-key', $node)->item(0)->nodeValue;
     
     return simplexml_import_dom($node);
   }
@@ -197,7 +189,7 @@ class PubChem extends API{
     $file = sprintf('%s/%s.png', $this->output_dir, $this->base64_encode_file(http_build_query($params)));
     
     if (!file_exists($file))
-      file_put_contents($file, $this->get_image($params));
+      $this->get_image($params, $file);
     
     if (file_exists($file)){
       header('Content-Type: image/png');
@@ -209,7 +201,9 @@ class PubChem extends API{
     }
   }
   
-  function get_image($params){
-    return $this->get_data('http://pubchem.ncbi.nlm.nih.gov/image/imagefly.cgi', $params, 'raw');
+  function get_image($params, $file = NULL){
+    $this->get_data('http://pubchem.ncbi.nlm.nih.gov/image/imagefly.cgi', $params, 'raw');
+    if ($file)
+      file_put_contents($file, $this->data);
   }
 }

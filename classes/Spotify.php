@@ -4,81 +4,67 @@ class Spotify extends API {
   public $doc = 'http://developer.spotify.com/en/metadata-api/overview/';
   public $server = 'http://ws.spotify.com';
   
-  function get_cached_data($uri, $params = array()){
-    $cache_dir = $this->get_output_dir('spotify/cache');
-    $suffix = empty($params) ? NULL : '?' . http_build_query($params);
-    $cache_file = sprintf('%s/%s.xml', $cache_dir, md5($uri . $suffix));
+  public $cache = TRUE;
+  public $results = array();
+  
+  public $total;
 
-    if (file_exists($cache_file) && ((filemtime($cache_file) - time()) < 60*60*24)) // use the cache file if it's less than one day old
-      $xml = simplexml_load_file($cache_file);
-    else
-      if (is_object($xml = $this->get_data($uri, $params, 'xml')))
-        file_put_contents($cache_file, $xml->asXML());
-
-    debug($xml);
-    return $xml;
-  }
-
-  function track($q){
-    if (!$q)
+  function track($q, $full = TRUE){
+    $this->opensearch($this->server . '/search/1/track.xml', array('q' => $q));  
+    $this->xpath->registerNamespace('s', 'http://www.spotify.com/ns/music/1');
+    
+    $nodes = $this->xpath->query("s:track");
+    if (!$nodes->length)
       return FALSE;
-
-    $xml = $this->get_cached_data($this->server . '/search/1/track.xml', array('q' => $q));
-    if (!$items = $xml->track)
-      return FALSE;
-      
-    if (!is_array($items))
-      $items = array($items);
-      
-    $uri = (string) $items[0]['href'];
-    $item = $this->lookup(array('uri' => $uri));
-        
-    return array(
+    
+    $node = $nodes->item(0);
+    $uri = $node->getAttribute('href');
+    
+    if ($full){
+      $this->lookup($uri);
+      $node = $this->data;
+    }
+    
+    $this->results[] = array(
       'href' => $uri,
-      'artist' => (string) $item->artist->name,
-      'album' => (string) $item->album->name,
-      'track' => (string) $item->name,
-      'raw' => $item,
+      'artist' => $this->xpath->query("s:artist/s:name", $node)->item(0)->textContent,
+      'album' => $this->xpath->query("s:album/s:name", $node)->item(0)->textContent,
+      'track' => $this->xpath->query("s:name", $node)->item(0)->textContent,
       );
   }
 
-  function album($q, $raw = FALSE){
-    if (!$q)
+  function album($q, $full = TRUE){
+    $this->opensearch($this->server . '/search/1/album.xml', array('q' => $q));
+    $this->xpath->registerNamespace('s', 'http://www.spotify.com/ns/music/1');
+       
+    $nodes = $this->xpath->query("s:album");
+    if (!$nodes->length)
       return FALSE;
-
-    $xml = $this->get_cached_data($this->server . '/search/1/album.xml', array('q' => $q));
-    if ($raw)
-      return $xml;
-      
-    if (!$items = $xml->album)
-      return FALSE;
-
-    if (!is_array($items))
-      $items = array($items);
-
-    $uri = (string) $items[0]['href'];
-    $item = $this->lookup(array('uri' => $uri, 'extras' => 'track')); // 'trackdetail'
-    if (!is_object($item))
-      return FALSE;
-
+    
+    $node = $nodes->item(0);
+    $uri = $node->getAttribute('href');
+    
+    if ($full){
+      $this->lookup($uri, array('extras' => 'track')); // 'trackdetail'
+      $node = $this->data;
+    }
+          
     $tracks = array();
-    if (!empty($item->tracks->track))
-      foreach ($item->tracks->track as $track)
-        $tracks[] = (string) $track['href'];
+    foreach ($this->xpath->query("s:tracks/s:track", $node) as $item)
+      $tracks[] = $node->getAttribute('href');
 
-    return array(
+    $this->results[] = array(
       'href' => $uri,
-      'artist' => (string) $item->artist->name,
-      'album' => (string) $item->name,
-      'released' => (string) $item->released,
+      'artist' => $this->xpath->query("s:artist/s:name", $node)->item(0)->textContent,
+      'album' => $this->xpath->query("s:name", $node)->item(0)->textContent,
+      'released' => $this->xpath->query("s:released", $node)->item(0)->textContent,
       'tracks' => $tracks,
-      //'territories' => (string) $items[0]->availability->territories,
       );
   }
 
-  function lookup($args = array()){
-    $this->validate($args, 'uri'); extract($args);
-
-    return $this->get_cached_data($this->server . '/lookup/1/', array('uri' => $uri));
+  function lookup($uri, $params = array()){
+    $default = array('uri' => $uri);
+    $this->get_data($this->server . '/lookup/1/', array_merge($default, $params), 'dom');
+    $this->xpath->registerNamespace('s', 'http://www.spotify.com/ns/music/1');
   }
 }

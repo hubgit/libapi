@@ -4,12 +4,14 @@ class Yahoo extends API {
   public $doc = '';
   //public $def = 'YAHOO';
   
+  public $entities = array();
+  
   # http://developer.yahoo.com/yql/
   function yql($query, $args = array(), $format = 'json'){
     if (!empty($args))
       $query = vsprintf($query, is_array($args) ? $args : array($args)); // FIXME: htmlspecialchars($arg, ENT_QUOTES, 'UTF-8'))
 
-    return $this->get_data('http://query.yahooapis.com/v1/public/yql', array(
+    $this->get_data('http://query.yahooapis.com/v1/public/yql', array(
       'q' => $query,
       'format' => $format,
       ), $format);
@@ -17,20 +19,14 @@ class Yahoo extends API {
 
   // http://developer.yahoo.com/maps/rest/V1/geocode.html
   function geocode($text){
-    $dom = $this->get_data('http://local.yahooapis.com/MapsService/V1/geocode', array(
+    $this->get_data('http://local.yahooapis.com/MapsService/V1/geocode', array(
       'location' => $text,
       'appid' => Config::get('YAHOO'),
     ), 'dom');
-  
-    //debug($dom->saveXML());
-  
-    if (!is_object($dom))
-      return FALSE;
       
-    $xpath = new DOMXPath($dom);    
-    $xpath->registerNamespace('y', 'urn:yahoo:maps');
+    $this->xpath->registerNamespace('y', 'urn:yahoo:maps');
   
-    $results = $dom->getElementsByTagNameNS('urn:yahoo:maps', 'Result');
+    $results = $this->data->getElementsByTagNameNS('urn:yahoo:maps', 'Result');
     if (empty($results))
       return FALSE;
   
@@ -55,22 +51,15 @@ class Yahoo extends API {
   }
   
   // http://developer.yahoo.com/geo/geoplanet/
-  function geo_metadata($q){ 
-    $this->validate($args, 'woeid'); extract($args);
-
+  function geo_metadata($woeid){ 
     $suffix = isset($suffix) ? '/' . $suffix : '';
 
-    $json = $this->get_data('http://where.yahooapis.com/v1/place/' . $id . $suffix, array(
+    $this->get_data('http://where.yahooapis.com/v1/place/' . $id . $suffix, array(
       'appid' => Config::get('YAHOO'),
       'format' => 'json',
-      ));
+      ), 'json');
 
-    //debug($json);
-
-    if (!is_object($json))
-      return FALSE;
-
-    return isset($json->places) ? $json->places : $json->place;
+    return isset($this->data->places) ? $this->data->places : $this->data->place;
   }
   
   function search($q, $params = array()){
@@ -84,38 +73,26 @@ class Yahoo extends API {
       'appid' => Config::get('YAHOO'),
     );
 
-    $json = $this->get_data('http://boss.yahooapis.com/ysearch/web/v1/' . urlencode($q), array_merge($default, $params));
-
-    //debug($json);
-
-    if (!is_object($json))
-      return FALSE;
-
-    return array($json->ysearchresponse->resultset_web, array('total' => (int) $json->ysearchresponse->totalhits));
+    $json = $this->get_data('http://boss.yahooapis.com/ysearch/web/v1/' . urlencode($q), array_merge($default, $params), 'json');
+      
+    $this->results = $json->ysearchresponse->resultset_web;
+    $this->total = $json->ysearchresponse->totalhits;
   }
   
-  function pagedata($q, $params = array()){
-    if (!$q)
-      return FALSE;
-    
+  function pagedata($q, $params = array()){    
     $default = array(
       'format' => 'json',
       'appid' => Config::get('YAHOO'),
     );
     
     $json = $this->get_data('http://boss.yahooapis.com/ysearch/se_pagedata/v1/' . urlencode($q), array_merge($default, $params));
-    if (!is_object($json))
-      return FALSE;
-      
-    debug($json);
-
-    return array($json->ysearchresponse->resultset_se_pagedata, array('total' => (int) $json->ysearchresponse->totalhits));
+    
+    $this->results = $json->ysearchresponse->resultset_se_pagedata;
+    $this->total = $json->ysearchresponse->totalhits;
   }
   
   # http://developer.yahoo.com/geo/placemaker/
-  function placemaker($args){
-    $this->validate($args, 'text'); extract($args);
-
+  function placemaker($text){
     $params = array(
       'appid' => Config::get('YAHOO'),
       'documentType' => 'text/plain',
@@ -123,51 +100,32 @@ class Yahoo extends API {
     );
 
     $http = array('method' => 'POST', 'content' => http_build_query($params), 'header' => 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8');
-    $xml = $this->get_data('http://wherein.yahooapis.com/v1/document', array(), 'xml', $http);
+    $this->get_data('http://wherein.yahooapis.com/v1/document', array(), 'xml', $http);
 
-    //debug($xml);
+    $this->data->registerXPathNamespace('y', 'http://wherein.yahooapis.com/v1/schema');
 
-    if (!is_object($xml))
-      return array();
+    $nodes = $this->data->xpath("y:document/y:placeDetails/y:place");
+    foreach ($nodes as $item)
+      $this->entities[(int) $item->woeId] = array(
+        'type' => (string) $item->type,
+        'title' => (string) $item->name,
+        'lat' => (float) $item->centroid->latitude,
+        'lng' => (float) $item->centroid->longitude,
+        'score' => (int) $item->confidence,
+        );
 
-    $xml->registerXPathNamespace('y', 'http://wherein.yahooapis.com/v1/schema');
-
-    $entities = array();
-    $nodes = $xml->xpath("y:document/y:placeDetails/y:place");
-    if (!empty($nodes)){
-      foreach ($nodes as $item){
-        $id = (int) $item->woeId;
-        $type = (string) $item->type;
-        $entities[$type][$id] = array(
-          'title' => (string) $item->name,
-          'lat' => (float) $item->centroid->latitude,
-          'lng' => (float) $item->centroid->longitude,
-          'score' => (int) $item->confidence,
-          );
-      }
-    }
-
-    $references = array();
-    $nodes = $xml->xpath("y:document/y:referenceList/y:reference");
-    if (!empty($nodes)){
-      foreach ($nodes as $item){
-        $id = (string) $item->woeIds;
-        $references[] = array(
-          'start' => (int) $item->start, 
-          'end' => (int) $item->end, 
-          'text' => (string) $item->text, 
-          'entity' => $id,
-          'snippet' => snippet($text, (int) $item->start, (int) $item->end),
-          );
-      }
-    }
-
-    return array($entities, $references);
+    $nodes = $this->data->xpath("y:document/y:referenceList/y:reference");
+    foreach ($nodes as $item)
+      $this->references[] = array(
+        'start' => (int) $item->start, 
+        'end' => (int) $item->end, 
+        'text' => (string) $item->text, 
+        'entity' => (string) $item->woeIds,
+        'snippet' => snippet($text, (int) $item->start, (int) $item->end),
+        );
   }
   
-  function entities($args){
-    $this->validate($args, 'text'); extract($args);
-
+  function extract_entities($text){
     $params = array(
       'context' => $text,
       'query' => $context, // context for extraction (search terms)
@@ -176,14 +134,8 @@ class Yahoo extends API {
     );
 
     $http = array('method' => 'POST', 'content' => http_build_query($params), 'header' => 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8');
-    $json = $this->get_data('http://api.search.yahoo.com/ContentAnalysisService/V1/termExtraction', array(), 'json', $http);
+    $this->get_data('http://api.search.yahoo.com/ContentAnalysisService/V1/termExtraction', array(), 'json', $http);
 
-    //debug($json);
-
-    if (!is_object($json))
-      return array();
-
-    return array($json->ResultSet->Result);
-  }
-  
+    $this->entities = $this->data->ResultSet->Result;
+  } 
 }

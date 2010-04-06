@@ -12,12 +12,12 @@ class SpotifyTest extends PHPUnit_Framework_TestCase {
   }
   
   public function testAlbum(){
-    $result = $this->api->album($this->album_query);
-    $this->assertEquals('spotify:album:7fh6U3pYDTFZBjLaF2tyTp', $result['href']);
+    $this->api->album($this->album_query);
+    $this->assertEquals('spotify:album:7fh6U3pYDTFZBjLaF2tyTp', $this->api->results[0]['href']);
   }
 
   public function testTrack(){
-    $result = $this->api->track($this->track_query);
-    $this->assertEquals('spotify:track:2GHlIdLfbzWwsjzZPNfdrq', $result['href']);
+    $this->api->track($this->track_query);
+    $this->assertEquals('spotify:track:2GHlIdLfbzWwsjzZPNfdrq', $this->api->results[0]['href']);
   }
 }

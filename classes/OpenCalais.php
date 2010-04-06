@@ -4,15 +4,16 @@ class OpenCalais extends API {
    public $doc = 'http://opencalais.com/documentation/calais-web-service-api';
    public $def = 'OPENCALAIS';
    
+   public $annotations = array();
+   public $categories = array();
+   
    function query($params){
       $http = array('method'=> 'POST', 'content' => http_build_query($params), 'header' => 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8');
-      return $this->get_data('http://api.opencalais.com/enlighten/rest/', array(), 'json', $http);
+      $this->get_data('http://api.opencalais.com/enlighten/rest/', array(), 'json', $http);
    }
    
-   function entities($args){
-     $this->validate($args, 'text'); extract($args);
-
-     $json = $this->query(array(
+   function annotate($text){
+     $this->query(array(
         'content' => sprintf('<Document><Body>%s</Body></Document>', htmlspecialchars($text)),
         'licenseID' => Config::get('OPENCALAIS'),
         'paramsXML' => '<c:params xmlns:c="http://s.opencalais.com/1/pred/">
@@ -22,43 +23,28 @@ class OpenCalais extends API {
           </c:params>',
       ));
 
-    //debug($json);
-
-     if (!is_object($json))
-       return FALSE;
-
-     $entities = array();
-     $references = array();
      foreach ($json as $id => $data){
        if ($id == 'doc' || $data->{'_typeGroup'} != 'entities')
          continue;
 
-       $entities[$data->{'_type'}][$id] = array(
-         'title' => $data->name,
-         'score' => $data->relevance,
-         'raw' => $data,
-         );
-
        foreach ($data->instances as $instance){
-         $references[] = array(
+         $this->annotations[] = array(
            'start' => $instance->offset,
            'end' => $instance->offset + $instance->length,
            'text' => $instance->exact,
-           'name' => $data->name,
            'type' => $data->{'_type'},
-           'entity' => $id,
-           'snippet' => sprintf('%s{{{%s}}}%s', $instance->prefix, $instance->exact, $instance->suffix),
+           'data' => array(
+              'title' => $data->name,
+              'score' => $data->relevance,
+              'raw' => $data,
+              ),
            );
        }
      }
-
-     return array($entities, $references);
    }
    
-   function categories($args){
-     $this->validate($args, 'text'); extract($args);
-
-     $json = $this->query(array(
+   function categorise($text){
+     $this->query(array(
        'content' => sprintf('<Document><Body>%s</Body></Document>', htmlspecialchars($text)),
        'licenseID' => Config::get('OPENCALAIS'),
        'paramsXML' => '<c:params xmlns:c="http://s.opencalais.com/1/pred/">
@@ -67,28 +53,21 @@ class OpenCalais extends API {
          <c:externalMetadata/>
          </c:params>', // does this work with a default namespace yet?
      ));
-
-     //debug($json);
-
-     if (!is_object($json))
-       return false;
-
-     $categories = array();
-
-     foreach ($json as $id => $data){
+     
+     foreach ($this->data as $id => $data){
        if ($id == 'doc')
          continue;
 
-       switch($data->{'_typeGroup'}){
+       switch ($data->{'_typeGroup'}){
          case 'topics':
-           $categories[$data->category] = array(
+           $this->categories[$data->category] = array(
              'title' => $data->categoryName,
              'raw' => $data,
              );
          break;
 
          case 'socialTag':
-           $categories[$data->socialTag] = array(
+           $this->categories[$data->socialTag] = array(
              'title' => $data->name,
              'score' => $data->importance,
              'raw' => $data,
@@ -96,20 +75,27 @@ class OpenCalais extends API {
          break;
        }    
      }
-
-     return $categories;
    }
    
    function geocode($text){
-     list($entities, $references) = $this->entities(array('text' => $text));
-     debug($entities); //exit();
-     $types = array('Organization', 'Facility', 'City', 'ProvinceOrState', 'Country');
-     $address = array();
-     foreach ($types as $type)
-       if (isset($entities[$type]))
-         foreach ($entities[$type] as $entity)
-           $address[$type] = $entity['title'];
+     $this->annotate($text);
      
-     return array('address' => implode('; ', $address));     
+     $types = array('Organization', 'Facility', 'City', 'ProvinceOrState', 'Country');
+     
+     $address = array();
+     foreach ($this->annotations as $annotation)
+       if (in_array($annotation['type'], $types))
+           $address[$annotation['type']] = $annotation['data']['title'];
+     
+     return array('address' => implode('; ', $this->sort_by_array($address, $types)));     
+   }
+   
+   // FIXME: use array_multisort?
+   function sort_by_array($input, $order) {
+     $output = array();
+     foreach ($order as $key)
+       if (array_key_exists($key, $input))
+         $output[$key] = $input[$key];
+     return $output;
    }
 }

@@ -3,7 +3,7 @@
 function debug($arg){  
   switch (Config::get('DEBUG')){
     case 'PRINT':
-      return print(print_r($arg, TRUE) . "\n");
+      print(print_r($arg, TRUE) . "\n");
     break;
     
     case 'OFF':

@@ -20,9 +20,27 @@ class ChemSpiderTest extends PHPUnit_Framework_TestCase {
     $this->wikipedia = 'http://en.wikipedia.org/wiki/Ethanol';
   }
   
+  public function testSearch(){
+    $result = $this->api->search(array('query' => sprintf('"%s"', $this->compoundName)));
+    debug($result);
+    $this->assertEquals($this->csid, $result[0]);
+    $this->assertEquals(1, count($result));   
+  }
+  
   public function testGetStructureSynonyms(){
     $result = $this->api->GetStructureSynonyms(file_get_contents($this->molfile));
     $this->assertGreaterThan(20, count($result));
+  }
+  
+  public function testCSID2ExtRefs(){
+    $result = $this->api->CSID2ExtRefs(array('csid' => $this->csid, 'datasources' => array('Wikipedia')));
+    $this->assertEquals($this->csid, $result['CSID']);    
+    $this->assertEquals($this->wikipedia, $result['ext_url']);    
+  }
+  
+  public function testInChIKeyToCSID(){
+    $result = $this->api->InChIKeyToCSID($this->inchikey);
+    $this->assertEquals($this->csid, $result);
   }
   
   public function testGetImage(){      
@@ -35,24 +53,6 @@ class ChemSpiderTest extends PHPUnit_Framework_TestCase {
     
     $this->assertType(PHPUnit_Framework_Constraint_IsType::TYPE_STRING, $image);
     $this->assertGreaterThan(100, strlen($image));
-  }
-  
-  public function testSearch(){
-    $result = $this->api->search(array('query' => sprintf('"%s"', $this->compoundName)));
-    $this->assertEquals($this->csid, $result[0]);
-    $this->assertEquals(1, count($result));    
-  }
-  
-  public function testCSID2ExtRefs(){
-    $result = $this->api->CSID2ExtRefs(array('csid' => $this->csid, 'datasources' => array('Wikipedia')));
-    debug($result);
-    $this->assertEquals($this->csid, $result['CSID']);    
-    $this->assertEquals($this->wikipedia, $result['ext_url']);    
-  }
-  
-  public function testInChIKeyToCSID(){
-    $result = $this->api->InChIKeyToCSID($this->inchikey);
-    $this->assertEquals($this->csid, $result);
   }
   
   public function testInChIToCSID(){

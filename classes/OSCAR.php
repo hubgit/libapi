@@ -3,30 +3,22 @@
 class OSCAR extends API {
   public $url = 'http://127.0.0.1:8181';
   
-  function entities($args){
-    $this->validate($args, 'text'); extract($args);
-
+  public $annotations = array();
+  
+  function annotate($text){
     $params = array(
       'contents' => $text,
       'output' => 'markedup',
       );
     
     $http = array('method'=> 'POST', 'content' => http_build_query($params), 'header' => 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8');
-    $xml = $this->get_data($this->url . '/oscar/Process', array(), 'xml', $http);
-  
-    if (!is_object($xml))
-      return FALSE;
-      
-    //debug($xml);
-  
-    $dom = dom_import_simplexml($xml->BODY->DIV->P[0]);
-
-    $entities = array();
-    $references = array();
+    $this->get_data($this->url . '/oscar/Process', array(), 'dom', $http);
     
+    $root = $this->xpath->query('BODY/DIV/P[0]')->item(0);
+      
     // TODO: return standoff annotation?
     $position = 0;
-    foreach ($dom->childNodes as $node){
+    foreach ($root->childNodes as $node){
       switch($node->nodeType){
         case XML_TEXT_NODE:
           $position += mb_strlen($node->nodeValue);
@@ -35,34 +27,21 @@ class OSCAR extends API {
         case XML_ELEMENT_NODE:
           $start = $position;
           $end = $position += mb_strlen($node->nodeValue);
-        
-          $name = $node->getAttribute('surface');
-          $type = $node->getAttribute('type');
-
-          if (isset($entities[$type][$name]))
-            $entities[$type][$name]['count']++;
-          else
-            $entities[$type][$name] = array(
-              'count' => 1,
+          
+          $this->annotations[] = array(
+            'type' => $node->getAttribute('type'),
+            'start' => $start,
+            'end' => $end,
+            'text' => $node->firstChild->textContent,
+            'score' => $node->getAttribute('confidence'),
+            'data' => array(
               'inchi' => $node->getAttribute('InChI'),
               'smiles' => $node->getAttribute('SMILES'),
               'identifiers' => explode(' ', $node->getAttribute('ontIDs')),
-              );
-        
-          $references[] = array(
-            'type' => $type,
-            'uri' => $node->getAttribute('InChI'),
-            'text' => $node->firstChild->nodeValue,
-            'start' => $start,
-            'end' => $end,
-            'score' => $node->getAttribute('confidence'),
-            'snippet' => snippet($text, $start, $end),
+              )
             );
         break; 
       }
     }
-
-    //ksort($entities, SORT_STRING);
-    return array($entities, $references);
   }
 }

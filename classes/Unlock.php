@@ -3,10 +3,11 @@
 class Unlock extends API {
   public $doc = 'http://unlock.edina.ac.uk:81/service-results/';
   public $def = 'UNLOCK';
+  
+  public $entities = array();
+  public $references = array();
 
-  function entities($args){
-    $this->validate($args, 'text'); extract($args);
-        
+  function entities($text){        
     $boundary = '---------------------' . substr(md5(time()), 0, 10);
     
     $params = array(
@@ -38,14 +39,7 @@ class Unlock extends API {
   
     //debug($xml);
     
-    if (!is_object($xml))
-      return array();
-    
-    $entities = array();
-    $references = array();
-    
     // TODO: parse response
  
-    return array($entities, $references);
   }
 }

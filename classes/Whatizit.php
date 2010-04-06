@@ -3,14 +3,9 @@
 class Whatizit extends API {
   public $doc = 'http://www.ebi.ac.uk/webservices/whatizit/';
 
-  function entities($args){ 
-    $this->validate($args, 'text'); extract($args);
-    
+  function entities($text){     
     /* Proteins */
-   
     $xml = $this->soap('whatizitSwissprot', $text);
-    if (!is_object($xml))
-      return FALSE;
           
     $entities = array();
     $references = array();
@@ -69,9 +64,6 @@ class Whatizit extends API {
     if (!is_object($client))
       //$client = new SoapClient('http://www.ebi.ac.uk/webservices/whatizit/ws?wsdl');
       $client = new SoapClient(LIBAPI_ROOT . '/misc/whatizit/whatizit.wsdl');
-  
-    // hack for bug in XML response
-    //$text = str_replace('<', '|', $text);
   
     $params = array(
       'text' => $text,
