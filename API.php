@@ -53,6 +53,31 @@ class API {
         $this->cache_set($url, $this->data);
     }
     return $this->data;
+
+ function get_cached_data($url, $params = array(), $format = 'json', $http = array()){
+    $cache_dir = $this->get_output_dir('cache-uri');
+    
+    $suffix = empty($params) ? NULL : '?' . http_build_query($params);
+    $cache_file = sprintf('%s/%s', $cache_dir, md5($url . $suffix));
+
+    if (file_exists($cache_file) && ((time() - filemtime($cache_file)) < 60*60*24)) { // use the cache file if it's less than one day old
+      $data = unserialize(file_get_contents('compress.zlib://' . $cache_file));
+      $content = $data['content'];
+      
+      $this->http_response_header = $data['header'];
+      $this->parse_http_response_header();
+
+      $h = explode(' ', $this->http_response_header[0], 3);
+      $this->http_status = $h[1];
+    }
+    else {
+      $content = $this->get_data($url, $params, 'raw', $http);
+      if ($content !== FALSE)
+        file_put_contents('compress.zlib://' . $cache_file, serialize(array('header' => $this->http_response_header, 'content' => $content)));
+    }
+    
+    return $this->format_data($format, $content);
+>>>>>>> 3dc18335b4229711900ec1b6cc060f74cc20a9f6
   }
   
   function get_data($url, $params = array(), $format = 'json', $http = array()){
@@ -81,7 +106,7 @@ class API {
     $this->http_response_header = $http_response_header;
     $this->parse_http_response_header();
 
-    $h = explode(' ', $http_response_header[0], 3);
+    $h = explode(' ', $this->http_response_header[0], 3);
     $this->http_status = $h[1];
     debug('Status: ' . $this->http_status);
 
@@ -169,7 +194,7 @@ class API {
       case 'xml':
         return simplexml_load_string($this->response, NULL, LIBXML_NOCDATA | LIBXML_NONET);
       case 'dom':
-        $dom = DOMDocument::loadXML($this->response, LIBXML_NOCDATA | LIBXML_NONET);
+        $dom = DOMDocument::loadXML($this->response, LIBXML_DTDLOAD | LIBXML_DTDVALID | LIBXML_NOCDATA | LIBXML_NOENT | LIBXML_NONET);
         $this->xpath = new DOMXPath($dom);
         return $dom;
       case 'html':

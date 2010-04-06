@@ -1,0 +1,12 @@
+<!DOCTYPE catalog PUBLIC "-//OASIS//DTD Entity Resolution XML Catalog V1.0//EN" "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd">
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="public">
+
+  <group xml:base="./">
+    <public publicId="-//NLM//DTD eSearchResult, 11 May 2002//EN" uri="eSearch_020511.dtd"/>
+    <public publicId="-//NLM//DTD eLinkResult, 10 August 2009//EN" uri="eLink_090910.dtd"/>
+    <public publicId="-//NLM//DTD PubMedArticle, 1st January 2010//EN" uri="pubmed_100101.dtd"/>
+    <public publicId="-//NLM//DTD Medline, 01 Jan 2010//EN" uri="nlmmedlinecitationset_100101.dtd"/>
+  </group>
+
+</catalog>
+
