@@ -37,8 +37,8 @@ class ISI extends API {
     if (!empty($nodes))
       return FALSE;
     
-    $this->total = $this->xpath->query("isi:fn/isi:map/isi:map/isi:map[@name='WOS']/isi:val[@name='timesCited']")->item(0)->nodeValue,
-    $this->url = $this->xpath->query("isi:fn/isi:map/isi:map/isi:map[@name='WOS']/isi:val[@name='citingArticlesURL']")->item(0)->nodeValue,
+    $this->total = $this->xpath->query("isi:fn/isi:map/isi:map/isi:map[@name='WOS']/isi:val[@name='timesCited']")->item(0)->nodeValue;
+    $this->url = $this->xpath->query("isi:fn/isi:map/isi:map/isi:map[@name='WOS']/isi:val[@name='citingArticlesURL']")->item(0)->nodeValue;
   }
 }
 
