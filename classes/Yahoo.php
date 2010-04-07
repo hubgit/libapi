@@ -27,16 +27,18 @@ class Yahoo extends API {
       
     $this->xpath->registerNamespace('y', 'urn:yahoo:maps');
   
-    $results = $this->data->getElementsByTagNameNS('urn:yahoo:maps', 'Result');
+    $results = $this->xpath->query('y:Result');
     if (empty($results))
       return FALSE;
   
     $place = $results->item(0);
   
     $name = array();
-    foreach (array('Address', 'City', 'State', 'Zip', 'Country') as $field)
-      if (($node = $place->getElementsByTagNameNS('urn:yahoo:maps', $field)) && $node->item(0)->nodeValue)
-        $name[$field] = $node->item(0)->nodeValue;
+    foreach (array('Address', 'City', 'State', 'Zip', 'Country') as $field){
+      $nodes = $this->xpath->query('y:' . $field, $place);
+      if ($nodes->length)
+        $name[$field] = $nodes->item(0)->nodeValue;
+    }
   
     if (isset($name['State']) && isset($name['Zip'])){
       $name['State'] .= ' ' . $name['Zip'];
@@ -45,8 +47,8 @@ class Yahoo extends API {
     
     return array(
       'address' => implode(', ', $name), 
-      'lat' => (float) $place->getElementsByTagName('Latitude')->item(0)->nodeValue, 
-      'lng' => (float) $place->getElementsByTagName('Longitude')->item(0)->nodeValue,
+      'lat' => (float) $this->xpath->query('Latitude', $place)->item(0)->nodeValue, 
+      'lng' => (float) $this->xpath->query('Longitude', $place)->item(0)->nodeValue,
       'raw' => $place,
       );
   }

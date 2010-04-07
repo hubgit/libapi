@@ -45,9 +45,9 @@ class PubMed extends API {
 
     $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi', array_merge($default, $params), 'dom');
 
-    $this->count = $this->data->getElementsByTagName("Count")->item(0)->nodeValue;
-    $this->webenv = $this->data->getElementsByTagName("WebEnv")->item(0)->nodeValue;
-    $this->querykey = $this->data->getElementsByTagName("QueryKey")->item(0)->nodeValue;
+    $this->count = $this->xpath->query("Count")->item(0)->nodeValue;
+    $this->webenv = $this->xpath->query("WebEnv")->item(0)->nodeValue;
+    $this->querykey = $this->xpath->query("QueryKey")->item(0)->nodeValue;
   }
 
   function fetch($ids = NULL, $params = array()){
@@ -90,7 +90,7 @@ class PubMed extends API {
       
     $items = array();
     foreach ($xpath->query("LinkSet/LinkSetDb/Link") as $link)
-      $items[] = $link->getElementsByTagName("Id")->item(0)->nodeValue;
+      $items[] = $this->xpath->query("Id", $link)->item(0)->nodeValue;
     
     $this->count = count($items);
     return $items;
@@ -191,8 +191,8 @@ class PubMed extends API {
         ), 'dom');
       
       
-      if ((int) $dom->getElementsByTagName('Count')->nodeValue > 0)  
-        $pmid = (int) $dom->getElementsByTagName('IdList')->item(0)->getElementsByTagName('Id')->item(0)->nodeValue;
+      if ($this->xpath->query('Count')->nodeValue > 0)  
+        $pmid = $this->xpath->query('IdList/Id')->item(0)->nodeValue;
     }
 
     if (!$pmid)
@@ -210,23 +210,22 @@ class PubMed extends API {
     if (!is_object($dom))
       return FALSE;
 
-    $article = $dom->getElementsByTagName('PubmedArticle')->item(0)->getElementsByTagName('MedlineCitation')->item(0)->getElementsByTagName('Article')->item(0);
-    $xpath = new DOMXpath($article);
+    $article = $this->xpath->query('PubmedArticle/MedlineCitation/Article')->item(0);
 
-    $doi = $xpath->query("//ArticleIdList/ArticleId[@IdType='doi']")->item(0)->nodeValue;
-    $pmid = (int) $xpath->query("//ArticleIdList/ArticleId[@IdType='pubmed']")->item(0)->nodeValue;
+    $doi = $this->xpath->query("//ArticleIdList/ArticleId[@IdType='doi']", $article)->item(0)->nodeValue;
+    $pmid = $this->xpath->query("//ArticleIdList/ArticleId[@IdType='pubmed']", $article)->item(0)->nodeValue;
 
     $authors = array();
-    foreach ($xpath->query("AuthorList/Author") as $author)
-      $authors[] = implode(' ', array($author->getElementsByTagName('Initials')->item(0)->nodeValue, $author->getElementsByTagName('LastName')->item(0)->nodeValue));
+    foreach ($this->xpath->query("AuthorList/Author", $article) as $author)
+      $authors[] = implode(' ', array($this->xpath->query('Initials', $author)->item(0)->nodeValue, $this->xpath->query('LastName', $author)->item(0)->nodeValue));
 
     return array(
-      'pmid' => $xpath->query("//ArticleIdList/ArticleId[@IdType='pubmed']")->item(0)->nodeValue,
-      'title' => $xpath->query("ArticleTitle")->item(0)->textContent,
-      'journal' => $xpath->query("Journal/Title")->item(0)->textContent,
-      'year' => $xpath->query("Journal/JournalIssue/PubDate/Year")->item(0)->nodeValue,
-      'abstract' => $xpath->query("Abstract/AbstractText")->item(0)->textContent,
-      'doi' => $xpath->query("//ArticleIdList/ArticleId[@IdType='doi']")->item(0)->nodeValue,
+      'pmid' => $this->xpath->query("//ArticleIdList/ArticleId[@IdType='pubmed']", $article)->item(0)->nodeValue,
+      'title' => $this->xpath->query("ArticleTitle", $article)->item(0)->textContent,
+      'journal' => $this->xpath->query("Journal/Title", $article)->item(0)->textContent,
+      'year' => $this->xpath->query("Journal/JournalIssue/PubDate/Year", $article)->item(0)->nodeValue,
+      'abstract' => $this->xpath->query("Abstract/AbstractText", $article)->item(0)->textContent,
+      'doi' => $this->xpath->query("//ArticleIdList/ArticleId[@IdType='doi']", $article)->item(0)->nodeValue,
       'authors' => $authors,
       'raw' => $article,
       );

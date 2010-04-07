@@ -15,7 +15,7 @@ class PubMedTest extends PHPUnit_Framework_TestCase {
      $this->api->search($this->query);
     
     $this->assertEquals(1, $this->api->count);
-    $this->assertEquals($this->query, $this->api->data->getElementsByTagName("QueryTranslation")->item(0)->nodeValue);
+    $this->assertEquals($this->query, $this->api->xpath->query("QueryTranslation")->item(0)->nodeValue);
     $this->assertEquals($this->pmid, $this->api->xpath->query("IdList/Id")->item(0)->nodeValue);
   }
   
@@ -31,7 +31,7 @@ class PubMedTest extends PHPUnit_Framework_TestCase {
     $this->api->fetch($this->pmid);
     
     $this->assertType(PHPUnit_Framework_Constraint_IsType::TYPE_OBJECT, $this->api->data);
-    $this->assertType(PHPUnit_Framework_Constraint_IsType::TYPE_OBJECT, $this->api->data->getElementsByTagName('PubmedArticle'));
+    $this->assertType(PHPUnit_Framework_Constraint_IsType::TYPE_OBJECT, $this->api->xpath->query('PubmedArticle'));
     $this->assertEquals($this->pmid, $this->api->xpath->query("PubmedArticle/MedlineCitation/PMID")->item(0)->nodeValue);
   }
   
