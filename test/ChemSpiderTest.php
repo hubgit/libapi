@@ -20,6 +20,12 @@ class ChemSpiderTest extends PHPUnit_Framework_TestCase {
     $this->wikipedia = 'http://en.wikipedia.org/wiki/Ethanol';
   }
   
+  public function testInChIKeyToCSID(){
+    $result = $this->api->InChIKeyToCSID($this->inchikey);
+    debug($result);
+    $this->assertEquals($this->csid, $result);
+  }
+  
   public function testSearch(){
     $result = $this->api->search(sprintf('"%s"', $this->compoundName));
     $this->assertEquals($this->csid, $result);
@@ -35,12 +41,6 @@ class ChemSpiderTest extends PHPUnit_Framework_TestCase {
     $result = $this->api->CSID2ExtRefs($this->csid, array('wikipedia'));
     $this->assertEquals($this->csid, $result->CSID);    
     $this->assertEquals($this->wikipedia, $result->ext_url);    
-  }
-  
-  public function testInChIKeyToCSID(){
-    $result = $this->api->InChIKeyToCSID($this->inchikey);
-    debug($result);
-    $this->assertEquals($this->csid, $result);
   }
   
   public function testGetImage(){      

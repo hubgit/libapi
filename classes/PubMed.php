@@ -19,8 +19,7 @@ class PubMed extends API {
       'email' => Config::get('EUTILS_EMAIL'),
       );
       
-    $client = new SoapClient('http://www.ncbi.nlm.nih.gov/entrez/eutils/soap/v2.0/eutils.wsdl'); 
-    $this->data = $client->run_eSearch(array_merge($default, $params));
+    $this->soap('http://www.ncbi.nlm.nih.gov/entrez/eutils/soap/v2.0/eutils.wsdl', 'run_eSearch', array_merge($default, $params));
     
     $this->total = $this->data->Count;
     $this->webenv = $this->data->WebEnv;
@@ -143,7 +142,6 @@ class PubMed extends API {
         foreach ($this->xpath->query("PubmedArticle") as $article){
           $medline = $this->xpath->query("MedlineCitation", $article)->item(0);          
           $id = $this->xpath->query("PMID", $medline)->item(0)->nodeValue;
-          debug($id);
           $status = $medline->getAttribute('Status');
 
           if ($this->output_dir)
@@ -152,7 +150,7 @@ class PubMed extends API {
             $this->results[$id] = $article;
         }
   
-        sleep(1);
+        //sleep(1);
     
         $start += $n;
       } while ($start < min($max, $this->total));

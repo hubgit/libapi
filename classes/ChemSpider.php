@@ -4,47 +4,25 @@ class ChemSpider extends API {
     public $doc = 'http://www.chemspider.com/AboutServices.aspx';
     public $def = 'CHEMSPIDER';
     
-    function InChIKeyToCSID($inchikey){
-      $params = array('inchi_key' => $inchikey);
-      
-      $client = new SoapClient('http://www.chemspider.com/inchi.asmx?wsdl');
-      $this->response = $client->InChIKeyToCSID($params);
-      return $this->response->InChIKeyToCSIDResult;
-      
-      //$this->get_data('http://www.chemspider.com/InChI.asmx/InChIKeyToCSID', $params, 'xml');
-      //return (int) $this->data;
+    function InChIKeyToCSID($inchikey){      
+      $this->soap('http://www.chemspider.com/inchi.asmx?wsdl', 'InChIKeyToCSID', array('inchi_key' => $inchikey));
+      return $this->data->InChIKeyToCSIDResult;
     }
     
-    function InChIToCSID($inchi){
-      $params = array('inchi' => $inchi);
-      
-      $client = new SoapClient('http://www.chemspider.com/inchi.asmx?wsdl');
-      $this->response = $client->InChIToCSID($params);
-      return $this->response->InChIToCSIDResult;
-      
-      //$this->get_data('http://www.chemspider.com/InChI.asmx/InChIToCSID', $params, 'xml');
-      //return (int) $this->data;
+    function InChIToCSID($inchi){    
+      $this->soap('http://www.chemspider.com/inchi.asmx?wsdl', 'InChIToCSID', array('inchi' => $inchi));
+      return $this->data->InChIToCSIDResult;
     }
     
     function CSID2ExtRefs($csid, $datasources = array('wikipedia')){
       $params = array(
         'token' => Config::get('CHEMSPIDER'),
         'CSID' => $csid,
-        //'datasources' => implode(',', $datasources),
         'datasources' => $datasources,
         );
       
-      $client = new SoapClient('http://www.chemspider.com/Search.asmx?wsdl');
-      $this->response = $client->CSID2ExtRefs($params);
-      return $this->response->CSID2ExtRefsResult->ExtRef;
-        
-      //$this->get_data('http://www.chemspider.com/Search.asmx/CSID2ExtRefs', $params, 'xml');
-
-      //$items = array();
-      //foreach ($this->data->ExtRef as $key => $value)
-        //$items[$key] = (string) $value;
-      
-      //return $items;
+      $this->soap('http://www.chemspider.com/search.asmx?wsdl', 'CSID2ExtRefs', $params);     
+      return $this->data->CSID2ExtRefsResult->ExtRef;
     }
     
     function GetStructureSynonyms($mol){
@@ -53,17 +31,8 @@ class ChemSpider extends API {
         'mol' => $mol,
         );
         
-      $client = new SoapClient('http://www.chemspider.com/Synonyms.asmx?wsdl');
-      $this->response = $client->GetStructureSynonyms($params);
-      return $this->response->GetStructureSynonymsResult->string;
-        
-      //$this->get_data('http://www.chemspider.com/Synonyms.asmx/GetStructureSynonyms', $params, 'xml');
-      
-      //$items = array();
-      //foreach ($xml->string as $item)
-        //$items[] = (string) $item;
-        
-      //return $items;
+      $this->soap('http://www.chemspider.com/synonyms.asmx?wsdl', 'GetStructureSynonyms', $params);     
+      return $this->data->GetStructureSynonymsResult->string;
     }
     
     function search($term){        
@@ -71,20 +40,18 @@ class ChemSpider extends API {
         'token' => Config::get('CHEMSPIDER'),
         'query' => $term,
         );
-      
-      $client = new SoapClient('http://www.chemspider.com/Search.asmx?wsdl');
-      //debug($client->__getTypes());
-      $this->response = $client->SimpleSearch($params);
-      return $this->response->SimpleSearchResult->int;
-      
-      //$this->get_data('http://www.chemspider.com/Search.asmx/SimpleSearch', $params, 'xml');        
-        
-      //foreach ($this->data->int as $value)
-        //$this->results[] = (int) $value;
+
+      $this->soap('http://www.chemspider.com/search.asmx?wsdl', 'SimpleSearch', $params);     
+      return $this->data->SimpleSearchResult->int;
+    }
+    
+    // or http://www.chemspider.com/ImagesHandler.ashx?id={$csid}
+    function get_image($params){
+      $this->soap('http://www.chemspider.com/search.asmx?wsdl', 'GetCompoundThumbnail', $params);     
+      return $this->data->GetCompoundThumbnailResult;
     }
     
     function image($csid){
-      debug('CSID: ' . $csid);
       $params = array(
         'id' => $csid,
         'token' => Config::get('CHEMSPIDER'),
@@ -105,13 +72,5 @@ class ChemSpider extends API {
       else{
         // default image
       }
-    }
-
-    // http://www.chemspider.com/ImagesHandler.ashx?id={$csid}
-    function get_image($params){
-      $client = new SoapClient('http://www.chemspider.com/Search.asmx?wsdl');
-      $this->response = $client->GetCompoundThumbnail($params);
-      return $this->response->GetCompoundThumbnailResult;
-      //return base64_decode((string) $this->get_data('http://www.chemspider.com/Search.asmx/GetCompoundThumbnail', $params, 'xml'));
     }
 }

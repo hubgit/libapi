@@ -15,16 +15,13 @@ class BingMaps extends API {
   }
 
   function geocode($text){
-    $client = new SoapClient($this->server . '/geocodeservice/geocodeservice.svc?wsdl');
-    $request = $this->request($text, 1);
-    $result = $client->Geocode($request);
+    $params = $this->request($text, 1);
+    $this->soap($this->server . '/geocodeservice/geocodeservice.svc?wsdl', 'Geocode', $params);
    
-    debug($result); //exit();
-
-    if (!is_object($result) || $result->GeocodeResult->ResponseSummary->StatusCode != 'Success')
+    if ($this->data->GeocodeResult->ResponseSummary->StatusCode != 'Success')
       return FALSE;
 
-    $data = $result->GeocodeResult->Results->GeocodeResult;
+    $data = $this->data->GeocodeResult->Results->GeocodeResult;
     if (!is_array($data->Locations->GeocodeLocation))
       $data->Locations->GeocodeLocation = array($data->Locations->GeocodeLocation);
     $location = $data->Locations->GeocodeLocation[0];
@@ -37,19 +34,14 @@ class BingMaps extends API {
       );
   }
   
-  function search($args){
-    $this->validate($args, 'text', array('n' => 10)); extract($args);
+  function search($text, $n = 10){        
+    $params = $this->request($text, $n);
+    $this->soap($this->server . '/searchservice/searchservice.svc?wsdl', 'Search', $params);
         
-    $client = new SoapClient($this->server . '/searchservice/searchservice.svc?wsdl');
-    $request = $this->request($text, $n);
-    $result = $client->Search($request);
-        
-    if (!is_object($result) || $result->SearchResult->ResponseSummary->StatusCode != 'Success')
+    if (!$this->data->SearchResult->ResponseSummary->StatusCode != 'Success')
       return FALSE;
-      
-    //debug($result);
     
-    return array($result->SearchResult->ResultSets->SearchResultSet->Results->SearchResultBase, array('raw' => $result));
+    $this->results = $result->SearchResult->ResultSets->SearchResultSet->Results->SearchResultBase;
   }
   
   function parse($args){
@@ -58,9 +50,7 @@ class BingMaps extends API {
     
     if (!is_array($result->SearchResult->ResultSets->SearchResultSet))
       $result->SearchResult->ResultSets->SearchResultSet = array($result->SearchResult->ResultSets->SearchResultSet);
-      
-    //debug($result->SearchResult->ResultSets->SearchResultSet);
-    
+          
     $parsed = $result->SearchResult->ResultSets->SearchResultSet[0]->Parse;
     return array('keyword' => $parsed->Keyword, 'address' => $parsed->Address->FormattedAddress);
   }

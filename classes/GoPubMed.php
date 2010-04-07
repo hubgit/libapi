@@ -1,69 +1,40 @@
 <?php
 
 class GoPubMed extends API {
-  function entities($args){ 
-    $this->validate($args, 'text'); extract($args);
-    
-    static $client;
-    if (!is_object($client))
-      $client = new SoapClient('http://gopubmed4.biotec.tu-dresden.de/GoPubMedTermGenerationService/services/GoPubMedTermGeneration?wsdl', array('trace' => 1));
-  
+  function annotate($text){ 
     $params = array(
       'texts' => array($text),
       'applicationCode' => 'test123',
       );
     
-    //print_r($client->__getFunctions());
-    
-    try{
-      $result = $client->generateConceptsFromText($params);
-    } catch (SoapFault $exception) { print_r($exception); exit(); return FALSE; }
-
-    if (!is_array($result->return))
-      return FALSE;
-             
-    $entities = $result->return;
-    $references = array();
-  
-    return array($entities, $references);
+    $this->soap('http://gopubmed4.biotec.tu-dresden.de/GoPubMedTermGenerationService/services/GoPubMedTermGeneration?wsdl', 'generateConceptsFromText', $params);
+        
+    if (is_array($this->data->return))
+      $this->entities = $this->data->return;
   }
 
-  function entities_from_pmid($args){ 
-    $this->validate($args, 'pmid'); extract($args);
-     
-    $xml = $this->get_data('http://www.gopubmed.org/GoMeshPubMed/gomeshpubmed/Search/Xml', array('q' => $pmid . '[PMID]'), 'xml');
+  function entities_from_pmid($pmid){      
+    $this->get_data('http://www.gopubmed.org/GoMeshPubMed/gomeshpubmed/Search/Xml', array('q' => $pmid . '[PMID]'), 'dom');
+    $this->xpath->registerNamespace('ygg', 'http://yggdrasil.biotec.tu-dresden.de/3.0');  
   
-    //debug($xml);
-  
-    if (!is_object($xml))
-      return array();
-  
-    $xml->registerXPathNamespace('ygg', 'http://yggdrasil.biotec.tu-dresden.de/3.0');  
-  
-    $entities = array();
-    $references = array();
-  
-    foreach ($xml->xpath("ygg:Terms/ygg:Term") as $item){
-      $id = (string) $item['id'];
-      $type = (string) $item['localName'];
+    foreach ($this->xpath->query("ygg:Terms/ygg:Term") as $node){
+      $id = $node->getAttribute('id')->item(0)->nodeValue;
+      $type = $node->getAttribute('localName')->item(0)->nodeValue;
     
-      $entities[$type][$id] = (string) $item['name'];
+      $this->entities[$type][$id] = $node->getAttribute('name')->item(0)->nodeValue;
     }
   
-    foreach ($xml->xpath("ygg:Documents/ygg:Document/ygg:Annotations/ygg:DocAnnotations[@type='Wiki']/ygg:Wiki") as $item){
-      $entities['Wikipedia'][] = (string) $item['link'];
-    }
+    foreach ($this->xpath->query("ygg:Documents/ygg:Document/ygg:Annotations/ygg:DocAnnotations[@type='Wiki']/ygg:Wiki") as $node)
+      $this->entities['Wikipedia'][] = $node->getAttribute('link')->item(0)->nodeValue;
   
-    foreach ($xml->xpath("ygg:Documents/ygg:Document/ygg:Attr[@name='Proteins']/ygg:Value") as $item){
-      $id = (string) $item['term']; 
-      $data = (string) $item;
+    foreach ($this->xpath->query("ygg:Documents/ygg:Document/ygg:Attr[@name='Proteins']/ygg:Value") as $node){
+      $id = $node->getAttribute('term')->item(0)->nodeValue; 
+      $data = $node->textContent; 
       $parts = explode(';', $data);
-      $entities['Protein'][$id] = array(
+      $this->entities['Protein'][$id] = array(
         'uniprot' => $parts[0], //explode('|', $parts[0]),
         'title' => $parts[1],
         );
     }
-  
-    return array($entities, $references);
   }
 }

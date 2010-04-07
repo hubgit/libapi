@@ -3,6 +3,8 @@
 class API {
   public $input_dir;
   public $output_dir;
+  
+  public $output_file;
 
   public $output;
 
@@ -14,6 +16,9 @@ class API {
 
   public $cache = TRUE;
   public $cache_expire = 86400; //60*60*24; // use the cache file if it's less than one day old
+  
+  // SOAP client
+  public $client;
   
   // for general use and searches
   public $results = array();
@@ -59,16 +64,22 @@ class API {
 
   function soap($wsdl, $method, $params){
     ksort($params);
-    $key = $wsdl . '#' . $method . '?' . http_build_query($params);
+    $key = md5($wsdl . '#' . $method . '?' . http_build_query($params));
+    
+    if ($this->cache)
+     $this->data = $this->cache_get($key);
+     
+    if (is_null($this->data)){      
+      try{
+        $this->client = new SOAPClient($wsdl);
+        $this->data = $this->client->$method($params);
+      } catch (SoapFault $exception) { debug($exception); } // FIXME: proper error handling 
 
-    if (is_null($this->data = $this->cache_get($key))){
-      $client = new SOAPClient($wsdl);      
-      $this->data = $client->$method($params);
-
-      if (!is_null($this->data))
+      if ($this->cache && !is_null($this->data))
         $this->cache_set($key, $this->data);
     }
-    return $this->data;
+    else
+      debug("Cached:\n" . print_r(array($wsdl, $method, $params), TRUE));
   }
   
   function cache_set($key, $data = NULL){

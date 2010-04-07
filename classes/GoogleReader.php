@@ -3,12 +3,7 @@
 class GoogleReader extends Google {
   public $doc = 'http://reader.google.com/';
 
-  function content_by_feed($args){
-    $this->validate($args, 'feed'); extract($args);
-    
-    if ($output)
-      $this->output_dir = $this->get_output_dir($output);
-
+  function content_by_feed($feed){
     $this->authorise();
             
     $headers = array(
@@ -20,35 +15,29 @@ class GoogleReader extends Google {
   
     $n = 100;
   
-    $items = array();
     $continuation = '';
   
     do{
-      $xml = $this->get_data('http://www.google.com/reader/atom/feed/' . urlencode($query), array(
+      $this->get_data('http://www.google.com/reader/atom/feed/' . urlencode($query), array(
         'n' => $n,
         'c' => $continuation,
-        ), 'xml', $http);
-
-      if (!is_object($xml))
-        break;
+        ), 'dom', $http);
       
-      $xml->registerXPathNamespace('atom', 'http://www.w3.org/2005/Atom');
-      $xml->registerXPathNamespace('gr', 'http://www.google.com/schemas/reader/atom/');
+      $this->xpath->registerNamespace('atom', 'http://www.w3.org/2005/Atom');
+      $this->xpath->registerNamespace('gr', 'http://www.google.com/schemas/reader/atom/');
     
-      foreach ($xml->xpath('/atom:feed/atom:entry') as $item){
+      foreach ($this->xpath->query('/atom:feed/atom:entry') as $node){
         if ($this->output_dir)
-          file_put_contents(sprintf('%s/%s.xml', $this->output_dir, base64_encode($item->id)), $item->asXML()); 
+          $this->data->save(sprintf('%s/%s.xml', $this->output_dir, base64_encode($item->id)), $node); 
         else
-          $items[] = $item;
+          $this->results[] = $node;
       }
 
-      $continuation = (string) current($xml->xpath('/atom:feed/gr:continuation'));
+      $continuation = $this->xpath->query('/atom:feed/gr:continuation')->item(0)->textContent;
       debug('Continuation: ' . $continuation);
     
       //sleep(1);
 
     } while ($continuation);
-  
-    return $items;
   }
 }
