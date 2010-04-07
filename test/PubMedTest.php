@@ -12,23 +12,31 @@ class PubMedTest extends PHPUnit_Framework_TestCase {
   }
   
   public function testSearch(){
-    $result = $this->api->search($this->query);
+     $this->api->search($this->query);
     
     $this->assertEquals(1, $this->api->count);
-    $this->assertEquals($this->query, (string) $result->QueryTranslation);
-    $this->assertEquals($this->pmid, (int) $result->IdList->Id);
+    $this->assertEquals($this->query, $this->api->data->getElementsByTagName("QueryTranslation")->item(0)->nodeValue);
+    $this->assertEquals($this->pmid, $this->api->xpath->query("IdList/Id")->item(0)->nodeValue);
+  }
+  
+  public function testSearchSoap(){
+     $this->api->search_soap($this->query);
+    
+    $this->assertEquals(1, $this->api->count);
+    $this->assertEquals($this->query, $this->api->data->QueryTranslation);
+    $this->assertEquals($this->pmid, $this->api->data->IdList->Id);
   }
 
   public function testFetch(){
-    $result = $this->api->fetch($this->pmid);
+    $this->api->fetch($this->pmid);
     
-    $this->assertType(PHPUnit_Framework_Constraint_IsType::TYPE_OBJECT, $result);
-    $this->assertType(PHPUnit_Framework_Constraint_IsType::TYPE_OBJECT, $result->{'PubmedArticle'});
-    $this->assertEquals($this->pmid, (int) $result->PubmedArticle->MedlineCitation->PMID);
+    $this->assertType(PHPUnit_Framework_Constraint_IsType::TYPE_OBJECT, $this->api->data);
+    $this->assertType(PHPUnit_Framework_Constraint_IsType::TYPE_OBJECT, $this->api->data->getElementsByTagName('PubmedArticle'));
+    $this->assertEquals($this->pmid, $this->api->xpath->query("PubmedArticle/MedlineCitation/PMID")->item(0)->nodeValue);
   }
   
   public function testContent(){
-    $items = $this->api->content(array('term' => '"Nature"[TA]', 'max' => 5, 'from' => 1));
-    $this->assertEquals(10, count($items));
+    $this->api->content('"Nature"[TA]', 5, 1);
+    $this->assertEquals(10, count($this->api->results));
   }
 }

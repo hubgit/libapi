@@ -29,9 +29,9 @@ class Google extends API {
       'accountType' => $account_type);
       
     $http = array('method' => 'POST', 'content' => http_build_query($params));
-    $result = $this->get_data_curl('https://www.google.com/accounts/ClientLogin', array(), 'raw', $http);
+    $this->get_data_curl('https://www.google.com/accounts/ClientLogin', array(), 'raw', $http);
     
-    preg_match('/(?:^|\n)SID=(.+?)\n/s', $result, $matches);
+    preg_match('/(?:^|\n)SID=(.+?)\n/s', $this->data, $matches);
     $this->cookie = implode('; ', array(
       'SID=' . $matches[1],
       'domain=.google.com',
@@ -39,7 +39,7 @@ class Google extends API {
       'expires=160000000000',
       ));
       
-    preg_match('/\nAuth=(.+?)\n/s', $result, $matches);
+    preg_match('/\nAuth=(.+?)\n/s', $this->data, $matches);
     $this->token = $matches[1];
   }
   

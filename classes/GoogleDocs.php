@@ -14,19 +14,19 @@ class GoogleDocs extends Google {
     
     // CURLOPT_INFILE CURLOPT_INFILESIZE
     $http = array('method' => 'POST', 'content' => $data, 'header' => $this->headers($headers));
-    $result = $this->get_data_curl('https://docs.google.com/feeds/default/private/full', $params, 'xml', $http);
+    $this->get_data_curl('https://docs.google.com/feeds/default/private/full', $params, 'xml', $http);
     
-    if (!isset($result->id))
+    if (!isset($this->data->id))
       return false;
     
-    preg_match('!/feeds/id/(.+)!', (string) $result->id, $matches);
+    preg_match('!/feeds/id/(.+)!', (string) $this->data->id, $matches);
     return $matches[1]; // document id
   }
   
   function delete($id){
     $http = array('method' => 'DELETE', 'header' => $this->headers(array('If-Match' => '*')));
-    $result = $this->get_data_curl('https://docs.google.com/feeds/default/private/full/' . $id, array('delete' => 'true'), 'xml', $http);
-    return $result;
+    $this->get_data_curl('https://docs.google.com/feeds/default/private/full/' . $id, array('delete' => 'true'), 'xml', $http);
+    return $this->data;
   }
   
   /*

@@ -3,10 +3,8 @@
 class Alchemy extends API {
   public $doc = 'http://www.alchemyapi.com/api';
   public $def = 'ALCHEMY';
-  
-  public $entities;
-    
-  function extract_entities($text){      
+      
+  function annotate($text){      
     $params = array(
       'apikey' => Config::get('ALCHEMY'),
       'outputMode' => 'json',

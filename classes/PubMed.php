@@ -45,9 +45,9 @@ class PubMed extends API {
 
     $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi', array_merge($default, $params), 'dom');
 
-    $this->count = (int) $dom->getElementsByTagName("Count")->item(0)->nodeValue;
-    $this->webenv = $dom->getElementsByTagName("WebEnv")->item(0)->nodeValue;
-    $this->querykey = (int) $dom->getElementsByTagName("QueryKey")->item(0)->nodeValue;
+    $this->count = $this->data->getElementsByTagName("Count")->item(0)->nodeValue;
+    $this->webenv = $this->data->getElementsByTagName("WebEnv")->item(0)->nodeValue;
+    $this->querykey = $this->data->getElementsByTagName("QueryKey")->item(0)->nodeValue;
   }
 
   function fetch($ids = NULL, $params = array()){
@@ -66,7 +66,7 @@ class PubMed extends API {
       $default['WebEnv'] = $this->webenv;
     }
 
-    return $this->get_cached_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi', array_merge($default, $params), 'dom');
+    $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi', array_merge($default, $params), 'dom');
   }
   
   function related($pmid, $params = array()){
@@ -82,7 +82,7 @@ class PubMed extends API {
        'email' => Config::get('EUTILS_EMAIL'),
      );
      
-    $dom = $this->get_cached_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi', array_merge($default, $params), 'dom');
+    $dom = $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi', array_merge($default, $params), 'dom');
     if (!is_object($dom))
       return FALSE;
       
@@ -105,7 +105,7 @@ class PubMed extends API {
       'email' => Config::get('EUTILS_EMAIL'),
     );
     
-    $dom = $this->get_cached_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi', $params, 'dom');
+    $dom = $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi', $params, 'dom');
     if (!is_object($dom))
       return FALSE;
       
@@ -115,7 +115,7 @@ class PubMed extends API {
     return $node->length ? 'http://dx.doi.org/' . $nodes->item(0)->nodeValue : 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi?cmd=prlinks&dbfrom=pubmed&retmode=ref&id=' . $pmid;
   }
 
-  function content($args){
+  function content($term, $max, $from){
     /*
     $args = filter_var_array($args, array(
       'max' => array(
@@ -125,18 +125,12 @@ class PubMed extends API {
        ),
     ));
     */
-    
-    $this->validate($args, 'term', array('max' => 10000000)); extract($args); // TODO: is there a limit?
-    
-    if ($output)
-      $this->output_dir = $this->get_output_dir($output);
   
-    $from = $this->get_latest($args, 0); // 0 = 1970-01-01T00:00:00Z
+    $from = $this->get_latest(array('from' => $from), 0); // 0 = 1970-01-01T00:00:00Z
 
     $to = date('Y/m/d', time() + 60*60*24*365*10); // 10 years in future
 
     $n = min($max, 500);
-    $items = array();
     $count = 0;
 
     foreach (array('edat', 'mdat') as $datetype){ // edat = date added to entrez (pdat = published date), mdat = date modified
@@ -148,9 +142,7 @@ class PubMed extends API {
         'datetype' => $datetype,
         );
 
-      $result = $this->search($term, $params);
-      if (!$result)
-        return FALSE;
+      $this->search($term, $params);
 
       do {
         $params = array(
@@ -159,20 +151,18 @@ class PubMed extends API {
           //'sort' => 'pub+date',
           );
      
-        $dom = $this->fetch(NULL, $params);
+        $this->fetch(NULL, $params);
     
-        if (!is_object($dom))
-          return FALSE;
-    
-        foreach ($dom->getElementsByTagName('PubmedArticle') as $article){
-          $medline = $dom->getElementsByTagName('MedlineCitation')->item(0);          
-          $id = (int) $medline->getElementsByTagName('PMID')->item(0);
+        foreach ($this->xpath->query("PubmedArticle") as $article){
+          $medline = $this->xpath->query("MedlineCitation", $article)->item(0);          
+          $id = $this->xpath->query("PMID", $medline)->item(0)->nodeValue;
+          debug($id);
           $status = $medline->getAttribute('Status');
 
           if ($this->output_dir)
             $article->save(sprintf('%s/%d.xml', $this->output_dir, $id));
           else
-            $items[$id] = $article;
+            $this->results[$id] = $article;
         }
   
         sleep(1);
@@ -180,10 +170,9 @@ class PubMed extends API {
         $start += $n;
       } while ($start < $pubmed->count);
     }
-
-    file_put_contents($this->output_dir . '/latest', date('Y/m/d'));
-  
-    return $items;
+    
+    if ($this->output_dir)
+      file_put_contents($this->output_dir . '/latest', date('Y/m/d'));
   }
   
   // fetch an individual item from PubMed by DOI or PMID

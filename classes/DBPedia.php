@@ -2,9 +2,7 @@
 
 class DBPedia extends API {
   public $doc = 'http://lookup.dbpedia.org/api/search.asmx';
-  
-  public $result = array();
-  
+    
   function search($text, $n = 10, $class = 'x'){
     $params = array(
       'QueryString' => $text,

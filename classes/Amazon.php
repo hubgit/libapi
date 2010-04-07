@@ -4,10 +4,6 @@ class Amazon extends API {
   public $host = 'ecs.amazonaws.com';
   public $path = '/onca/xml';
   
-  public $results = array();
-  public $total;
-  public $pages;
-  
   function sign($params){
     uksort($params, 'strnatcmp');
     

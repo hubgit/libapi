@@ -38,20 +38,19 @@ class Flickr extends API {
     $params = array_merge($default, $params);
     $params['api_sig'] = $this->sign($params); 
     
-    $data = $this->get_data('http://www.flickr.com/services/rest/', $params, 'php');
-    debug($data);
+    $this->get_data('http://www.flickr.com/services/rest/', $params, 'php');
     
-    switch($data['stat']){
+    switch($this->data['stat']){
       case 'ok':
-        return $data;
       break;
       
       case 'fail':
-        debug($method . ' failed: ' . $data['message'] . "\n");
+        debug($method . ' failed: ' . $this->data['message'] . "\n");
+        return FALSE:
       break;
       
       default:
-        debug($data);
+        debug($this->data);
         exit();
       break;
     }   
@@ -73,14 +72,14 @@ class Flickr extends API {
     if (!file_exists($this->frobfile) || time() - filemtime($this->frobfile) > 3600)
     	$this->get_frob();
     	
-    $result = $this->api('flickr.auth.getToken', array('frob' => file_get_contents($this->frobfile)));
+    $this->api('flickr.auth.getToken', array('frob' => file_get_contents($this->frobfile)));
     
     unlink($this->frobfile); // frob is only valid for one request
     
-    if (!$result['auth']['token']['_content'] || $result['auth']['perms']['_content'] != 'read')
+    if (!$this->data['auth']['token']['_content'] || $this->data['auth']['perms']['_content'] != 'read')
       exit('Unable to get authentication token');
     
-    $this->token = $result['auth']['token']['_content'];
+    $this->token = $this->data['auth']['token']['_content'];
     
     file_put_contents($this->tokenfile, $this->token) or die('Could not write to ' . $this->tokenfile);
   }
@@ -90,11 +89,11 @@ class Flickr extends API {
     if (file_exists($this->frobfile))
       unlink($this->frobfile);
     
-    $result = $this->api('flickr.auth.getFrob');
-    if (!$result['frob']['_content'])
+    $this->api('flickr.auth.getFrob');
+    if (!$this->data['frob']['_content'])
       exit('No frob returned');
       
-    $frob = $result['frob']['_content'];
+    $frob = $this->data['frob']['_content'];
     file_put_contents($this->frobfile, $frob);
     
     $params = array(
@@ -112,19 +111,12 @@ class Flickr extends API {
   }
 
   // http://idgettr.com/
-  function content_by_user($args){
-    $this->validate($args, 'user'); extract($args);
-    
-    if ($output)
-      $this->output_dir = $this->get_output_dir($output);
-    
-    $from = $this->get_latest($args, 0); // 0 = 1970-01-01T00:00:00Z
+  function content_by_user($user, $from = 0){    
+    $from = $this->get_latest($from); // 0 = 1970-01-01T00:00:00Z
    
     $n = 500;
     $page = 1; // pages start at 1
-  
-    $items = array();
-   
+     
     do {
       $params = array(
         'user_id' => $user,
@@ -134,14 +126,12 @@ class Flickr extends API {
         'sort' => 'date-posted-asc',
         );
 
-     $data = $this->api('flickr.photos.search', $params);
-  
-     //debug($data);
-    
-      if (!is_array($data) || $data['stat'] != 'ok' || empty($data['photos']['photo']))
+     $this->api('flickr.photos.search', $params);
+      
+      if ($this->data['stat'] != 'ok' || empty($this->data['photos']['photo']))
         return FALSE;
     
-      foreach ($data['photos']['photo'] as $photo){
+      foreach ($this->data['photos']['photo'] as $photo){
         if ($this->output_dir){
           $id = preg_replace('/\D/', '', $photo['id']); // can't use %d as too big, so sanitise by removing non-numeric characters
         
@@ -172,33 +162,29 @@ class Flickr extends API {
           file_put_contents($this->output_dir . '/latest', $item['dateuploaded']);
         }
         else
-          $items[] = $photo;
+          $this->results[] = $photo;
       }
   
       sleep(1);
     
-    } while ($page++ < $data['photos']['pages']);
-
-    return $items;
+    } while ($page++ < $this->data['photos']['pages']);
   }
   
   // http://www.flickr.com/services/api/flickr.photos.getInfo.htm
-  function metadata($args){    
-    $this->validate($args, 'id'); extract($args);
-    
+  function metadata($id, $secret = NULL){        
     $this->get_data('http://api.flickr.com/services/rest/', array(
       'api_key' => Config::get('FLICKR'),
       'format' => 'php_serial',
       'method' => 'flickr.photos.getInfo',
       'photo_id' => $id,
-      'secret' => $q['secret'],
+      'secret' => $secret,
       ), 'php');
 
 
     if ($this->data['stat'] != 'ok')
       return FALSE;
 
-    return $data['photo'];
+    return $this->data['photo'];
   }
   
   // http://www.flickr.com/services/api/flickr.photos.search.html
@@ -215,6 +201,6 @@ class Flickr extends API {
 
     $this->total = (int) $this->data['photos']['total'];
     $this->pages = (int) $this->data['photos']['pages'];
-    $this->results = $data['photos']['photo'];
+    $this->results = $this->data['photos']['photo'];
   }
 }

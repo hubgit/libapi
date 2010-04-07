@@ -11,7 +11,7 @@ class AlchemyTest extends PHPUnit_Framework_TestCase {
   }
   
   public function testEntities(){
-    $this->api->extract_entities(array('text' => $this->text));
+    $this->api->extract_entities($this->text);
     $this->assertEquals(29, count($this->api->entities));
   }
 }

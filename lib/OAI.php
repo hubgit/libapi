@@ -4,10 +4,8 @@ class OAI extends API{
   public $server;
   public $maxRecords;
   
-  public $items = array();
-  
-  private $xpath;
-  
+  public $results = array();
+    
   function __construct($server){
     $this->server = $server;
     $this->api = new API;
@@ -19,17 +17,15 @@ class OAI extends API{
       
       $nodes = $this->xpath->query('oai:' . $verb . $path);
       foreach ($nodes as $node)
-        $this->items[] = $node;
+        $this->results[] = $node;
       
-      if ($this->maxRecords && (count($this->items) >= $this->maxRecords)){
-        array_splice($this->items, $this->maxRecords);
+      if ($this->maxRecords && (count($this->results) >= $this->maxRecords)){
+        array_splice($this->results, $this->maxRecords);
         break;
       }
       
-      try {
-        $params = array('resumptionToken' = $this->xpath->query(sprintf('oai:%s/oai:resumptionToken', $verb))->item(0)->nodeValue);   
-      } catch (Exception $e) { break; }
-    } while (1);
+      $params = array('resumptionToken' => $this->xpath->query(sprintf('oai:%s/oai:resumptionToken', $verb))->item(0)->nodeValue);   
+    } while ($params['resumptionToken']);
   }
   
   function get($verb, $params = array()){
@@ -37,35 +33,34 @@ class OAI extends API{
     
     $this->get_data($this->server, $params, 'dom');
     
-    $this->xpath = new DOMXpath($this->data);
     $this->xpath->registerNamespace('oai', 'http://www.openarchives.org/OAI/2.0/');
     $this->xpath->registerNamespace('id', 'http://www.openarchives.org/OAI/2.0/oai-identifier');
     $this->xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3'); 
   }
   
   function getSampleIdentifier(){
-    $nodes = $this->query('Identify', '/oai:description/id:oai-identifier/id:sampleIdentifier');
-    $this->sampleIdentifier = $nodes[0]->nodeValue;
+    $this->query('Identify', '/oai:description/id:oai-identifier/id:sampleIdentifier');
+    $this->sampleIdentifier = $this->results[0]->nodeValue;
   }
   
   function listSets(){
-    $nodes = $this->query('ListSets', '/oai:set/oai:setSpec');
+    $this->query('ListSets', '/oai:set/oai:setSpec');
     $this->sets = array();
-    foreach ($nodes as $node)
+    foreach ($this->results as $node)
       $this->sets[] = $node->nodeValue; 
   }
   
   function listMetadataFormats(){
-    $nodes = $this->query('ListMetadataFormats', '/oai:metadataFormat/oai:metadataPrefix', array('identifier' => $this->sampleIdentifier));
+    $this->query('ListMetadataFormats', '/oai:metadataFormat/oai:metadataPrefix', array('identifier' => $this->sampleIdentifier));
     $this->formats = array();
-    foreach ($nodes as $node)
+    foreach ($this->results as $node)
       $this->formats[] = $node->nodeValue;  
   }
   
   function listRecords($set, $format = 'oai_dc'){
-    $nodes = $this->query('ListRecords', '/oai:record/oai:metadata', array('set' => $set, 'metadataPrefix' => $format));
+    $this->query('ListRecords', '/oai:record/oai:metadata', array('set' => $set, 'metadataPrefix' => $format));
     $this->records = array();
-    foreach ($nodes as $node)
+    foreach ($this->results as $node)
       $this->records[] = $node; 
   } 
 }

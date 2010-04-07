@@ -6,6 +6,8 @@ class PubChem extends API{
   
   public $results = array();
   
+  public $cache = TRUE;
+  
   function search($args, $params = array()){
     unset($this->count, $this->webenv, $this->querykey);
     
@@ -83,7 +85,7 @@ class PubChem extends API{
     if (isset($xml->ERROR))
       return FALSE;
 
-    foreach ($xml->DocSum as $item)
+    foreach ($this->data->DocSum as $item)
       $this->results[] = $item;
   }
   

@@ -8,22 +8,21 @@ class TwitterTest extends PHPUnit_Framework_TestCase {
   public function setUp(){
     $auth = explode(':', Config::get('TWITTER_AUTH'));
     $this->username = $auth[0];
-    
-    $this->api = new Twitter();
+    $this->api = new Twitter;
   }
   
   public function testFollowers(){
-    $items = $this->api->followers(array('user' => $this->username));
-    $this->assertGreaterThan(10, count($items));
+    $this->api->followers($this->username);
+    $this->assertGreaterThan(10, count($this->api->results));
   }
   
   public function testFriends(){
-    $items = $this->api->friends(array('user' => $this->username));
-    $this->assertGreaterThan(10, count($items));
+    $this->api->friends($this->username);
+    $this->assertGreaterThan(10, count($this->api->results));
   }
 
   public function testContentByUser(){
-    $items = $this->api->content_by_user(array('user' => $this->username, 'max' => 5, 'from' => 1));
-    $this->assertEquals(5, count($items));
+    $this->api->content_by_user($this->username, 5, 1);
+    $this->assertGreaterThan(1, count($this->api->results));
   }
 }

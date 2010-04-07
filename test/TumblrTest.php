@@ -10,12 +10,7 @@ class TumblrTest extends PHPUnit_Framework_TestCase {
   }
 
   public function testContent(){
-    $items = $this->api->content_by_user(array(
-      'user' => 'test', 
-      'max' => 100,
-      //'output' => 'tumblr/test', 
-      ));
-    $this->assertEquals(100, count($items));
-    return $items;
+    $this->api->content_by_user('test', 100);
+    $this->assertEquals(100, count($this->api->results));
   }
 }

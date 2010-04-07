@@ -10,17 +10,17 @@ class LastFMTest extends PHPUnit_Framework_TestCase {
   }
   
   public function testAlbumSearch(){
-    $result = $this->api->call('album.search', array('album' => 'Nirvana - Nevermind'));
-    $this->assertEquals(5, count($result->results->albummatches->album));
+    $this->api->call('album.search', array('album' => 'Nirvana - Nevermind'));
+    $this->assertEquals(5, count($this->api->data->results->albummatches->album));
   }
   
   public function testMetroHypeTracks(){
-    $result = $this->api->call('geo.getmetrohypetrackchart', array('country' => 'united kingdom', 'metro' => 'london'));
-    $this->assertEquals(50, count($result->toptracks->track));
+    $this->api->call('geo.getmetrohypetrackchart', array('country' => 'united kingdom', 'metro' => 'london'));
+    $this->assertEquals(50, count($this->api->data->toptracks->track));
   }
   
   public function testMetroHypeArtists(){
-    $result = $this->api->call('geo.getmetrohypeartistchart', array('country' => 'united kingdom', 'metro' => 'london'));
-    $this->assertEquals(50, count($result->topartists->artist));
+    $this->api->call('geo.getmetrohypeartistchart', array('country' => 'united kingdom', 'metro' => 'london'));
+    $this->assertEquals(50, count($this->api->data->topartists->artist));
   }
 }

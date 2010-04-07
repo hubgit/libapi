@@ -5,6 +5,7 @@ class TFL extends API {
   //public $def = '';
   
   public $results = array();
+  public $cache = TRUE;
 
   function stop($stopcode){
     $this->get_data('http://www.tfl.gov.uk/tfl/gettingaround/maps/buses/tfl-bus-map/dotnet/StopInfo.aspx', array('stopcode' => $stopcode));  

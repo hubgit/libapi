@@ -6,7 +6,7 @@ Config::set('DEBUG', 'PRINT');
 
 class PubChemTest extends PHPUnit_Framework_TestCase {  
   public function setUp(){
-    $this->api = new PubChem();
+    $this->api = new PubChem;
     
     // http://www.nature.com/nchem/journal/v1/n7/compound/nchem.351_comp1-epi.html
     $this->sid = 85098522;
@@ -19,19 +19,19 @@ class PubChemTest extends PHPUnit_Framework_TestCase {
   public function testSearchCID(){
     $this->api->search(array('cid' => $this->cid));
     $this->assertEquals(1, $this->api->count);
-    $result = $this->api->fetch();
+    $this->api->fetch();
   }
     
   public function testSearchInChIKey(){
-    $result = $this->api->search(array('inchikey' => $this->inchikey));
+    $this->api->search(array('inchikey' => $this->inchikey));
     $this->assertEquals(1, $this->api->count);
-    $result = $this->api->fetch();
+    $this->api->fetch();
   }
     
   public function testSearchSID(){
     $result = $this->api->search(array('sid' => $this->sid, 'db' => 'pcsubstance'));
     $this->assertEquals(1, $this->api->count);
-    $result = $this->api->fetch();
+    $this->api->fetch();
   }
   
   public function testSearchTerm(){
@@ -39,8 +39,8 @@ class PubChemTest extends PHPUnit_Framework_TestCase {
     $this->assertGreaterThan(90000, $this->api->count);
     $this->assertLessThan(250000, $this->api->count);
     
-    $result = $this->api->fetch(NULL, array('retmax' => 3));
-    return $result[0];
+    $this->api->fetch(NULL, array('retmax' => 3));
+    return $this->api->results[0];
   }
   
   /*
@@ -51,13 +51,13 @@ class PubChemTest extends PHPUnit_Framework_TestCase {
   }
   
   public function testGetImage(){      
-    $image = $this->api->get_image(array(
+    $this->api->get_image(array(
       'width' => 100,
       'height' => 100,
       'cid' => $this->cid,
       ));
     
-    $this->assertType(PHPUnit_Framework_Constraint_IsType::TYPE_STRING, $image);
+    $this->assertType(PHPUnit_Framework_Constraint_IsType::TYPE_STRING, $this->api->data);
   }
   
   /*

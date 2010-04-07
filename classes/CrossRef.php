@@ -3,44 +3,34 @@
 class CrossRef extends API {
   public $doc = 'http://www.crossref.org/citedby.html';
   public $def = 'CROSSREF_AUTH'; // http://www.crossref.org/requestaccount/
-
-  function citedby($args){
-    $this->validate($args, 'doi'); extract($args);
-
+  
+  function citedby($doi){
     $auth = explode(':', Config::get('CROSSREF_AUTH'));
 
-    $xml = $this->get_data('http://doi.crossref.org/servlet/getForwardLinks', array(
+    $this->get_data('http://doi.crossref.org/servlet/getForwardLinks', array(
       'doi' => $doi,
       'usr' => $auth[0],
       'pwd' => $auth[1],
       ), 'xml');
 
-    //debug($xml);
-
-    if (!is_object($xml))
-      return FALSE;
-
     $items = array();
-    foreach ($xml->query_result->body->forward_link as $item){  
+    foreach ($this->data->query_result->body->forward_link as $item){  
       $cite = $item->journal_cite;
-      //debug($item);  
-      $items[(string) $cite->doi] = array(
+      $this->results[(string) $cite->doi] = array(
         'citedby' => (int) $cite['fl_count'],
         'year' => (int) $cite->year,
         'xml' => $cite,
         );
     }
     
-    return array($items, array('total' => count($items)));
+    $this->total = count($this->results);
   }
 
-  function metadata($args){
-    if (!$args['uri'] && $args['doi'])
-      $args['uri'] = 'doi:' . $args['doi'];
-    
-    extract($args);
-    
-    if (!$uri && !$openurl)
+  function metadata($uri, $data = array()){
+    if (!$uri && $data['doi'])
+      $uri = 'http://dx.doi.org/' . $data['doi'];
+        
+    if (!$uri && !$data['openurl'])
       trigger_error('URI or OpenURL needed', E_USER_ERROR);
 
     $params = array(
@@ -55,13 +45,12 @@ class CrossRef extends API {
     if ($openurl)
       $params = array_merge($params, $openurl);
 
-    $xml = $this->get_data('http://www.crossref.org/openurl/', $params, 'xml');
-    debug($xml);
+    $this->get_data('http://www.crossref.org/openurl/', $params, 'xml');
 
-    if (!is_object($xml) || empty($xml->doi_record))
+    if (empty($this->data->doi_record))
       return FALSE;
 
-    $record = $xml->doi_record->crossref->journal;
+    $record = $this->data->doi_record->crossref->journal;
 
     $article = $record->journal_article;
     $journal = $record->journal_metadata;

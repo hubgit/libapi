@@ -4,8 +4,6 @@ class Bloglines extends API {
   public $doc = 'http://www.bloglines.com/search';
   public $def = array('BLOGLINES', 'BLOGLINES_USER'); 
   
-  public $results = array();
-  public $total;
   public $link;
   
   function citedby($uri, $data = array()){

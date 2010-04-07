@@ -6,7 +6,7 @@ Config::set('DEBUG', 'PRINT');
 
 class GoogleDocsTest extends PHPUnit_Framework_TestCase {  
   public function setUp(){
-    $this->api = new GoogleDocs();
+    $this->api = new GoogleDocs;
   }
   
   public function testAuthorise(){

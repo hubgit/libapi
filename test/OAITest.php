@@ -11,7 +11,6 @@ class OAITest extends PHPUnit_Framework_TestCase {
   
   public function testGetSampleIdentifier(){
     $this->api->getSampleIdentifier();
-    debug($result);
     $this->assertEquals('oai:nature.com:10.1038/187504a0', $this->api->sampleIdentifier);
   }
   
@@ -29,7 +28,7 @@ class OAITest extends PHPUnit_Framework_TestCase {
   
   public function testListRecords(){
     $this->api->maxRecords = 10;
-    $result = $this->api->listRecords('news', 'oai_dc');
+    $this->api->listRecords('news', 'oai_dc');
     debug($this->api->records);
     $this->assertEquals(10, count($this->api->records));
   }

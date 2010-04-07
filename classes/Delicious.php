@@ -4,8 +4,6 @@ class Delicious extends API {
   public $doc = 'http://delicious.com/';
   //public $def = 'DELICIOUS_AUTH'; // only for fetching a user's content
   
-  public $results = array();
-  public $total;
   public $tags = array();
    
   function get_bookmarks_for_item($uri){

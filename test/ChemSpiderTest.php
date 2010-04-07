@@ -21,9 +21,8 @@ class ChemSpiderTest extends PHPUnit_Framework_TestCase {
   }
   
   public function testSearch(){
-    $result = $this->api->search(array('query' => sprintf('"%s"', $this->compoundName)));
-    debug($result);
-    $this->assertEquals($this->csid, $result[0]);
+    $result = $this->api->search(sprintf('"%s"', $this->compoundName));
+    $this->assertEquals($this->csid, $result);
     $this->assertEquals(1, count($result));   
   }
   
@@ -33,13 +32,14 @@ class ChemSpiderTest extends PHPUnit_Framework_TestCase {
   }
   
   public function testCSID2ExtRefs(){
-    $result = $this->api->CSID2ExtRefs(array('csid' => $this->csid, 'datasources' => array('Wikipedia')));
-    $this->assertEquals($this->csid, $result['CSID']);    
-    $this->assertEquals($this->wikipedia, $result['ext_url']);    
+    $result = $this->api->CSID2ExtRefs($this->csid, array('wikipedia'));
+    $this->assertEquals($this->csid, $result->CSID);    
+    $this->assertEquals($this->wikipedia, $result->ext_url);    
   }
   
   public function testInChIKeyToCSID(){
     $result = $this->api->InChIKeyToCSID($this->inchikey);
+    debug($result);
     $this->assertEquals($this->csid, $result);
   }
   

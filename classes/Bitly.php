@@ -3,9 +3,7 @@
 class Bitly extends API {
   public $doc = 'http://bit.ly/apidocs';
   public $def = array('BITLY_USER', 'BITLY');
-  
-  public $results;
-  
+    
   function metadata($uri, $data = array()){
     if (!$uri && $data['doi'])
       $uri = 'http://dx.doi.org/' . $data['doi'];

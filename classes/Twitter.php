@@ -3,30 +3,32 @@
 class Twitter extends API {
   public $doc = 'http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-statuses-user_timeline';
   //public $def = 'TWITTER_AUTH'; // http://apiwiki.twitter.com/Authentication - username:password for basic authentication
+  public $server = 'http://api.twitter.com/1/';
+  public $cache = TRUE;
   
   public $results = array();
 
   function followers($user, $id = NULL, $cursor = -1){
-    $this->get_data('http://twitter.com/followers/ids.json', array('screen_name' => $user, 'user_id' => $id, 'cursor' => $cursor));
+    $this->get_data($this->server . 'followers/ids.json', array('screen_name' => $user, 'user_id' => $id, 'cursor' => $cursor));
     $this->cursor = $this->data->next_cursor;
     $this->results = $this->data->ids;
   }
   
   function friends($user, $id = NULL, $cursor = -1){
-    $this->get_data('http://twitter.com/friends/ids.json', array('screen_name' => $user, 'user_id' => $id, 'cursor' => $cursor));
+    $this->get_data($this->server . 'friends/ids.json', array('screen_name' => $user, 'user_id' => $id, 'cursor' => $cursor));
     $this->cursor = $this->data->next_cursor;
     $this->results = $this->data->ids;
   }
   
   function user($user, $id = NULL){
-    $this->get_data('http://twitter.com/users/show.json', array('screen_name' => $user, 'user_id' => $id));
+    $this->get_data($this->server . 'users/show.json', array('screen_name' => $user, 'user_id' => $id));
   }
 
   // maximum 3200 items available through the API 
-  function content_by_user($user, $max = 3200){ 
-    $auth = explode(':', Config::get('TWITTER_AUTH'));
+  function content_by_user($user, $max = 3200, $from = 1){ 
+    $http = array('header' => sprintf('Authorization: Basic %s', base64_encode(Config::get('TWITTER_AUTH'))));
       
-    $from = $this->get_latest($args, 1); // 1 = earliest status id
+    $from = $this->get_latest(array('from' => $from), 1); // 1 = earliest status id
    
     $n = min($max, 200); // max 200
     $page = 1; // pages start at 1
@@ -34,15 +36,15 @@ class Twitter extends API {
     $count = 0;
     do {
      $this->get_data(
-       sprintf('http://%s:%s@twitter.com/statuses/user_timeline.json', urlencode($auth[0]), urlencode($auth[1])),
+       $this->server . 'statuses/user_timeline.json',
        array(
         'screen_name' => $user,
         'since_id' => $from,
         'count' => $n,
         'page' => $page,
-        ));
+        ), 'json', $http);
       
-      if (!is_array($this->data) || empty($this->data))
+      if (empty($this->data))
         break;
     
       foreach ($this->data as $item){          

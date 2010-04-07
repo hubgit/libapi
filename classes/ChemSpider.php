@@ -4,8 +4,6 @@ class ChemSpider extends API {
     public $doc = 'http://www.chemspider.com/AboutServices.aspx';
     public $def = 'CHEMSPIDER';
     
-    public $results = array();
-
     function InChIKeyToCSID($inchikey){
       $params = array('inchi_key' => $inchikey);
       
@@ -28,11 +26,12 @@ class ChemSpider extends API {
       //return (int) $this->data;
     }
     
-    function CSID2ExtRefs($csid, $datasources = array('Wikipedia')){
+    function CSID2ExtRefs($csid, $datasources = array('wikipedia')){
       $params = array(
         'token' => Config::get('CHEMSPIDER'),
         'CSID' => $csid,
-        'datasources' => implode(',', $datasources),
+        //'datasources' => implode(',', $datasources),
+        'datasources' => $datasources,
         );
       
       $client = new SoapClient('http://www.chemspider.com/Search.asmx?wsdl');
@@ -74,10 +73,9 @@ class ChemSpider extends API {
         );
       
       $client = new SoapClient('http://www.chemspider.com/Search.asmx?wsdl');
-      debug($client->__getTypes());
+      //debug($client->__getTypes());
       $this->response = $client->SimpleSearch($params);
-      debug($this->response); exit();
-      return $this->response->SimpleSearchResult;
+      return $this->response->SimpleSearchResult->int;
       
       //$this->get_data('http://www.chemspider.com/Search.asmx/SimpleSearch', $params, 'xml');        
         
@@ -93,6 +91,7 @@ class ChemSpider extends API {
         );
 
       $this->output_dir = $this->get_output_dir('cache/chemspider/images');
+      ksort($params);
       $file = sprintf('%s/%s.png', $this->output_dir, $this->base64_encode_file(http_build_query($params)));
 
       if (!file_exists($file))
@@ -110,6 +109,9 @@ class ChemSpider extends API {
 
     // http://www.chemspider.com/ImagesHandler.ashx?id={$csid}
     function get_image($params){
-      return base64_decode((string) $this->get_data('http://www.chemspider.com/Search.asmx/GetCompoundThumbnail', $params, 'xml'));
+      $client = new SoapClient('http://www.chemspider.com/Search.asmx?wsdl');
+      $this->response = $client->GetCompoundThumbnail($params);
+      return $this->response->GetCompoundThumbnailResult;
+      //return base64_decode((string) $this->get_data('http://www.chemspider.com/Search.asmx/GetCompoundThumbnail', $params, 'xml'));
     }
 }

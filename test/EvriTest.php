@@ -11,8 +11,7 @@ class EvriTest extends PHPUnit_Framework_TestCase {
   }
   
   public function testConcepts(){
-    $result = $this->api->entities(array('text' => $this->text));
-    
-    $this->assertEquals(27, count($result));
+    $this->api->annotate($this->text);
+    $this->assertEquals(27, count($this->api->entities));
   }
 }

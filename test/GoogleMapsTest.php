@@ -10,8 +10,8 @@ class GoogleMapsTest extends PHPUnit_Framework_TestCase {
   }
   
   public function testSearch(){
-    list($results, $meta) = $this->api->search(array('text' => 'Google near Mountain View'));
-    $this->assertEquals(1, count($results)); 
+    $this->api->search('Google near Mountain View');
+    $this->assertEquals(1, count($this->api->results)); 
   }
 
   public function testGeocode(){

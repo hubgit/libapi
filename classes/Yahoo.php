@@ -4,7 +4,8 @@ class Yahoo extends API {
   public $doc = '';
   //public $def = 'YAHOO';
   
-  public $entities = array();
+  public $annotations = array();
+  public $results = array();
   
   # http://developer.yahoo.com/yql/
   function yql($query, $args = array(), $format = 'json'){
@@ -73,10 +74,10 @@ class Yahoo extends API {
       'appid' => Config::get('YAHOO'),
     );
 
-    $json = $this->get_data('http://boss.yahooapis.com/ysearch/web/v1/' . urlencode($q), array_merge($default, $params), 'json');
+    $this->get_data('http://boss.yahooapis.com/ysearch/web/v1/' . urlencode($q), array_merge($default, $params), 'json');
       
-    $this->results = $json->ysearchresponse->resultset_web;
-    $this->total = $json->ysearchresponse->totalhits;
+    $this->results = $this->data->ysearchresponse->resultset_web;
+    $this->total = $this->data->ysearchresponse->totalhits;
   }
   
   function pagedata($q, $params = array()){    
@@ -85,10 +86,10 @@ class Yahoo extends API {
       'appid' => Config::get('YAHOO'),
     );
     
-    $json = $this->get_data('http://boss.yahooapis.com/ysearch/se_pagedata/v1/' . urlencode($q), array_merge($default, $params));
+    $this->get_data('http://boss.yahooapis.com/ysearch/se_pagedata/v1/' . urlencode($q), array_merge($default, $params));
     
-    $this->results = $json->ysearchresponse->resultset_se_pagedata;
-    $this->total = $json->ysearchresponse->totalhits;
+    $this->results = $this->data->ysearchresponse->resultset_se_pagedata;
+    $this->total = $this->data->ysearchresponse->totalhits;
   }
   
   # http://developer.yahoo.com/geo/placemaker/
@@ -116,16 +117,15 @@ class Yahoo extends API {
 
     $nodes = $this->data->xpath("y:document/y:referenceList/y:reference");
     foreach ($nodes as $item)
-      $this->references[] = array(
+      $this->annotations[] = array(
         'start' => (int) $item->start, 
         'end' => (int) $item->end, 
         'text' => (string) $item->text, 
-        'entity' => (string) $item->woeIds,
-        'snippet' => snippet($text, (int) $item->start, (int) $item->end),
+        'entity' => $this->entities[(string) $item->woeIds],
         );
   }
   
-  function extract_entities($text){
+  function terms($text){
     $params = array(
       'context' => $text,
       'query' => $context, // context for extraction (search terms)
@@ -136,6 +136,6 @@ class Yahoo extends API {
     $http = array('method' => 'POST', 'content' => http_build_query($params), 'header' => 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8');
     $this->get_data('http://api.search.yahoo.com/ContentAnalysisService/V1/termExtraction', array(), 'json', $http);
 
-    $this->entities = $this->data->ResultSet->Result;
+    $this->annotations = $this->data->ResultSet->Result;
   } 
 }

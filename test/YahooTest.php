@@ -10,8 +10,7 @@ class YahooTest extends PHPUnit_Framework_TestCase {
   }
   
   public function testPageData(){
-    list($items, $meta) = $this->api->pagedata('http://www.google.com/');
-    debug($items);
-    $this->assertEquals(10, count($items));
+    $this->api->pagedata('http://www.google.com/');
+    $this->assertEquals(10, count($this->api->results));
   }
 }
