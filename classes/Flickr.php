@@ -46,7 +46,7 @@ class Flickr extends API {
       
       case 'fail':
         debug($method . ' failed: ' . $this->data['message'] . "\n");
-        return FALSE:
+        return FALSE;
       break;
       
       default:

@@ -3,8 +3,6 @@
 class NPR extends API {
   public $doc = 'http://www.npr.org/api/'; # Note that full-text content is not available for some topics.
   public $def = 'NPR';
-
-  public $results = array();
   
   function content($npr_topic){ 
     if (!is_numeric($npr_topic))

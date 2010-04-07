@@ -3,9 +3,6 @@
 class TFL extends API {
   //public $doc = '';
   //public $def = '';
-  
-  public $results = array();
-  public $cache = TRUE;
 
   function stop($stopcode){
     $this->get_data('http://www.tfl.gov.uk/tfl/gettingaround/maps/buses/tfl-bus-map/dotnet/StopInfo.aspx', array('stopcode' => $stopcode));  
@@ -16,7 +13,8 @@ class TFL extends API {
   }
   
   function route_search($latitude, $longitude){
-    $this->get_data('http://www.tfl.gov.uk/tfl/gettingaround/maps/buses/tfl-bus-map/dotnet/Search.aspx', array('Lat' => $latitude, 'Lng' => $longitude));  
+    $this->get_data('http://www.tfl.gov.uk/tfl/gettingaround/maps/buses/tfl-bus-map/dotnet/Search.aspx', array('Lat' => $latitude, 'Lng' => $longitude)); 
+    $this->results = $this->data->Routes;
   }
 
   function timetable($route, $stopcode){

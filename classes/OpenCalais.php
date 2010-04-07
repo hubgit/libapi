@@ -23,7 +23,7 @@ class OpenCalais extends API {
           </c:params>',
       ));
 
-     foreach ($json as $id => $data){
+     foreach ($this->data as $id => $data){
        if ($id == 'doc' || $data->{'_typeGroup'} != 'entities')
          continue;
 

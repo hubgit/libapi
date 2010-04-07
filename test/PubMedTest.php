@@ -12,17 +12,17 @@ class PubMedTest extends PHPUnit_Framework_TestCase {
   }
   
   public function testSearch(){
-     $this->api->search($this->query);
+    $this->api->search($this->query);
     
-    $this->assertEquals(1, $this->api->count);
+    $this->assertEquals(1, $this->api->total);
     $this->assertEquals($this->query, $this->api->xpath->query("QueryTranslation")->item(0)->nodeValue);
     $this->assertEquals($this->pmid, $this->api->xpath->query("IdList/Id")->item(0)->nodeValue);
   }
   
   public function testSearchSoap(){
-     $this->api->search_soap($this->query);
+    $this->api->search_soap($this->query);
     
-    $this->assertEquals(1, $this->api->count);
+    $this->assertEquals(1, $this->api->total);
     $this->assertEquals($this->query, $this->api->data->QueryTranslation);
     $this->assertEquals($this->pmid, $this->api->data->IdList->Id);
   }

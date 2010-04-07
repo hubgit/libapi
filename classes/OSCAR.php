@@ -2,9 +2,7 @@
 
 class OSCAR extends API {
   public $url = 'http://127.0.0.1:8181';
-  
-  public $annotations = array();
-  
+    
   function annotate($text){
     $params = array(
       'contents' => $text,

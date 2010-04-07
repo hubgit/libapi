@@ -3,11 +3,6 @@
 class Spotify extends API {
   public $doc = 'http://developer.spotify.com/en/metadata-api/overview/';
   public $server = 'http://ws.spotify.com';
-  
-  public $cache = TRUE;
-  public $results = array();
-  
-  public $total;
 
   function track($q, $full = TRUE){
     $this->opensearch($this->server . '/search/1/track.xml', array('q' => $q));  

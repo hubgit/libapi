@@ -3,14 +3,11 @@
 class PubMed extends API {
   public $doc = 'http://www.ncbi.nlm.nih.gov/entrez/query/static/eutils_help.html';
   
-  public $count;
   public $webenv;
   public $querykey;
- 
-  public $cache = TRUE;
-  
+   
   function search_soap($q, $params = array()){
-    unset($this->count, $this->webenv, $this->querykey);
+    unset($this->webenv, $this->querykey);
     
     $default = array(
       'db' => 'pubmed',
@@ -25,13 +22,13 @@ class PubMed extends API {
     $client = new SoapClient('http://www.ncbi.nlm.nih.gov/entrez/eutils/soap/v2.0/eutils.wsdl'); 
     $this->data = $client->run_eSearch(array_merge($default, $params));
     
-    $this->count = $this->data->Count;
+    $this->total = $this->data->Count;
     $this->webenv = $this->data->WebEnv;
     $this->querykey = $this->data->QueryKey;
   }
   
   function search($q, $params = array()){
-    unset($this->count, $this->webenv, $this->querykey);
+    unset($this->webenv, $this->querykey);
 
     $default = array(
       'db' => 'pubmed',
@@ -45,7 +42,7 @@ class PubMed extends API {
 
     $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi', array_merge($default, $params), 'dom');
 
-    $this->count = $this->xpath->query("Count")->item(0)->nodeValue;
+    $this->total = $this->xpath->query("Count")->item(0)->nodeValue;
     $this->webenv = $this->xpath->query("WebEnv")->item(0)->nodeValue;
     $this->querykey = $this->xpath->query("QueryKey")->item(0)->nodeValue;
   }
@@ -82,18 +79,12 @@ class PubMed extends API {
        'email' => Config::get('EUTILS_EMAIL'),
      );
      
-    $dom = $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi', array_merge($default, $params), 'dom');
-    if (!is_object($dom))
-      return FALSE;
-      
-    $xpath = new DOMXPath($dom);      
-      
-    $items = array();
-    foreach ($xpath->query("LinkSet/LinkSetDb/Link") as $link)
-      $items[] = $this->xpath->query("Id", $link)->item(0)->nodeValue;
+    $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi', array_merge($default, $params), 'dom');
     
-    $this->count = count($items);
-    return $items;
+    foreach ($this->xpath->query("LinkSet/LinkSetDb/Link") as $link)
+      $this->results[] = $this->xpath->query("Id", $link)->item(0)->nodeValue;
+    
+    $this->total = count($items);
   }
   
   function fulltext($pmid){
@@ -105,13 +96,9 @@ class PubMed extends API {
       'email' => Config::get('EUTILS_EMAIL'),
     );
     
-    $dom = $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi', $params, 'dom');
-    if (!is_object($dom))
-      return FALSE;
-      
-    $xpath = new DOMXPath($dom);  
+    $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi', $params, 'dom');
     
-    $nodes = $xpath->query("DocSum/Item[@Name='DOI']");
+    $nodes = $this->xpath->query("DocSum/Item[@Name='DOI']");
     return $node->length ? 'http://dx.doi.org/' . $nodes->item(0)->nodeValue : 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi?cmd=prlinks&dbfrom=pubmed&retmode=ref&id=' . $pmid;
   }
 
@@ -126,7 +113,7 @@ class PubMed extends API {
     ));
     */
   
-    $from = $this->get_latest(array('from' => $from), 0); // 0 = 1970-01-01T00:00:00Z
+    $from = $this->get_latest($from, 0); // 0 = 1970-01-01T00:00:00Z
 
     $to = date('Y/m/d', time() + 60*60*24*365*10); // 10 years in future
 
@@ -168,7 +155,7 @@ class PubMed extends API {
         sleep(1);
     
         $start += $n;
-      } while ($start < $pubmed->count);
+      } while ($start < min($max, $this->total));
     }
     
     if ($this->output_dir)
@@ -177,15 +164,14 @@ class PubMed extends API {
   
   // fetch an individual item from PubMed by DOI or PMID
   // TODO: clean up
-  function metadata($args){
-    extract($args);
-    if (!$pmid && $doi){
-      $dom = $this->get_cached_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi', array(
+  function metadata($pmid, $data){
+    if (!$pmid && $data['doi']){
+      $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi', array(
         'db' => 'pubmed',
         'retmode' => 'xml',
         'retmax' => 1,
         'usehistory' => 'n',
-        'term' => $doi . '[DOI]',
+        'term' => $data['doi'] . '[DOI]',
         'tool' => Config::get('EUTILS_TOOL'),
         'email' => Config::get('EUTILS_EMAIL'),
         ), 'dom');
@@ -198,17 +184,13 @@ class PubMed extends API {
     if (!$pmid)
       return FALSE;
 
-    $dom = $this->get_cached_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi', array(
+    $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi', array(
       'db' => 'pubmed',
       'retmode' => 'xml',
       'id' => $pmid,
       'tool' => Config::get('EUTILS_TOOL'),
       'email' => Config::get('EUTILS_EMAIL'),
       ), 'dom');
-
-
-    if (!is_object($dom))
-      return FALSE;
 
     $article = $this->xpath->query('PubmedArticle/MedlineCitation/Article')->item(0);
 

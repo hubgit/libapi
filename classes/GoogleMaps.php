@@ -41,6 +41,6 @@ class GoogleMaps extends API {
       return FALSE;
 
     $this->results = $this->data->responseData->results;
-    $this->total = $json->responseData->cursor->estimatedResultCount;
+    $this->total = $this->data->responseData->cursor->estimatedResultCount;
   }
 }

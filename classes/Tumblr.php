@@ -3,7 +3,6 @@
 class Tumblr extends API {
   public $doc = 'http://www.tumblr.com/docs/api';
   //public $def = 'TUMBLR_AUTH'; // http://www.tumblr.com/docs/api#authenticate
-  public $results = array();
   
   function content_by_user($user, $max = 0){
     $count = 0;
@@ -16,8 +15,8 @@ class Tumblr extends API {
     do {
       $this->get_data(sprintf('http://%s.tumblr.com/api/read', $user), $params, 'xml');
       
-      $total = (int) $this->data->posts['total'];
-      $max = $max ? min($max, $total) : $total;
+      $this->total = (int) $this->data->posts['total'];
+      $max = $max ? min($max, $this->total) : $this->total;
           
       foreach ($this->data->posts->post as $item){ 
         if ($this->output_dir){

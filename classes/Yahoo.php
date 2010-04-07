@@ -4,9 +4,6 @@ class Yahoo extends API {
   public $doc = '';
   //public $def = 'YAHOO';
   
-  public $annotations = array();
-  public $results = array();
-  
   # http://developer.yahoo.com/yql/
   function yql($query, $args = array(), $format = 'json'){
     if (!empty($args))

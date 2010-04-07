@@ -4,10 +4,6 @@ class PubChem extends API{
   public $doc = 'http://pubchem.ncbi.nlm.nih.gov/';
   public $def = array('EUTILS_TOOL', 'EUTILS_EMAIL');
   
-  public $results = array();
-  
-  public $cache = TRUE;
-  
   function search($args, $params = array()){
     unset($this->count, $this->webenv, $this->querykey);
     

@@ -4,9 +4,6 @@ class Twitter extends API {
   public $doc = 'http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-statuses-user_timeline';
   //public $def = 'TWITTER_AUTH'; // http://apiwiki.twitter.com/Authentication - username:password for basic authentication
   public $server = 'http://api.twitter.com/1/';
-  public $cache = TRUE;
-  
-  public $results = array();
 
   function followers($user, $id = NULL, $cursor = -1){
     $this->get_data($this->server . 'followers/ids.json', array('screen_name' => $user, 'user_id' => $id, 'cursor' => $cursor));
@@ -28,7 +25,7 @@ class Twitter extends API {
   function content_by_user($user, $max = 3200, $from = 1){ 
     $http = array('header' => sprintf('Authorization: Basic %s', base64_encode(Config::get('TWITTER_AUTH'))));
       
-    $from = $this->get_latest(array('from' => $from), 1); // 1 = earliest status id
+    $from = $this->get_latest($from, 1); // 1 = earliest status id
    
     $n = min($max, 200); // max 200
     $page = 1; // pages start at 1

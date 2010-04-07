@@ -3,9 +3,7 @@
 class Guardian extends API {
   public $doc = 'http://api.guardianapis.com/docs';
   public $def = 'GUARDIAN';
-  
-  public $results;
-  
+    
   private $daily_limit = 5000;
   
   public $n = 50;
@@ -48,7 +46,7 @@ class Guardian extends API {
 
     $this->get_data('http://api.guardianapis.com/content/search', array_merge($default, $params));
 
-    $this->results = $json->search->results;
-    $this->total = $json->search->count;
+    $this->results = $this->data->search->results;
+    $this->total = $this->data->search->count;
   }
 }

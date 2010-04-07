@@ -4,8 +4,6 @@ class Zemanta extends API {
   public $doc = 'http://developer.zemanta.com/';
   public $def = 'ZEMANTA';
   
-  public $entities = array();
-
   function extract_entities($text){    
     $params = array(
       'text' => $text,

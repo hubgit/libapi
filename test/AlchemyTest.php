@@ -10,8 +10,8 @@ class AlchemyTest extends PHPUnit_Framework_TestCase {
     $this->text = file_get_contents(dirname(__FILE__) . '/text/news.txt');
   }
   
-  public function testEntities(){
-    $this->api->extract_entities($this->text);
+  public function testAnnotate(){
+    $this->api->annotate($this->text);
     $this->assertEquals(29, count($this->api->entities));
   }
 }

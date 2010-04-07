@@ -4,9 +4,6 @@ class Unlock extends API {
   public $doc = 'http://unlock.edina.ac.uk:81/service-results/';
   public $def = 'UNLOCK';
   
-  public $entities = array();
-  public $references = array();
-
   function entities($text){        
     $boundary = '---------------------' . substr(md5(time()), 0, 10);
     

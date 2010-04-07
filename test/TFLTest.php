@@ -28,13 +28,12 @@ class TFLTest extends PHPUnit_Framework_TestCase {
   
   public function testSearch(){
     $this->api->route_search($this->latitude, $this->longitude);
-    debug($this->api->results);
-    $this->assertEquals(8, count($this->api->results->Routes));
-    $this->assertType(PHPUnit_Framework_Constraint_IsType::TYPE_OBJECT, $this->api->results[0]->CoOrds);
-    $this->assertType(PHPUnit_Framework_Constraint_IsType::TYPE_OBJECT, $this->api->results[0]->Count);
+    $this->assertEquals(7, count($this->api->results));
+    $this->assertType(PHPUnit_Framework_Constraint_IsType::TYPE_OBJECT, $this->api->data->CoOrds);
+    $this->assertType(PHPUnit_Framework_Constraint_IsType::TYPE_OBJECT, $this->api->data->Count);
     
-    $this->assertEquals($this->latitude, $result->CoOrds->Latitude);
-    $this->assertEquals($this->longitude, $result->CoOrds->Longitude);
+    $this->assertEquals($this->latitude, $this->api->data->CoOrds->Latitude);
+    $this->assertEquals($this->longitude, $this->api->data->CoOrds->Longitude);
   }
   
   public function testTimetable(){

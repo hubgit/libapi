@@ -3,9 +3,7 @@
 class WorldCat extends API {
   public $doc = 'http://worldcat.org/devnet/wiki/BasicAPIDetails';
   public $def = 'WORLDCAT'; // https://worldcat.org/config/
-  
-  public $results = array();
-  
+    
   function search($q, $params = array()){
     $default = array(
       'q' => $q,

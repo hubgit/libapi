@@ -1,8 +1,6 @@
 <?php
 
-class GoogleCalendar extends API {
-  public $results;
-  
+class GoogleCalendar extends API {  
   function content($id, $params = array()){
     $now = time();
     $week = 3600 * 24 * 7;

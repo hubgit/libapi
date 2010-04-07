@@ -1,8 +1,6 @@
 <?php
 
-class BritishPathe extends API {
-  public $results = array();
-  
+class BritishPathe extends API {  
   function content($start = 1){        
     $items = array();
     $attempts = array();
