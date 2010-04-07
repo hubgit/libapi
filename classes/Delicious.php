@@ -9,20 +9,18 @@ class Delicious extends API {
   function get_bookmarks_for_item($uri){
     $this->get_data('http://badges.del.icio.us/feeds/json/url/data', array('url' => $uri));
 
-    if (empty($json))
-      return FALSE;
-
     $this->total = $this->data[0]->total_posts;
     $this->tags = $this->data[0]->top_tags;
 
-    $dom = $this->get_data('http://feeds.delicious.com/v2/rss/url/' . md5($uri), array(), 'dom');
+    $this->get_data('http://feeds.delicious.com/v2/rss/url/' . md5($uri), array(), 'dom');
+    $this->xpath->registerNamespace('dcel', 'http://purl.org/dc/elements/1.1/');
 
     foreach ($this->xpath->query('channel/item') as $node)
       $items[] = array(
-        'user' => $node->getElementsByTagNameNS('http://purl.org/dc/elements/1.1/', 'creator')->item(0)->nodeValue,
-        'date' => $node->getElementsByTagName('pubDate')->item(0)->nodeValue,
-        'title' => $node->getElementsByTagName('title')->item(0)->nodeValue,
-        'tags' => $node->getElementsByTagName('category')->item(0)->nodeValue,
+        'user' => $this->xpath->query("dcel:creator", $node)->item(0)->nodeValue,
+        'date' => $this->xpath->query("pubDate", $node)->item(0)->nodeValue,
+        'title' => $this->xpath->query("title", $node)->item(0)->nodeValue,
+        'tags' => $this->xpath->query("category", $node)->item(0)->nodeValue,
         );
   }
 
@@ -97,23 +95,11 @@ class Delicious extends API {
     } while ($page);
   }
   
-  function content_by_user($args){
-    extract($args);
-          
-    if (isset($output))
-      $this->output_dir = $this->get_output_dir($output);
-      
-    $from = $this->get_latest($args, 0); // 0 = 1970-01-01T00:00:00Z
+  function content_by_user($user, $from){
+    $from = $this->get_latest($from, 0); // 0 = 1970-01-01T00:00:00Z
 
-    $auth = explode(':', Config::get('DELICIOUS_AUTH'));
-
-    $this->get_data(
-      sprintf('https://%s:%s@api.del.icio.us/v1/posts/all', urlencode($auth[0]), urlencode($auth[1])), 
-      array('fromdt' => gmdate("Y-m-d\TH:i:s\Z", $from)),
-      'xml');
-      
-    if (!isset($xml->post))
-      return FALSE;
+    $http = array('header' => sprintf('Authorization: Basic %s', base64_encode(Config::get('DELICIOUS_AUTH'))));    
+    $this->get_data('https://api.del.icio.us/v1/posts/all', array('fromdt' => gmdate("Y-m-d\TH:i:s\Z", $from)), 'xml', $http);
 
     foreach ($this->data->post as $item){
       if ($this->output_dir)
@@ -123,6 +109,6 @@ class Delicious extends API {
     }
 
     if ($this->output_dir)
-      file_put_contents($this->output_dir . '/latest', strtotime((string) $xml['update']));
+      file_put_contents($this->output_dir . '/latest', strtotime((string) $this->data['update']));
   }
 }

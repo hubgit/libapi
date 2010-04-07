@@ -97,11 +97,7 @@ class API {
       $this->parse_http_response_header();
     }
     else {
-      $cache_tmp = $this->cache;
-      $this->cache = FALSE;
-      $this->get_data($url, $params, 'raw', $http);
-      $this->cache = $cache_tmp;
-
+      $this->get_data($url, $params, 'raw', $http, FALSE);
       if ($this->response !== FALSE)
         $this->cache_set($key, array('header' => $this->http_response_header, 'content' => $this->data));
     }
@@ -113,17 +109,24 @@ class API {
     catch (DataException $e) { $e->errorMessage(); }
     catch (Exception $e) { debug($e->getMessage()); }
   }
-
-  function get_data($url, $params = array(), $format = 'json', $http = array()){
-    if ($this->cache)
-      if (!isset($http['method']) || $http['method'] == 'GET')
+  
+  function get_data($url, $params = array(), $format = 'json', $http = array(), $cache = TRUE){
+    if ($cache && $this->cache) // can set either of these to FALSE to disable the cache
+      if (!isset($http['method']) || $http['method'] == 'GET') // only use the cache for GET requests
         return $this->get_cached_data($url, $params, $format, $http);
 
     debug($params);
     
-    if (!empty($params))
+    // FIXME: is this a good idea?
+    if ($http['method'] == 'POST' && empty($http['content']) && !empty($params)){
+      $http['content'] = http_build_query($params);
+      $params = array();
+    }
+    
+    if (!empty($params)){
       ksort($params);
-    $url .= empty($params) ? NULL : '?' . http_build_query($params);
+      $url .= '?' . http_build_query($params);
+    }
 
     debug($url);
     debug($http);
@@ -163,10 +166,10 @@ class API {
     // array_merge doesn't preserve numeric keys
     curl_setopt_array($curl, array(
       CURLOPT_CONNECTTIMEOUT => 60, // 1 minute
-    CURLOPT_TIMEOUT => 60*60*24, // 1 day
-    CURLOPT_RETURNTRANSFER => TRUE, // return contents
-    //CURLOPT_FAILONERROR => TRUE,
-    //CURLOPT_SSL_VERIFYPEER => FALSE, // FIXME: temporary fix for curl without SSL certificates
+      CURLOPT_TIMEOUT => 60*60*24, // 1 day
+      CURLOPT_RETURNTRANSFER => TRUE, // return contents
+      //CURLOPT_FAILONERROR => TRUE,
+      //CURLOPT_SSL_VERIFYPEER => FALSE, // FIXME: temporary fix for curl without SSL certificates
     ) + $curl_params);
 
     if (isset($http['header']))
@@ -350,9 +353,9 @@ class API {
     return $dir;
   }
 
-  function get_latest($args, $default = 1){
-    if (isset($args['from']))
-      return $args['from'];
+  function get_latest($from = NULL, $default = 1){
+    if ($from)
+      return $from;
     else if ($this->output_dir && file_exists($this->output_dir . '/latest'))
       return file_get_contents($this->output_dir . '/latest');
     else
