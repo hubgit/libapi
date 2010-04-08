@@ -33,8 +33,7 @@ class ISI extends API {
 
     $this->xpath->registerNamespace('isi', 'http://www.isinet.com/xrpc41');
   
-    $nodes = $this->xpath->query("isi:fn/isi:error");
-    if (!empty($nodes))
+    if ($this->xpath->query("isi:fn/isi:error")->length)
       return FALSE;
     
     $this->total = $this->xpath->query("isi:fn/isi:map/isi:map/isi:map[@name='WOS']/isi:val[@name='timesCited']")->item(0)->nodeValue;

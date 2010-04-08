@@ -4,8 +4,6 @@ class Bibsonomy extends API {
   public $doc = '';
   public $def = array('BIBSONOMY_USER', 'BIBSONOMY');
   
-  public $item = array();
-
   function metadata($uri, $data = array()){
     if (!$uri && $data['doi'])
       $uri = 'http://dx.doi.org/' . $data['doi'];
@@ -15,12 +13,15 @@ class Bibsonomy extends API {
       'format' => 'rdf+xml',
       ), 'rdf');
       
-    $this->data->registerXPathNamespace('swrc', 'http://swrc.ontoware.org/ontology#');
+    $this->xpath->registerNamespace('swrc', 'http://swrc.ontoware.org/ontology#');
   
+    $item = array();
     foreach ($this->xpath->query("swrc:Article/*") as $node)
-      $this->item[$node->nodeName] = $node->textContent;
+      $item[$node->nodeName] = $node->textContent;
   
     foreach ($this->xpath->query("swrc:Article/swrc:author/swrc:Person/swrc:name") as $node)
-      $this->item['authors'][] = $node->textContent;
+      $item['authors'][] = $node->textContent;
+      
+    $this->results[] = $item;
   }
 }

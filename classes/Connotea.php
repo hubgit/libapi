@@ -4,7 +4,7 @@ class Connotea extends API {
   public $doc = 'http://www.connotea.org/webcite';
   public $def = 'CONNOTEA_AUTH';
   
-  function bookmarks_for_item($uri, $data){
+  function bookmarks_for_item($uri, $data = array()){
     if (!$uri && $data['doi'])
       $uri = 'http://dx.doi.org/' . $data['doi'];
 
@@ -26,7 +26,7 @@ class Connotea extends API {
     $this->total = count($this->results);
   }
   
-  function metadata($data){
+  function metadata($uri, $data = array()){
     if (!$uri && $data['doi'])
       $uri = 'http://dx.doi.org/' . $data['doi'];
 

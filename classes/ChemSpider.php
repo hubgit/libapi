@@ -57,8 +57,8 @@ class ChemSpider extends API {
         'token' => Config::get('CHEMSPIDER'),
         );
 
-      $this->output_dir = $this->get_output_dir('cache/chemspider/images');
       ksort($params);
+      $this->output_dir = $this->get_output_dir('cache/chemspider/images');
       $file = sprintf('%s/%s.png', $this->output_dir, $this->base64_encode_file(http_build_query($params)));
 
       if (!file_exists($file))

@@ -16,7 +16,7 @@ class Delicious extends API {
     $this->xpath->registerNamespace('dcel', 'http://purl.org/dc/elements/1.1/');
 
     foreach ($this->xpath->query('channel/item') as $node)
-      $items[] = array(
+      $this->results[] = array(
         'user' => $this->xpath->query("dcel:creator", $node)->item(0)->nodeValue,
         'date' => $this->xpath->query("pubDate", $node)->item(0)->nodeValue,
         'title' => $this->xpath->query("title", $node)->item(0)->nodeValue,

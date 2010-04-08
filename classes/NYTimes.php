@@ -6,20 +6,18 @@ class NYTimes extends API {
   
   public $results = array();
   public $total;
-
-  function content($query, $params = array()){    
-    if ($params['nytimes_facet'])
-      $query = sprintf('des_facet:[%s]', $params['nytimes_facet']);
   
-    $n = 10;
+  public $n = 10;
+  public $daily_limit = 5000;
+  
+  function content($query, $facet = NULL){    
+    if ($facet)
+      $query = sprintf('des_facet:[%s]', $facet);
+  
     $page = 0; // results start at 0
-  
-    $daily_limit = 5000;
-  
-    $items = array();
-  
+    
     do{
-      $start = $page * $n;
+      $start = $page * $this->n;
       
       $this->get_data('http://api.nytimes.com/svc/search/v1/article', array(
         'query' => $query,
@@ -41,7 +39,7 @@ class NYTimes extends API {
       }
 
       sleep(1);
-    } while ($start < $this->data->total && ++$page < $daily_limit);
+    } while ($start < $this->data->total && ++$page < $this->daily_limit);
   }
   
   function search($q, $params = array()){

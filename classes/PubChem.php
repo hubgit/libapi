@@ -5,7 +5,7 @@ class PubChem extends API{
   public $def = array('EUTILS_TOOL', 'EUTILS_EMAIL');
   
   function search($args, $params = array()){
-    unset($this->count, $this->webenv, $this->querykey);
+    unset($this->total, $this->webenv, $this->querykey);
     
     $this->db = 'pccompound';
     
@@ -48,7 +48,7 @@ class PubChem extends API{
     if (!is_object($this->data))
       throw new Exception('Error searching PubChem');
 
-    $this->count = (int) $this->data->Count;
+    $this->total = (int) $this->data->Count;
     
     if ($params['usehistory'] == 'y'){
       $this->webenv = (string) $this->data->WebEnv;

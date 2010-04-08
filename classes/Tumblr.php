@@ -4,11 +4,13 @@ class Tumblr extends API {
   public $doc = 'http://www.tumblr.com/docs/api';
   //public $def = 'TUMBLR_AUTH'; // http://www.tumblr.com/docs/api#authenticate
   
+  public $n = 50;
+  
   function content_by_user($user, $max = 0){
     $count = 0;
     
     $params = array(
-      'num' => 50,
+      'num' => $this->n,
       'start' => 0, // item offset
       );
     

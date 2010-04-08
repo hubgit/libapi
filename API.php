@@ -1,6 +1,9 @@
 <?php
 
 class API {
+  public $def;
+  public $doc;
+  
   public $input_dir;
   public $output_dir;
   
@@ -80,6 +83,8 @@ class API {
     }
     else
       debug("Cached:\n" . print_r(array($wsdl, $method, $params), TRUE));
+    
+    debug($this->data);
   }
   
   function cache_set($key, $data = NULL){
@@ -221,7 +226,7 @@ class API {
     $this->http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     $this->http_info = array(curl_getinfo($curl));
 
-    debug($this->response);
+    //debug($this->response);
     debug('Status: ' . $this->http_status);  
 
     curl_close($curl);

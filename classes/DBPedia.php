@@ -10,8 +10,7 @@ class DBPedia extends API {
       'MaxHits' => $n,
     );
     
-    $this->get_data('http://lookup.dbpedia.org/api/search.asmx/KeywordSearch', $params, 'dom'); 
-    
+    $this->get_data('http://lookup.dbpedia.org/api/search.asmx/KeywordSearch', $params, 'dom');
     $this->xpath->registerNamespace('db', 'http://lookup.dbpedia.org/');
     $this->results = $this->xpath->query('db:Result');
   }  

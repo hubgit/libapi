@@ -3,15 +3,13 @@
 class PubMedCentral extends API {
   public $doc = 'http://www.pubmedcentral.nih.gov/utils/';
   
-  public $results = array();
-
   function citedby($pmid){    
     $this->get_data('http://www.pubmedcentral.nih.gov/utils/entrez2pmcciting.cgi', array(
       'view' => 'xml',
       'id' => $pmid,
       ), 'xml');
     
-    foreach ($xml->REFORM->PMCID as $item)
+    foreach ($this->data->REFORM->PMCID as $item)
       $this->results[] = (int) $item;
   }
   
@@ -21,7 +19,7 @@ class PubMedCentral extends API {
       'id' => implode(',', $ids),
       ), 'xml');
     
-    foreach ($xml->REFORM as $item)
+    foreach ($this->data->REFORM as $item)
       $this->results[] = (int) $item->PMID;
   }
 }

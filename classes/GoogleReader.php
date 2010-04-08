@@ -2,6 +2,8 @@
 
 class GoogleReader extends Google {
   public $doc = 'http://reader.google.com/';
+  
+  $this->n = 100;
 
   function content_by_feed($feed){
     $this->authorise();
@@ -11,15 +13,12 @@ class GoogleReader extends Google {
       'Cookie: ' . $this->cookie,
       );
     
-    $http = array('header' => $this->headers($headers));
-  
-    $n = 100;
-  
+    $http = array('header' => $this->headers($headers));  
     $continuation = '';
   
     do{
       $this->get_data('http://www.google.com/reader/atom/feed/' . urlencode($query), array(
-        'n' => $n,
+        'n' => $this->n,
         'c' => $continuation,
         ), 'dom', $http);
       

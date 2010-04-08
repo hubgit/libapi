@@ -5,6 +5,8 @@ class PubMed extends API {
   
   public $webenv;
   public $querykey;
+  
+  public $n = 500;
    
   function search_soap($q, $params = array()){
     unset($this->webenv, $this->querykey);
@@ -101,7 +103,7 @@ class PubMed extends API {
     return $node->length ? 'http://dx.doi.org/' . $nodes->item(0)->nodeValue : 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi?cmd=prlinks&dbfrom=pubmed&retmode=ref&id=' . $pmid;
   }
 
-  function content($term, $max, $from){
+  function content($term, $max = 0, $from = 0){
     /*
     $args = filter_var_array($args, array(
       'max' => array(
@@ -116,8 +118,8 @@ class PubMed extends API {
 
     $to = date('Y/m/d', time() + 60*60*24*365*10); // 10 years in future
 
-    $n = min($max, 500);
     $count = 0;
+    $n = $max ? min($this->n, $max) : $this->n;
 
     foreach (array('edat', 'mdat') as $datetype){ // edat = date added to entrez (pdat = published date), mdat = date modified
       $start = 0;
