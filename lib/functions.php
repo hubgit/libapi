@@ -1,5 +1,10 @@
 <?php
 
+// convenience function
+function h($input){
+  Output::html($input);
+}
+
 function debug($arg){  
   switch (Config::get('DEBUG')){
     case 'PRINT':
