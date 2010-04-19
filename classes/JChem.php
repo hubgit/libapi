@@ -20,6 +20,7 @@ class JChem extends API {
     }
     
     $this->soap($this->server . 'MolConvertWS?wsdl', $method, $params);
+    $this->data = base64_decode($this->data->return);
   }
   
   // https://www.chemaxon.com/webservices/soap/StandardizerWS.wsdl.html

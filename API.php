@@ -65,7 +65,8 @@ class API {
       throw new Exception('Requirement not defined: ' . $def);
   }
 
-  function soap($wsdl, $method, $params){
+  function soap($wsdl, $method, $params = array()){
+    debug($params);
     ksort($params);
     $key = md5($wsdl . '#' . $method . '?' . http_build_query($params));
     
@@ -156,6 +157,7 @@ class API {
     $context = empty($http) ? NULL : stream_context_create(array('http' => $http));
 
     $this->response = file_get_contents($url, NULL, $context);
+    //file_put_contents(sys_get_temp_dir() . '/raw.xml', $this->response);
 
     debug($http_response_header);
     debug($this->response);
@@ -164,11 +166,13 @@ class API {
     $this->parse_http_response_header();
 
     try {
-      $this->data = $this->format_data($format, $this->response);
+      $this->data = $this->format_data($format);
       $this->validate_data($format);
     } 
     catch (DataException $e) { $e->errorMessage(); }
     catch (Exception $e) { debug($e->getMessage()); }
+    
+    return $this->data;
   }
 
   function get_data_curl($url, $params = array(), $format = 'json', $http = array(), $curl_params = array()){  
@@ -228,17 +232,20 @@ class API {
 
     //debug($this->response);
     debug('Status: ' . $this->http_status);  
+    //file_put_contents(sys_get_temp_dir() . '/raw.xml', $this->response);
 
     curl_close($curl);
     if (isset($http['file']))
       fclose($http['file']);
 
     try {
-      $this->data = $this->format_data($format, $this->response);
+      $this->data = $this->format_data($format);
       $this->validate_data($format);
     } 
     catch (DataException $e) { $e->errorMessage(); }
     catch (Exception $e) { debug($e->getMessage()); }
+    
+    return $this->data;
   }
 
   function format_data($format){
@@ -248,13 +255,19 @@ class API {
       case 'xml':
       return simplexml_load_string($this->response, NULL, LIBXML_NOCDATA | LIBXML_NONET);
       case 'dom':
-      $dom = DOMDocument::loadXML($this->response, LIBXML_DTDLOAD | LIBXML_DTDVALID | LIBXML_NOCDATA | LIBXML_NOENT | LIBXML_NONET);
+      $dom = new DOMDocument;
+      $dom->preserveWhiteSpace = FALSE;
+      $dom->loadXML($this->response, LIBXML_DTDLOAD | LIBXML_DTDVALID | LIBXML_NOCDATA | LIBXML_NOENT | LIBXML_NONET);
+      $dom->encoding = 'UTF-8';
+      $dom->formatOutput = TRUE;
       $this->xpath = new DOMXPath($dom);
       return $dom;
       case 'html':
       return simplexml_import_dom(@DOMDocument::loadHTML($this->response, LIBXML_NOCDATA | LIBXML_NONET));
       case 'html-dom':
-      return @DOMDocument::loadHTML($this->response);
+      $dom = @DOMDocument::loadHTML($this->response);
+      $this->xpath = new DOMXPath($dom);
+      return $dom;
       case 'rdf':
       return DOMDocument::loadXML($this->response, NULL, LIBXML_NOCDATA | LIBXML_NONET); // TODO: parse RDF
       case 'php':
