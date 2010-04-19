@@ -26,6 +26,52 @@ class PubMed extends API {
     $this->total = $this->data->Count;
     $this->webenv = $this->data->WebEnv;
     $this->querykey = $this->data->QueryKey;
+    
+    return $this->data;
+  }
+  
+  function fetch_soap($ids = NULL, $params = array()){
+     $default = array(
+      'db' => 'pubmed',
+      'retmode' => 'xml',
+      'tool' => Config::get('EUTILS_TOOL'),
+      'email' => Config::get('EUTILS_EMAIL'),
+      );
+      
+    if (!empty($ids)){
+      $default['id'] = implode(',', is_array($ids) ? $ids : array($ids));
+    }
+    else if ($this->webenv){
+      $default['query_key'] = $this->querykey;
+      $default['WebEnv'] = $this->webenv;
+    }
+
+    $this->soap('http://www.ncbi.nlm.nih.gov/entrez/eutils/soap/v2.0/efetch_pubmed.wsdl', 'run_eFetch', array_merge($default, $params));
+    
+    return $this->data;
+  }
+  
+  function related_soap($pmids, $params = array()){
+    if (!is_array($pmids))
+      $pmids = array($pmids);
+    
+    $default = array(
+       'db' => 'pubmed',
+       'dbfrom' => 'pubmed',
+       'id' => implode(',', $pmids),
+       'retmode' => 'xml',
+       'tool' => Config::get('EUTILS_TOOL'),
+       'email' => Config::get('EUTILS_EMAIL'),
+     );
+     
+    $this->soap('http://www.ncbi.nlm.nih.gov/entrez/eutils/soap/v2.0/eutils.wsdl', 'run_eLink', array_merge($default, $params));
+    
+    $this->results = array();
+    //debug($this->data->LinkSet);
+    foreach ($this->data->LinkSet[0]->LinkSetDb[0]->Link as $link)
+      $this->results[] = $link->Id->{'_'};
+    
+    $this->total = count($this->results);
   }
   
   function search($q, $params = array()){
@@ -46,6 +92,8 @@ class PubMed extends API {
     $this->total = $this->xpath->query("Count")->item(0)->nodeValue;
     $this->webenv = $this->xpath->query("WebEnv")->item(0)->nodeValue;
     $this->querykey = $this->xpath->query("QueryKey")->item(0)->nodeValue;
+    
+    return $this->data;
   }
 
   function fetch($ids = NULL, $params = array()){
@@ -65,6 +113,7 @@ class PubMed extends API {
     }
 
     $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi', array_merge($default, $params), 'dom');
+    return $this->data;
   }
   
   function related($pmid, $params = array()){
@@ -82,6 +131,7 @@ class PubMed extends API {
      
     $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi', array_merge($default, $params), 'dom');
     
+    $this->results = array();
     foreach ($this->xpath->query("LinkSet/LinkSetDb/Link") as $link)
       $this->results[] = $this->xpath->query("Id", $link)->item(0)->nodeValue;
     

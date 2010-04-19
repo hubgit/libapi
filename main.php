@@ -33,6 +33,6 @@ if (empty(Config::$properties['LOG']))
   Config::set('LOG', Config::get('DATA_DIR') . '/debug.log');
 
 require LIBAPI_ROOT . '/API.php';
-require LIBAPI_ROOT . '/lib/O.php';
+require LIBAPI_ROOT . '/lib/Output.php';
 
 spl_autoload_register(array('API', '__autoload'));

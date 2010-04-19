@@ -75,7 +75,7 @@ class API {
      
     if (is_null($this->data)){      
       try{
-        $this->client = new SOAPClient($wsdl);
+        $this->client = new SOAPClient($wsdl, array('features' => SOAP_SINGLE_ELEMENT_ARRAYS, 'compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP));
         $this->data = $this->client->$method($params);
       } catch (SoapFault $exception) { debug($exception); } // FIXME: proper error handling 
 
