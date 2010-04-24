@@ -2,7 +2,12 @@
 
 // convenience function
 function h($input){
-  Output::html($input);
+  $args = func_get_args();
+  call_user_func_array(array('Output', 'html'), $args);
+}
+
+function url($url, $params = array()){
+  return $url . (empty($params) ? '' : '?' . http_build_query($params)); 
 }
 
 function debug($arg){  
