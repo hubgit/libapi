@@ -21,7 +21,7 @@ class API {
   public $cache_expire = 86400; //60*60*24; // use the cache file if it's less than one day old
   
   // SOAP client
-  public $client;
+  public $soapclient;
   
   // for general use and searches
   public $results = array();
@@ -75,8 +75,11 @@ class API {
      
     if (is_null($this->data)){      
       try{
-        $this->client = new SOAPClient($wsdl, array('features' => SOAP_SINGLE_ELEMENT_ARRAYS, 'compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP));
-        $this->data = $this->client->$method($params);
+        $this->soapclient = new SOAPClient($wsdl, array(
+          'features' => SOAP_SINGLE_ELEMENT_ARRAYS, 
+          //'compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP,
+        ));
+        $this->data = $this->soapclient->$method($params);
       } catch (SoapFault $exception) { debug($exception); } // FIXME: proper error handling 
 
       if ($this->cache && !is_null($this->data))
@@ -85,7 +88,7 @@ class API {
     else
       debug("Cached:\n" . print_r(array($wsdl, $method, $params), TRUE));
     
-    debug($this->data);
+    //debug($this->data);
   }
   
   function cache_set($key, $data = NULL){
@@ -232,7 +235,7 @@ class API {
 
     //debug($this->response);
     debug('Status: ' . $this->http_status);  
-    //file_put_contents(sys_get_temp_dir() . '/raw.xml', $this->response);
+    file_put_contents(sys_get_temp_dir() . '/raw.xml', $this->response);
 
     curl_close($curl);
     if (isset($http['file']))
@@ -265,11 +268,11 @@ class API {
       case 'html':
       return simplexml_import_dom(@DOMDocument::loadHTML($this->response, LIBXML_NOCDATA | LIBXML_NONET));
       case 'html-dom':
-      $dom = @DOMDocument::loadHTML($this->response);
+      $dom = @DOMDocument::loadHTML($this->response, LIBXML_NOCDATA | LIBXML_NONET);
       $this->xpath = new DOMXPath($dom);
       return $dom;
-      case 'rdf':
-      return DOMDocument::loadXML($this->response, NULL, LIBXML_NOCDATA | LIBXML_NONET); // TODO: parse RDF
+      case 'rdf-xml':
+      return DOMDocument::loadXML($this->response, LIBXML_DTDLOAD | LIBXML_DTDVALID | LIBXML_NOCDATA | LIBXML_NOENT | LIBXML_NONET); // FIXME: need proper RDF parser
       case 'php':
       return unserialize($this->response);
       case 'xmlrpc':
