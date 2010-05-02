@@ -3,10 +3,10 @@
 class API {
   public $def;
   public $doc;
-  
+
   public $input_dir;
   public $output_dir;
-  
+
   public $output_file;
 
   public $output;
@@ -19,21 +19,21 @@ class API {
 
   public $cache = TRUE;
   public $cache_expire = 86400; //60*60*24; // use the cache file if it's less than one day old
-  
+
   // SOAP client
   public $soapclient;
-  
+
   // for general use and searches
   public $results = array();
-  
+
   // for searches
   public $total;
   public $pages;
-  
+
   // for entity extraction
   public $annotations = array();
   public $entities = array();
-  
+
 
   function __construct(){
     if (isset($this->def) && !empty($this->def))
@@ -69,34 +69,34 @@ class API {
     debug($params);
     ksort($params);
     $key = md5($wsdl . '#' . $method . '?' . http_build_query($params));
-    
+
     if ($this->cache)
      $this->data = $this->cache_get($key);
-     
-    if (is_null($this->data)){      
+
+    if (is_null($this->data)){
       try{
         $this->soapclient = new SOAPClient($wsdl, array(
-          'features' => SOAP_SINGLE_ELEMENT_ARRAYS, 
+          'features' => SOAP_SINGLE_ELEMENT_ARRAYS,
           //'compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP,
         ));
         $this->data = $this->soapclient->$method($params);
-      } catch (SoapFault $exception) { debug($exception); } // FIXME: proper error handling 
+      } catch (SoapFault $exception) { debug($exception); } // FIXME: proper error handling
 
       if ($this->cache && !is_null($this->data))
         $this->cache_set($key, $this->data);
     }
     else
       debug("Cached:\n" . print_r(array($wsdl, $method, $params), TRUE));
-    
+
     //debug($this->data);
   }
-  
+
   function cache_set($key, $data = NULL){
     $cache_dir = $this->get_output_dir('cache-uri');
     $cache_file = sprintf('%s/%s', $cache_dir, $key);
     file_put_contents('compress.zlib://' . $cache_file, serialize($data));
   }
-  
+
   function cache_get($key){
     $cache_dir = $this->get_output_dir('cache-uri');
     $cache_file = sprintf('%s/%s', $cache_dir, $key);
@@ -125,24 +125,24 @@ class API {
     try {
       $this->data = $this->format_data($format, $this->response);
       $this->validate_data($format);
-    } 
+    }
     catch (DataException $e) { $e->errorMessage(); }
     catch (Exception $e) { debug($e->getMessage()); }
   }
-  
+
   function get_data($url, $params = array(), $format = 'json', $http = array(), $cache = TRUE){
     if ($cache && $this->cache) // can set either of these to FALSE to disable the cache
       if (!isset($http['method']) || $http['method'] == 'GET') // only use the cache for GET requests
         return $this->get_cached_data($url, $params, $format, $http);
 
     debug($params);
-    
+
     // FIXME: is this a good idea?
     if ($http['method'] == 'POST' && empty($http['content']) && !empty($params)){
       $http['content'] = http_build_query($params);
       $params = array();
     }
-    
+
     if (!empty($params)){
       ksort($params);
       $url .= '?' . http_build_query($params);
@@ -171,14 +171,14 @@ class API {
     try {
       $this->data = $this->format_data($format);
       $this->validate_data($format);
-    } 
+    }
     catch (DataException $e) { $e->errorMessage(); }
     catch (Exception $e) { debug($e->getMessage()); }
-    
+
     return $this->data;
   }
 
-  function get_data_curl($url, $params = array(), $format = 'json', $http = array(), $curl_params = array()){  
+  function get_data_curl($url, $params = array(), $format = 'json', $http = array(), $curl_params = array()){
     debug($params);
     if (!empty($params))
       $url .= '?' . http_build_query($params);
@@ -217,7 +217,7 @@ class API {
 
       $fstat = fstat($http['file']);
       curl_setopt($curl, CURLOPT_INFILE, $http['file']);
-      curl_setopt($curl, CURLOPT_INFILESIZE, $fstat['size']);        
+      curl_setopt($curl, CURLOPT_INFILESIZE, $fstat['size']);
       break;
 
       case 'DELETE':
@@ -229,12 +229,12 @@ class API {
       break;
     }
 
-    $this->response = curl_exec($curl);  
+    $this->response = curl_exec($curl);
     $this->http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     $this->http_info = array(curl_getinfo($curl));
 
     //debug($this->response);
-    debug('Status: ' . $this->http_status);  
+    debug('Status: ' . $this->http_status);
     file_put_contents(sys_get_temp_dir() . '/raw.xml', $this->response);
 
     curl_close($curl);
@@ -244,10 +244,10 @@ class API {
     try {
       $this->data = $this->format_data($format);
       $this->validate_data($format);
-    } 
+    }
     catch (DataException $e) { $e->errorMessage(); }
     catch (Exception $e) { debug($e->getMessage()); }
-    
+
     return $this->data;
   }
 
@@ -314,7 +314,7 @@ class API {
       case 'dom':
       return 'application/xml, */*;q=0.2';
       case 'html':
-      return 'text/html, */*;q=0.2';        
+      return 'text/html, */*;q=0.2';
       case 'rdf':
       return 'application/rdf+xml, */*;q=0.2';
       case 'raw':
@@ -350,7 +350,7 @@ class API {
     debug('Status: ' . $this->http_status);
   }
 
-  function save_http_header($status, $item){  
+  function save_http_header($status, $item){
     // convert arrays to strings if only one item
     foreach ($item as &$data)
       if (count($data) === 1)
@@ -434,3 +434,4 @@ class API {
   }
   */
 }
+
