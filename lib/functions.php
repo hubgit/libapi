@@ -2,8 +2,8 @@
 
 // convenience function
 function h($input){
-  $args = func_get_args();
-  call_user_func_array(array('Output', 'html'), $args);
+  $input = mb_convert_encoding($input, 'UTF-8', mb_detect_encoding($input));
+  print htmlspecialchars((string) $input, ENT_QUOTES, 'UTF-8'); // FIXME: filter_var + FILTER_SANITIZE_SPECIAL_CHARS?
 }
 
 function url($url, $params = array()){
@@ -206,5 +206,51 @@ function positions($haystack, $needle, $modifiers = 'u'){
       $positions[] = mb_strlen(mb_strcut($haystack, 0, $match[0][1])); // convert bytes to chars: PREG_OFFSET_CAPTURE returns byte offset, not chars, even with the 'u' modifier
 
   return $positions;
+}
+
+function truncate($string, $length, $suffix = ''){
+  if (mb_strlen($string) <= $length)
+    return $string;
+
+  if ($suffix)
+    $length -= mb_strlen($suffix) + 1;
+
+  $string = mb_substr($string, 0, $length);
+
+  if ($suffix)
+    $string .= ' ' . $suffix;
+
+  return $string;
+}
+
+function absolute_url($url, $base = NULL){
+  /* return if already absolute URL */
+  if (parse_url($url, PHP_URL_SCHEME) != '')
+    return $url;
+
+  $first = substr($url, 0, 1);
+
+  /* anchors and queries */
+  if ($first == '#' || $first == '?')
+    return $base . $url;
+
+  /* parse base URL and convert to local variables: $scheme, $host, $path */
+  extract(parse_url($base));
+
+  /* remove non-directory element from path */
+  $path = preg_replace('#/[^/]*$#', '', $path);
+
+  /* destroy path if relative url points to root */
+  if ($first == '/')
+    $path = '';
+
+  /* dirty absolute URL */
+  $url = $host . $path . '/' . $url;
+
+  /* replace '//' or '/./' or '/foo/../' with '/' */
+  for ($n = 1; $n > 0; $url = preg_replace(array('#(/\.?/)#', '#/(?!\.\.)[^/]+/\.\./#'), '/', $url, -1, $n)) {}
+
+  /* absolute URL is ready! */
+  return $scheme . '://' . $url;
 }
 
