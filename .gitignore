@@ -2,6 +2,8 @@ config.inc.php
 Config.php
 
 classes-private
+tests-private
+
 private
 misc/private
 *.private.*

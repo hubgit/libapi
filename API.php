@@ -3,7 +3,7 @@
 class API {
   public $def;
   public $doc;
-
+  
   public $input_dir;
   public $output_dir;
 
@@ -19,21 +19,20 @@ class API {
 
   public $cache = TRUE;
   public $cache_expire = 86400; //60*60*24; // use the cache file if it's less than one day old
-
+  
   // SOAP client
   public $soapclient;
-
+  
   // for general use and searches
   public $results = array();
-
+  
   // for searches
   public $total;
   public $pages;
-
+  
   // for entity extraction
   public $annotations = array();
   public $entities = array();
-
 
   function __construct(){
     if (isset($this->def) && !empty($this->def))
@@ -119,13 +118,6 @@ class API {
       if (!isset($http['method']) || $http['method'] == 'GET') // only use the cache for GET requests
         return $this->get_cached_data($url, $params, $format, $http);
 
-<<<<<<< HEAD
-    //debug($params);
-    
-=======
-    debug($params);
-
->>>>>>> 6aabb4be54d85e888db5efd609a713bc9ea85eab
     // FIXME: is this a good idea?
     if ($http['method'] == 'POST' && empty($http['content']) && !empty($params)){
       $http['content'] = http_build_query($params);
@@ -167,7 +159,7 @@ class API {
     return $this->data;
   }
 
-  function get_data_curl($url, $params = array(), $format = 'json', $http = array(), $curl_params = array()){
+  function get_data_curl($url, $params = array(), $format = 'json', $http = array(), $curl_params = array()){  
     debug($params);
     if (!empty($params))
       $url .= '?' . http_build_query($params);

@@ -2,6 +2,8 @@
 
 set_time_limit(0);
 
+//ini_set('soap.wsdl_cache_enabled', '0');
+
 mb_internal_encoding('UTF-8');
 mb_regex_encoding('UTF-8');
 

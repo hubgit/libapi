@@ -169,6 +169,10 @@ function send_content_type_header($format, $params = array(), $charset = 'utf-8'
 function innerXML($node){
   if (!is_object($node))
     return FALSE;
+    
+  if (get_class($node) == 'SimpleXMLElement')
+    $node = dom_import_simplexml($node);
+  
 
   if (get_class($node) == 'SimpleXMLElement')
     $node = dom_import_simplexml($node);
@@ -258,4 +262,3 @@ function absolute_url($url, $base = NULL){
   /* absolute URL is ready! */
   return $scheme . '://' . $url;
 }
-

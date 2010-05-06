@@ -3,6 +3,7 @@
 class Atom {
   function __construct($title, $author, $params = array()){
     $this->dom = new DOMDocument('1.0', 'UTF-8');
+
     $this->feed = $this->dom->appendChild($this->dom->createElement('feed'));
 
     $this->addTextChild($this->feed, 'title', $title);
@@ -67,4 +68,3 @@ class Atom {
     print $this->dom->saveXML();
   }
 }
-
