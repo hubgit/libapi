@@ -111,7 +111,7 @@ class API {
     $key = md5($url . $suffix);
 
     if ($data = $this->cache_get($key)) {
-      debug("Cached: \n" . $url . $suffix);
+      //debug("Cached: \n" . $url . $suffix);
       $this->response = $data['content'];
       $this->http_response_header = $data['header'];
       $this->parse_http_response_header();
@@ -135,7 +135,7 @@ class API {
       if (!isset($http['method']) || $http['method'] == 'GET') // only use the cache for GET requests
         return $this->get_cached_data($url, $params, $format, $http);
 
-    debug($params);
+    //debug($params);
     
     // FIXME: is this a good idea?
     if ($http['method'] == 'POST' && empty($http['content']) && !empty($params)){
@@ -148,8 +148,8 @@ class API {
       $url .= '?' . http_build_query($params);
     }
 
-    debug($url);
-    debug($http);
+    //debug($url);
+    //debug($http);
 
     if (isset($http['file']))
       $http['content'] = file_get_contents($http['file']);
@@ -163,7 +163,7 @@ class API {
     //file_put_contents(sys_get_temp_dir() . '/raw.xml', $this->response);
 
     debug($http_response_header);
-    debug($this->response);
+    //debug($this->response);
 
     $this->http_response_header = $http_response_header;
     $this->parse_http_response_header();
@@ -412,6 +412,14 @@ class API {
     $this->total = $this->xpath->query('opensearch:totalResults')->item(0)->textContent;
     $this->page = $this->xpath->query('opensearch:startIndex')->item(0)->textContent;
     $this->itemsPerPage = $this->xpath->query('opensearch:itemsPerPage')->item(0)->textContent;
+  }
+  
+  function opensearch_json($url, $params){
+    $this->get_data($url, $params, 'json');
+
+    $this->total = $this->data->feed->{'opensearch:totalResults'};
+    $this->page = $this->data->feed->{'opensearch:startIndex'};
+    $this->itemsPerPage = $this->data->feed->{'opensearch:itemsPerPage'};
   }
 
   /*

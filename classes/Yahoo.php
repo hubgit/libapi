@@ -13,6 +13,8 @@ class Yahoo extends API {
       'q' => $query,
       'format' => $format,
       ), $format);
+      
+    debug($this->data);
   }
 
   // http://developer.yahoo.com/maps/rest/V1/geocode.html
