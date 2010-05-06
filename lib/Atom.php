@@ -19,30 +19,32 @@ class Atom {
     $node = $this->dom->createElement($name);
     $node->appendChild($this->dom->createTextNode($text));
     $parent->appendChild($node);
+    return $node;
   }
 
-  function addEntry($id, $title, $updated, $summary, $params){
+  function addEntry($id, $title, $updated, $summary = NULL, $params = array()){
     $entry = $this->feed->appendChild($this->dom->createElement('entry'));
 
     $this->addTextChild($entry, 'id', $id);
     $this->addTextChild($entry, 'title', $title);
     $this->addTextChild($entry, 'updated', date(DATE_ATOM, $updated));
-    $this->addTextChild($entry, 'summary', $summary);
+
+    if (!is_null($summary))
+      $this->addTextChild($entry, 'summary', $summary);
 
     $this->addLinks($entry, $params['link']);
-
     return $entry;
   }
 
-  function addContent(&$parent, $div){
+  function addContent(&$parent){
     $content = $this->dom->createElement('content');
-    $content->setAttribute('type' => 'xhtml');
+    $content->setAttribute('type', 'xhtml');
     $parent->appendChild($content);
 
-    $doc = DOMDocument::loadXML($div);
-    $node = $this->dom->importNode($doc->firstChild, TRUE);
-    $node->setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+    $div = $this->dom->createElement('div');
+    $div->setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
     $content->appendChild($div);
+    return $div;
   }
 
   function addLinks(&$parent, $links){
