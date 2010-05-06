@@ -1,16 +1,19 @@
 <?php
 
-// convenience function
-function h($input){
+function h($input, $print = TRUE){
   $input = mb_convert_encoding($input, 'UTF-8', mb_detect_encoding($input));
-  print htmlspecialchars((string) $input, ENT_QUOTES, 'UTF-8'); // FIXME: filter_var + FILTER_SANITIZE_SPECIAL_CHARS?
+  $output = htmlspecialchars((string) $input, ENT_QUOTES, 'UTF-8'); // FIXME: filter_var + FILTER_SANITIZE_SPECIAL_CHARS?
+  if ($print)
+    print $output;
+  else
+    return $output;
 }
 
 function url($url, $params = array()){
   return $url . (empty($params) ? '' : '?' . http_build_query($params));
 }
 
-function debug($arg){
+function debug($arg = ''){
   switch (Config::get('DEBUG')){
     case 'PRINT':
       print(print_r($arg, TRUE) . "\n");
@@ -21,8 +24,10 @@ function debug($arg){
 
     case 'FIRE':
       $fire = FirePHP::getInstance(TRUE);
-      if (is_string($arg))
-        $arg = sprintf('%s %.4f %s', date('H:i:s'), microtime(TRUE) - $_SERVER['REQUEST_TIME'], $arg);
+      if (is_string($arg)){
+        $trace = debug_backtrace();
+        $arg = sprintf('%s %.4f %s#%d:%s %s', date('H:i:s'), microtime(TRUE) - $_SERVER['REQUEST_TIME'], basename($trace[1]['file']), $trace[1]['line'], $trace[1]['function'], $arg);
+      }
       $fire->log($arg);
     break;
 

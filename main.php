@@ -34,5 +34,15 @@ if (empty(Config::$properties['LOG']))
 
 require LIBAPI_ROOT . '/API.php';
 
-spl_autoload_register(array('API', '__autoload'));
+set_include_path(implode(PATH_SEPARATOR, array(
+  LIBAPI_ROOT . '/classes-private/',
+  LIBAPI_ROOT . '/classes/',
+  LIBAPI_ROOT . '/lib/',
+  LIBAPI_ROOT . '/extlib/',
+  get_include_path())));
+
+spl_autoload_register(function($class){ require $class . '.php'; }, FALSE, TRUE);
+
+//spl_autoload_extensions('.private.php', '.php');
+//spl_autoload_register();
 

@@ -44,22 +44,6 @@ class API {
       $this->check_def($this->def);
   }
 
-  static function __autoload($class){
-    $file = sprintf('%s/classes/%s', LIBAPI_ROOT, $class);
-    if (file_exists($file . '.private.php'))
-      return require_once($file . '.private.php');
-    else if (file_exists($file . '.php'))
-      return require_once($file . '.php');
-
-    $file = sprintf('%s/lib/%s.php', LIBAPI_ROOT, $class);
-    if (file_exists($file))
-      return require_once($file);
-
-    $file = sprintf('%s/extlib/%s.php', LIBAPI_ROOT, $class);
-    if (file_exists($file))
-      return require_once($file);
-  }
-
   function check_def($def){
     if (Config::get($def) === FALSE)
       throw new Exception('Requirement not defined: ' . $def);
