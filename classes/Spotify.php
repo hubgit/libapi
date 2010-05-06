@@ -15,16 +15,14 @@ class Spotify extends API {
     $node = $nodes->item(0);
     $uri = $node->getAttribute('href');
     
-    if ($full){
+    if ($full)
       $this->lookup($uri);
-      $node = $this->data;
-    }
     
     $this->results[] = array(
       'href' => $uri,
-      'artist' => $this->xpath->query("s:artist/s:name", $node)->item(0)->textContent,
-      'album' => $this->xpath->query("s:album/s:name", $node)->item(0)->textContent,
-      'track' => $this->xpath->query("s:name", $node)->item(0)->textContent,
+      'artist' => $this->xpath->query("s:artist/s:name")->item(0)->textContent,
+      'album' => $this->xpath->query("s:album/s:name")->item(0)->textContent,
+      'track' => $this->xpath->query("s:name")->item(0)->textContent,
       );
   }
 
@@ -39,20 +37,18 @@ class Spotify extends API {
     $node = $nodes->item(0);
     $uri = $node->getAttribute('href');
     
-    if ($full){
+    if ($full)
       $this->lookup($uri, array('extras' => 'track')); // 'trackdetail'
-      $node = $this->data;
-    }
           
     $tracks = array();
-    foreach ($this->xpath->query("s:tracks/s:track", $node) as $item)
-      $tracks[] = $node->getAttribute('href');
+    foreach ($this->xpath->query("s:tracks/s:track") as $item)
+      $tracks[] = $item->getAttribute('href');
 
     $this->results[] = array(
       'href' => $uri,
-      'artist' => $this->xpath->query("s:artist/s:name", $node)->item(0)->textContent,
-      'album' => $this->xpath->query("s:name", $node)->item(0)->textContent,
-      'released' => $this->xpath->query("s:released", $node)->item(0)->textContent,
+      'artist' => $this->xpath->query("s:artist/s:name")->item(0)->textContent,
+      'album' => $this->xpath->query("s:name")->item(0)->textContent,
+      'released' => $this->xpath->query("s:released")->item(0)->textContent,
       'tracks' => $tracks,
       );
   }
@@ -61,5 +57,6 @@ class Spotify extends API {
     $default = array('uri' => $uri);
     $this->get_data($this->server . '/lookup/1/', array_merge($default, $params), 'dom');
     $this->xpath->registerNamespace('s', 'http://www.spotify.com/ns/music/1');
+    return $this->data;
   }
 }

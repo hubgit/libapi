@@ -1,25 +1,25 @@
 <?php
 
-class DB {  
+class DB {
   public $link;
-  
+
   function __construct($host = 'localhost', $database = NULL, $user = NULL, $password = NULL){
     if (!isset($database))
       $database = Config::get('DB');
-      
+
     if (!isset($user))
       $user = Config::get('DB_USER');
-    
+
     if (!isset($password))
       $password = Config::get('DB_PASS');
-      
+
     $this->link = mysql_connect($host, $user, $password) or die("Could not connect to MySQL database\n");
     mysql_select_db($database, $this->link) or die("Could not select database\n");
 
     mysql_query('SET CHARACTER SET utf8', $this->link);
     //mysql_query('SET NAMES utf8');
   }
-  
+
   function query(){
     $params = func_get_args();
     $query = array_shift($params);
@@ -43,6 +43,4 @@ class DB {
     return $result;
   }
 }
-
-
 
