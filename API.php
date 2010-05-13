@@ -69,20 +69,21 @@ class API {
         $this->cache_set($key, $this->data);
     }
     else
-      debug("Cached:\n" . print_r(array($wsdl, $method, $params), TRUE));
+      debug('Cached SOAP response');
+      //debug("Cached:\n" . print_r(array($wsdl, $method, $params), TRUE));
 
     //debug($this->data);
   }
 
   function cache_set($key, $data = NULL){
     $cache_dir = $this->get_output_dir('cache-uri');
-    $cache_file = sprintf('%s/%s', $cache_dir, $key);
+    $cache_file = sprintf('%s/%s.gz', $cache_dir, $key);
     file_put_contents('compress.zlib://' . $cache_file, serialize($data));
   }
 
   function cache_get($key){
     $cache_dir = $this->get_output_dir('cache-uri');
-    $cache_file = sprintf('%s/%s', $cache_dir, $key);
+    $cache_file = sprintf('%s/%s.gz', $cache_dir, $key);
     if (file_exists($cache_file) && ((time() - filemtime($cache_file)) < $this->cache_expire))
       return unserialize(file_get_contents('compress.zlib://' . $cache_file));
   }
