@@ -12,7 +12,6 @@ class ZemantaTest extends PHPUnit_Framework_TestCase {
   
   public function testSimilar(){
     $n = 20;
-    $this->text = "Trying out a bit of Simon Willison's Redis Tutorial (and 'Node.js is genuinely exciting' post): this node.js script reads the HTTP referer header from a request, increments appropriate counters in a Redis database, then returns a 1x1px GIF image.";
     $this->api->similar($this->text, $n);
     $this->assertEquals($n, count($this->api->results));
     debug($this->api->results);
