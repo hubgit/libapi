@@ -14,7 +14,7 @@ class ZemantaTest extends PHPUnit_Framework_TestCase {
     $n = 20;
     $this->api->similar($this->text, $n);
     $this->assertEquals($n, count($this->api->results));
-    debug($this->api->results);
+    //debug($this->api->results);
   }
   
   public function testKeywords(){
