@@ -98,7 +98,7 @@ class API {
     $key = md5($format . ':' . $url . $suffix); // TODO: use Accept header as well as format? Use proper Cache-Control and Vary response headers?
 
     if ($data = $this->cache_get($key)) {
-      debug("Cached: \n" . $url . $suffix);
+      debug("Cached: \n" . $format . ' ' . $url . $suffix);
       $this->response = $data['content'];
       $this->http_response_header = $data['header'];
       $this->parse_http_response_header();
@@ -119,6 +119,8 @@ class API {
     }
     catch (DataException $e) { $e->errorMessage(); }
     catch (Exception $e) { debug($e->getMessage()); }
+
+    return $this->data;
   }
 
   function get_data($url, $params = array(), $format = 'json', $http = array(), $cache = TRUE){
