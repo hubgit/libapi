@@ -71,20 +71,21 @@ class API {
         $this->cache_set($key, $this->data);
     }
     else
-      debug("Cached:\n" . print_r(array($wsdl, $method, $params), TRUE));
+      debug('Cached SOAP response');
+      //debug("Cached:\n" . print_r(array($wsdl, $method, $params), TRUE));
 
     //debug($this->data);
   }
 
   function cache_set($key, $data = NULL){
     $cache_dir = $this->get_output_dir('cache-uri');
-    $cache_file = sprintf('%s/%s', $cache_dir, $key);
+    $cache_file = sprintf('%s/%s.gz', $cache_dir, $key);
     file_put_contents('compress.zlib://' . $cache_file, serialize($data));
   }
 
   function cache_get($key){
     $cache_dir = $this->get_output_dir('cache-uri');
-    $cache_file = sprintf('%s/%s', $cache_dir, $key);
+    $cache_file = sprintf('%s/%s.gz', $cache_dir, $key);
     if (file_exists($cache_file) && ((time() - filemtime($cache_file)) < $this->cache_expire))
       return unserialize(file_get_contents('compress.zlib://' . $cache_file));
   }
@@ -93,30 +94,33 @@ class API {
     if (!empty($params))
       ksort($params);
     $suffix = empty($params) ? NULL : '?' . http_build_query($params);
-    $key = md5($url . $suffix);
+    $key = md5($format . ':' . $url . $suffix); // TODO: use Accept header as well as format? Use proper Cache-Control and Vary response headers?
 
     if ($data = $this->cache_get($key)) {
       debug("Cached: \n" . $url . $suffix);
-      //debug($data);
       $this->response = $data['content'];
       $this->http_response_header = $data['header'];
       $this->parse_http_response_header();
     }
     else {
+      // set the accept header here, because the format is set to 'raw'
+      if (!isset($http['header']) || !preg_match('/Accept: /', $http['header']))
+        $http['header'] .= (empty($http['header']) ? '' : "\n") . $this->accept_header($format);
+        
       $this->get_data($url, $params, 'raw', $http, FALSE);
       if ($this->response !== FALSE)
         $this->cache_set($key, array('header' => $this->http_response_header, 'content' => $this->data));
     }
 
     try {
-      $this->data = $this->format_data($format, $this->response);
+      $this->data = $this->format_data($format);
       $this->validate_data($format);
     }
     catch (DataException $e) { $e->errorMessage(); }
     catch (Exception $e) { debug($e->getMessage()); }
   }
 
-  function get_data($url, $params = array(), $format = 'json', $http = array(), $cache = TRUE){
+  function get_data($url, $params = array(), $format = 'json', $http = array(), $cache = TRUE){    
     if ($cache && $this->cache) // can set either of these to FALSE to disable the cache
       if (!isset($http['method']) || $http['method'] == 'GET') // only use the cache for GET requests
         return $this->get_cached_data($url, $params, $format, $http);
@@ -138,8 +142,13 @@ class API {
     if (isset($http['file']))
       $http['content'] = file_get_contents($http['file']);
 
-    // TODO: set HTTP Accept headers according to format?
     // TODO: allow setting default HTTP headers in Config.php
+    
+    if (!isset($http['header']) || !preg_match('/Accept: /', $http['header']))
+      $http['header'] .= (empty($http['header']) ? '' : "\n") . $this->accept_header($format);
+      
+    debug($url);
+    debug($http);
 
     $context = empty($http) ? NULL : stream_context_create(array('http' => $http));
 
@@ -295,17 +304,17 @@ class API {
   function accept_header($format){
     switch ($format){
       case 'json':
-      return 'application/json, */*;q=0.2';
+      return 'Accept: application/json,*/*;q=0.2';
       case 'xml':
       case 'dom':
-      return 'application/xml, */*;q=0.2';
+      return 'Accept: application/xml,*/*;q=0.2';
       case 'html':
-      return 'text/html, */*;q=0.2';
+      return 'Accept: text/html,*/*;q=0.2';
       case 'rdf':
-      return 'application/rdf+xml, */*;q=0.2';
+      return 'Accept: application/rdf+xml,*/*;q=0.2';
       case 'raw':
       default:
-      return '*/*';
+      return 'Accept: */*';
     }
   }
 
