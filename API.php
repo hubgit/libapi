@@ -126,7 +126,7 @@ class API {
   function get_data($url, $params = array(), $format = 'json', $http = array(), $cache = TRUE){
     debug();
     if ($cache && $this->cache) // can set either of these to FALSE to disable the cache
-      if (!isset($http['method']) || $http['method'] == 'GET') // only use the cache for GET requests
+      if (!isset($http['method']) || $http['method'] == 'GET') // only use the cache for GET requests (TODO: allow caching of some POST requests?)
         return $this->get_cached_data($url, $params, $format, $http);
 
     // FIXME: is this a good idea?
