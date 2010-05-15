@@ -91,6 +91,7 @@ class API {
   }
 
   function get_cached_data($url, $params = array(), $format = 'json', $http = array()){
+    debug();
     if (!empty($params))
       ksort($params);
     $suffix = empty($params) ? NULL : '?' . http_build_query($params);
@@ -106,7 +107,7 @@ class API {
       // set the accept header here, because the format is set to 'raw'
       if (!isset($http['header']) || !preg_match('/Accept: /', $http['header']))
         $http['header'] .= (empty($http['header']) ? '' : "\n") . $this->accept_header($format);
-        
+
       $this->get_data($url, $params, 'raw', $http, FALSE);
       if ($this->response !== FALSE)
         $this->cache_set($key, array('header' => $this->http_response_header, 'content' => $this->data));
@@ -120,7 +121,8 @@ class API {
     catch (Exception $e) { debug($e->getMessage()); }
   }
 
-  function get_data($url, $params = array(), $format = 'json', $http = array(), $cache = TRUE){    
+  function get_data($url, $params = array(), $format = 'json', $http = array(), $cache = TRUE){
+    debug();
     if ($cache && $this->cache) // can set either of these to FALSE to disable the cache
       if (!isset($http['method']) || $http['method'] == 'GET') // only use the cache for GET requests
         return $this->get_cached_data($url, $params, $format, $http);
@@ -136,17 +138,14 @@ class API {
       $url .= '?' . http_build_query($params);
     }
 
-    debug($url);
-    //debug($http);
-
     if (isset($http['file']))
       $http['content'] = file_get_contents($http['file']);
 
     // TODO: allow setting default HTTP headers in Config.php
-    
+
     if (!isset($http['header']) || !preg_match('/Accept: /', $http['header']))
       $http['header'] .= (empty($http['header']) ? '' : "\n") . $this->accept_header($format);
-      
+
     debug($url);
     debug($http);
 
