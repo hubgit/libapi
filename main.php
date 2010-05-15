@@ -40,6 +40,8 @@ set_include_path(implode(PATH_SEPARATOR, array(
   LIBAPI_ROOT . '/lib/',
   LIBAPI_ROOT . '/extlib/',
   get_include_path())));
+  
+require 'DB.php';
 
-spl_autoload_register(function($class){ require $class . '.php'; }, FALSE, TRUE);
-
+function libapi_autoload($class){ require $class . '.php'; }
+spl_autoload_register('libapi_autoload', FALSE, TRUE);
