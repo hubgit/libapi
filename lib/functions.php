@@ -13,9 +13,13 @@ function url($url, $params = array()){
   return $url . (empty($params) ? '' : '?' . http_build_query($params));
 }
 
-function debug($arg = ''){  
+function debug($arg = ''){
   switch (Config::get('DEBUG')){
     case 'PRINT':
+      if (is_string($arg)){
+        $trace = debug_backtrace();
+        $arg = sprintf('%s %s#%d:%s %s', microtime(), basename($trace[1]['file']), $trace[1]['line'], $trace[1]['function'], $arg);
+      }
       print(print_r($arg, TRUE) . "\n");
     break;
 
@@ -169,10 +173,10 @@ function send_content_type_header($format, $params = array(), $charset = 'utf-8'
 function innerXML($node){
   if (!is_object($node))
     return FALSE;
-    
+
   if (get_class($node) == 'SimpleXMLElement')
     $node = dom_import_simplexml($node);
-  
+
 
   if (get_class($node) == 'SimpleXMLElement')
     $node = dom_import_simplexml($node);
@@ -262,3 +266,32 @@ function absolute_url($url, $base = NULL){
   /* absolute URL is ready! */
   return $scheme . '://' . $url;
 }
+
+function list_data($data, $show_value = TRUE){
+  ?>
+  <dl>
+<? foreach ($data as $key => $value): ?>
+    <div class="di">
+      <dt><? h($key); ?></dt>
+<? if (is_array($value)): ?>
+      <dd><? h(implode(', ', $value)); ?></dd>
+<? else: ?>
+      <dd><? h($value); ?></dd>
+<? endif; ?>
+    </div>
+<? endforeach; ?>
+  </dl>
+  <?
+}
+
+function mb_str_replace($needle, $replacement, $haystack){
+  $needle_len = mb_strlen($needle);
+  $replacement_len = mb_strlen($replacement);
+  $pos = mb_strpos($haystack, $needle);
+  while ($pos !== false){
+    $haystack = mb_substr($haystack, 0, $pos) . $replacement . mb_substr($haystack, $pos + $needle_len);
+    $pos = mb_strpos($haystack, $needle, $pos + $replacement_len);
+  }
+  return $haystack;
+}
+
