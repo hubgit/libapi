@@ -7,6 +7,9 @@ set_time_limit(0);
 mb_internal_encoding('UTF-8');
 mb_regex_encoding('UTF-8');
 
+ini_set('display_errors', TRUE);
+ini_set('error_reporting', E_ALL  & ~E_NOTICE);
+
 libxml_use_internal_errors(FALSE); // true = hide parsing errors; use libxml_get_errors() to display later.
 
 //ini_set('soap.wsdl_cache_enabled', '0');
@@ -41,5 +44,8 @@ set_include_path(implode(PATH_SEPARATOR, array(
   LIBAPI_ROOT . '/extlib/',
   get_include_path())));
 
-spl_autoload_register(function($class){ require $class . '.php'; }, FALSE, TRUE);
+require 'DB.php';
+
+function libapi_autoload($class){ require $class . '.php'; }
+spl_autoload_register('libapi_autoload', FALSE, TRUE);
 

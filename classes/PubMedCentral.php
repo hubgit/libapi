@@ -8,21 +8,9 @@ class PubMedCentral extends API {
       'view' => 'xml',
       'id' => $pmid,
       ), 'xml');
-    
+
     foreach ($this->data->REFORM->PMCID as $item)
       $this->results[] = (int) $item;
-  }
-  
-  function pmc_to_entrez($ids){    
-
-    $this->total = count($this->data->REFORM->PMCID);
-    if (!$this->total)
-      return FALSE;
-
-    $this->results = array();
-    foreach ($this->data->REFORM->PMCID as $item)
-      $this->results[] = (int) $item;
-
   }
 
   function pmc_to_entrez($ids){

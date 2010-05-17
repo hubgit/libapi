@@ -3,7 +3,7 @@
 class API {
   public $def;
   public $doc;
-  
+
   public $input_dir;
   public $output_dir;
 
@@ -19,17 +19,17 @@ class API {
 
   public $cache = TRUE;
   public $cache_expire = 86400; //60*60*24; // use the cache file if it's less than one day old
-  
+
   // SOAP client
   public $soapclient;
-  
+
   // for general use and searches
   public $results = array();
-  
+
   // for searches
   public $total;
   public $pages;
-  
+
   // for entity extraction
   public $annotations = array();
   public $entities = array();
@@ -48,7 +48,9 @@ class API {
       throw new Exception('Requirement not defined: ' . $def);
   }
 
-  function soap($wsdl, $method, $params = array()){
+  function soap($wsdl, $method){
+    $args = func_get_args();
+    $params = array_slice($args, 2);
     debug($params);
     ksort($params);
     $key = md5($wsdl . '#' . $method . '?' . http_build_query($params));
@@ -62,7 +64,7 @@ class API {
           'features' => SOAP_SINGLE_ELEMENT_ARRAYS,
           //'compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP,
         ));
-        $this->data = $this->soapclient->$method($params);
+        $this->data = call_user_func_array(array($this->soapclient, $method), $params);
       } catch (SoapFault $exception) { debug($exception); } // FIXME: proper error handling
 
       if ($this->cache && !is_null($this->data))
@@ -89,13 +91,14 @@ class API {
   }
 
   function get_cached_data($url, $params = array(), $format = 'json', $http = array()){
+    debug();
     if (!empty($params))
       ksort($params);
     $suffix = empty($params) ? NULL : '?' . http_build_query($params);
     $key = md5($format . ':' . $url . $suffix); // TODO: use Accept header as well as format? Use proper Cache-Control and Vary response headers?
 
     if ($data = $this->cache_get($key)) {
-      debug("Cached: \n" . $url . $suffix);
+      debug("Cached: \n" . $format . ' ' . $url . $suffix);
       $this->response = $data['content'];
       $this->http_response_header = $data['header'];
       $this->parse_http_response_header();
@@ -104,7 +107,7 @@ class API {
       // set the accept header here, because the format is set to 'raw'
       if (!isset($http['header']) || !preg_match('/Accept: /', $http['header']))
         $http['header'] .= (empty($http['header']) ? '' : "\n") . $this->accept_header($format);
-        
+
       $this->get_data($url, $params, 'raw', $http, FALSE);
       if ($this->response !== FALSE)
         $this->cache_set($key, array('header' => $this->http_response_header, 'content' => $this->data));
@@ -116,11 +119,14 @@ class API {
     }
     catch (DataException $e) { $e->errorMessage(); }
     catch (Exception $e) { debug($e->getMessage()); }
+
+    return $this->data;
   }
 
-  function get_data($url, $params = array(), $format = 'json', $http = array(), $cache = TRUE){    
+  function get_data($url, $params = array(), $format = 'json', $http = array(), $cache = TRUE){
+    debug();
     if ($cache && $this->cache) // can set either of these to FALSE to disable the cache
-      if (!isset($http['method']) || $http['method'] == 'GET') // only use the cache for GET requests
+      if (!isset($http['method']) || $http['method'] == 'GET') // only use the cache for GET requests (TODO: allow caching of some POST requests?)
         return $this->get_cached_data($url, $params, $format, $http);
 
     // FIXME: is this a good idea?
@@ -138,10 +144,10 @@ class API {
       $http['content'] = file_get_contents($http['file']);
 
     // TODO: allow setting default HTTP headers in Config.php
-    
+
     if (!isset($http['header']) || !preg_match('/Accept: /', $http['header']))
       $http['header'] .= (empty($http['header']) ? '' : "\n") . $this->accept_header($format);
-      
+
     debug($url);
     debug($http);
 
@@ -166,7 +172,7 @@ class API {
     return $this->data;
   }
 
-  function get_data_curl($url, $params = array(), $format = 'json', $http = array(), $curl_params = array()){  
+  function get_data_curl($url, $params = array(), $format = 'json', $http = array(), $curl_params = array()){
     debug($params);
     if (!empty($params))
       $url .= '?' . http_build_query($params);
@@ -251,13 +257,15 @@ class API {
       $dom->loadXML($this->response, LIBXML_DTDLOAD | LIBXML_DTDVALID | LIBXML_NOCDATA | LIBXML_NOENT | LIBXML_NONET);
       $dom->encoding = 'UTF-8';
       $dom->formatOutput = TRUE;
-      $this->xpath = new DOMXPath($dom);
+      if (is_object($dom))
+       $this->xpath = new DOMXPath($dom);
       return $dom;
       case 'html':
-      return simplexml_import_dom(@DOMDocument::loadHTML($this->response, LIBXML_NOCDATA | LIBXML_NONET));
+      return simplexml_import_dom($this->format_data('html-dom'));
       case 'html-dom':
-      $dom = @DOMDocument::loadHTML($this->response, LIBXML_NOCDATA | LIBXML_NONET);
-      $this->xpath = new DOMXPath($dom);
+      $dom = @DOMDocument::loadHTML($this->response);
+      if (is_object($dom))
+        $this->xpath = new DOMXPath($dom);
       return $dom;
       case 'rdf-xml':
       return DOMDocument::loadXML($this->response, LIBXML_DTDLOAD | LIBXML_DTDVALID | LIBXML_NOCDATA | LIBXML_NOENT | LIBXML_NONET); // FIXME: need proper RDF parser
@@ -401,7 +409,7 @@ class API {
     $this->page = $this->xpath->query('opensearch:startIndex')->item(0)->textContent;
     $this->itemsPerPage = $this->xpath->query('opensearch:itemsPerPage')->item(0)->textContent;
   }
-  
+
   function opensearch_json($url, $params){
     $this->get_data($url, $params, 'json');
 
