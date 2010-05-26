@@ -6,35 +6,14 @@ class XCAS {
   }
   
   function item($id, $name = '*'){
-    debug(array($id, $name));
-    return $this->xpath->evaluate(sprintf("%s[@_id='%d']", $name, $id));
+    static $items = array(); // item cache for speed, but what if processing more than one XCAS file in a request?
+    if (!isset($items[$id]))
+      $items[$id] = $this->xpath->evaluate(sprintf("%s[@_id='%d']", $name, $id))->item(0);
+    return $items[$id];
   }
   
   function items($id){
-    debug($id);
     return $this->xpath->evaluate(sprintf("uima.cas.FSArray[@_id='%d']/i", $id));
-  }
-
-  function knowledgesets(){
-    return $this->xpath->query('com.temis.uima.KnowledgeSet');
-  }
-
-  function provider($knowledgeset){
-    $nodes = $this->item($knowledgeset->getAttribute('_ref_provider'), 'com.temis.uima.KSProvider');
-    return $nodes->item(0);
-  }
-
-  function elements($knowledgeset){
-    return $this->items($knowledgeset->getAttribute('_ref_elements'));
-  }
-
-  function occurrences($element){
-    return $this->item($element->nodeValue, 'com.temis.uima.EntityOccurrence');
-  }
-
-  function entity($occurrence){
-    $nodes = $this->item($occurrence->getAttribute('_ref_entity'), 'com.temis.uima.Entity');
-    return $nodes->item(0);
   }
 
   function concepts_by_position($occurrence){
@@ -89,8 +68,7 @@ class XCAS {
   }
   
   function attribute($id){
-    $nodes = $this->item($id);
-    $node = $nodes->item(0);
+    $node = $this->item($id);
     return array($node->getAttribute('name'), $node->getAttribute('value'));
   }
 
@@ -98,8 +76,7 @@ class XCAS {
     $items = array();
 
     while ($entity->hasAttribute('_ref_entity')){
-      $nodes = $this->item($entity->getAttribute('_ref_entity'));
-      $entity = $nodes->item(0);
+      $entity = $this->item($entity->getAttribute('_ref_entity'));
       $items[$entity->getAttribute('value')] = 1;
     }
 
