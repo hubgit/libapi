@@ -70,9 +70,10 @@ class API {
       if ($this->cache && !is_null($this->data))
         $this->cache_set($key, $this->data);
     }
-    else
+    else{
       debug('Cached SOAP response');
       //debug("Cached:\n" . print_r(array($wsdl, $method, $params), TRUE));
+    }
 
     //debug($this->data);
   }
@@ -148,13 +149,19 @@ class API {
     if (!isset($http['header']) || !preg_match('/Accept: /', $http['header']))
       $http['header'] .= (empty($http['header']) ? '' : "\n") . $this->accept_header($format);
 
-    debug($url);
-    debug($http);
+    //debug($url);
+    //debug($http);
 
     $context = empty($http) ? NULL : stream_context_create(array('http' => $http));
-
-    $this->response = file_get_contents($url, NULL, $context);
-    //file_put_contents(sys_get_temp_dir() . '/raw.xml', $this->response);
+    
+    if (!empty($this->oauth)){
+      $oauth = new OAuth($this->oauth['consumer_key'], $this->oauth['consumer_secret'], OAUTH_SIG_METHOD_HMACSHA1, OAUTH_AUTH_TYPE_URI);
+      $oauth->setToken($this->oauth['token'], $this->oauth['secret']);
+      $this->response = $oauth->fetch($url);
+    }
+    else {
+      $this->response = file_get_contents($url, NULL, $context);
+    }
 
     debug($http_response_header);
     //debug($this->response);
