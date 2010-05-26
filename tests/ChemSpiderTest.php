@@ -28,8 +28,8 @@ class ChemSpiderTest extends PHPUnit_Framework_TestCase {
   
   public function testSearch(){
     $result = $this->api->search(sprintf('"%s"', $this->compoundName));
-    $this->assertEquals($this->csid, $result);
     $this->assertEquals(1, count($result));   
+    $this->assertEquals($this->csid, $result[0]);
   }
   
   public function testGetStructureSynonyms(){
@@ -39,8 +39,8 @@ class ChemSpiderTest extends PHPUnit_Framework_TestCase {
   
   public function testCSID2ExtRefs(){
     $result = $this->api->CSID2ExtRefs($this->csid, array('wikipedia'));
-    $this->assertEquals($this->csid, $result->CSID);    
-    $this->assertEquals($this->wikipedia, $result->ext_url);    
+    $this->assertEquals($this->csid, $result[0]->CSID);    
+    $this->assertEquals($this->wikipedia, $result[0]->ext_url);    
   }
   
   public function testGetImage(){      

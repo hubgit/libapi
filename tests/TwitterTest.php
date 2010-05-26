@@ -16,12 +16,12 @@ class TwitterTest extends PHPUnit_Framework_TestCase {
     $this->assertGreaterThan(10, count($this->api->results));
   }
   
-  public function testFriends(){
+  public function xtestFriends(){
     $this->api->friends($this->username);
     $this->assertGreaterThan(10, count($this->api->results));
   }
 
-  public function testContentByUser(){
+  public function xtestContentByUser(){
     $this->api->content_by_user($this->username, 5, 1);
     $this->assertGreaterThan(1, count($this->api->results));
   }
