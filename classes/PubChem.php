@@ -5,12 +5,8 @@ class PubChem extends API{
   public $def = array('EUTILS_TOOL', 'EUTILS_EMAIL');
   
   public $db = 'pccompound';
-
-  function search($args, $params = array()){
-    unset($this->total, $this->webenv, $this->querykey);
-
-    $this->db = 'pccompound';
-
+  
+  function build_term($args){
     if ($args['cid'])
       $args['term'] = sprintf('%d[CID]', $args['cid']);
     else if ($args['sid'])
@@ -19,8 +15,10 @@ class PubChem extends API{
       $args['term'] = sprintf('"%s"[InChIKey]', preg_replace('/^inchikey=/i', '', $args['inchikey']));
     else if ($args['inchi'])
       return $this->pug($args['inchi']);
+    else if ($args['iupac'])
+      $args['term'] = sprintf('"%s"[IUPACName]', $args['name']); // TODO
     else if ($args['name'])
-      $args['term'] = sprintf('%s[IUPACName]', $args['name']); // TODO
+      $args['term'] = sprintf('"%s"', $args['name']);
 
     if (!$term = $args['term'])
       return FALSE;
@@ -33,6 +31,66 @@ class PubChem extends API{
     // put free text queries in quotes
     if (strpos($term, '"') === FALSE && !preg_match('/\[[CS]ID\]/', $term)) // && strpos($term, '[') === FALSE)
       $term = sprintf('"%s"', $term);
+    
+    return $term;
+  }
+  
+  function search_soap($args, $params = array()){
+    unset($this->total, $this->webenv, $this->querykey);
+    $this->db = 'pccompound';
+    $term = $this->build_term($args);
+        
+    $default = array(
+      'db' => $this->db,
+      'term' => $term,
+      'retmax' => 1,
+      'retmode' => 'xml',
+      'usehistory' => 'y',
+      'tool' => Config::get('EUTILS_TOOL'),
+      'email' => Config::get('EUTILS_EMAIL'),
+      );
+
+    $params = array_merge($default, $params);
+    $this->soap('http://www.ncbi.nlm.nih.gov/entrez/eutils/soap/v2.0/eutils.wsdl', 'run_eSearch', $params);
+    
+    $this->total = $this->data->Count;
+    
+    if ($params['usehistory'] == 'y'){
+      $this->webenv = $this->data->WebEnv;
+      $this->querykey = $this->data->QueryKey;
+    }
+    
+    return $this->data;
+  }
+  
+  /*
+  function fetch_soap($ids = NULL, $params = array()){
+     $default = array(
+      'db' => $this->db,
+      'retmode' => 'xml',
+      'tool' => Config::get('EUTILS_TOOL'),
+      'email' => Config::get('EUTILS_EMAIL'),
+      );
+      
+    if (!empty($ids)){
+      $default['id'] = implode(',', is_array($ids) ? $ids : array($ids));
+    }
+    else if ($this->webenv){
+      $default['query_key'] = $this->querykey;
+      $default['WebEnv'] = $this->webenv;
+    }
+
+    $this->soap('http://www.ncbi.nlm.nih.gov/entrez/eutils/soap/v2.0/efetch_pubchem.wsdl', 'run_eFetch', array_merge($default, $params));
+    
+    return $this->data;
+  }
+  */
+  
+
+  function search($args, $params = array()){
+    unset($this->total, $this->webenv, $this->querykey);
+    $this->db = 'pccompound';
+    $term = $this->build_term($args);
 
     $default = array(
       'db' => $this->db,
@@ -129,6 +187,7 @@ class PubChem extends API{
      return $result;
    }
 
+  // TODO: pug_soap
   function pug($inchi){
     if (stripos($inchi, 'inchi=') !== 0)
       $inchi = 'InChI=' . $inchi;
@@ -142,7 +201,7 @@ class PubChem extends API{
     if ($status != 'queued')
       exit('Error searching PubChem');
 
-    $reqid = $xpath->query("//PCT-Waiting_reqid")->item(0)->nodeValue;
+    $reqid = $this->xpath->query("//PCT-Waiting_reqid")->item(0)->nodeValue;
     $xml = sprintf(file_get_contents(Config::get('MISC_DIR') . '/pubchem/pug-reqid.xml'), htmlspecialchars($reqid));
 
     $i = 0;

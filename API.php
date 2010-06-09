@@ -72,10 +72,10 @@ class API {
     }
     else{
       debug('Cached SOAP response');
-      //debug("Cached:\n" . print_r(array($wsdl, $method, $params), TRUE));
+      debug("Cached:\n" . print_r(array($wsdl, $method, $params), TRUE));
     }
 
-    //debug($this->data);
+    debug($this->data);
   }
 
   function cache_set($key, $data = NULL){
@@ -149,7 +149,7 @@ class API {
     if (!isset($http['header']) || !preg_match('/Accept: /', $http['header']))
       $http['header'] .= (empty($http['header']) ? '' : "\n") . $this->accept_header($format);
 
-    //debug($url);
+    debug($url);
     //debug($http);
 
     $context = empty($http) ? NULL : stream_context_create(array('http' => $http));
@@ -164,7 +164,7 @@ class API {
     }
 
     debug($http_response_header);
-    //debug($this->response);
+    debug($this->response);
 
     $this->http_response_header = $http_response_header;
     $this->parse_http_response_header();
