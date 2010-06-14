@@ -126,7 +126,7 @@ class Yahoo extends API {
         );
   }
   
-  function terms($text){
+  function terms($text, $context = ''){
     $params = array(
       'context' => $text,
       'query' => $context, // context for extraction (search terms)

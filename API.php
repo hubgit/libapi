@@ -150,7 +150,7 @@ class API {
       $http['header'] .= (empty($http['header']) ? '' : "\n") . $this->accept_header($format);
 
     debug($url);
-    //debug($http);
+    debug($http);
 
     $context = empty($http) ? NULL : stream_context_create(array('http' => $http));
     
@@ -186,6 +186,7 @@ class API {
 
     $curl = curl_init($url);
     debug($url);
+    debug($http);
 
     // array_merge doesn't preserve numeric keys
     curl_setopt_array($curl, array(

@@ -3,6 +3,8 @@
 class Google extends API {
   public $def = array('GOOGLE_AUTH', 'GOOGLE_REFERER');
   
+  public $token;
+  
   function headers($items = array()){
     $default = array(
       'GData-Version' => '3.0',
@@ -17,19 +19,23 @@ class Google extends API {
     return implode("\n", $headers);
   }
   
-  function authorise($service = 'writely', $source = 'libapi', $account_type = 'GOOGLE'){ // 'writely' = Docs, 'wise' = Spreadsheets
+  function authorise($service = 'writely', $source = 'libapi', $account_type = 'GOOGLE'){ // 'writely' = Docs, 'wise' = Spreadsheets, 'xapi' = Prediction
+    if ($this->token)
+      return;
+      
     debug('Authorising');
     $auth = explode(':', Config::get('GOOGLE_AUTH'));
-  
+      
     $params = array(
       'Email' => $auth[0], 
       'Passwd' => $auth[1], 
       'service' => $service,
-      'source' => $soure,
-      'accountType' => $account_type);
+      'source' => $source,
+      'accountType' => $account_type,
+      );
       
     $http = array('method' => 'POST', 'content' => http_build_query($params));
-    $this->get_data_curl('https://www.google.com/accounts/ClientLogin', array(), 'raw', $http);
+    $this->get_data('https://www.google.com/accounts/ClientLogin', array(), 'raw', $http);
     
     preg_match('/(?:^|\n)SID=(.+?)\n/s', $this->data, $matches);
     $this->cookie = implode('; ', array(
