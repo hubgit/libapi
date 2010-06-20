@@ -51,8 +51,8 @@ class API {
   function soap($wsdl, $method){
     $args = func_get_args();
     $params = array_slice($args, 2);
-    debug($params);
     ksort($params);
+    debug($params);
     $key = md5($wsdl . '#' . $method . '?' . http_build_query($params));
 
     if ($this->cache)
@@ -149,25 +149,33 @@ class API {
     if (!isset($http['header']) || !preg_match('/Accept: /', $http['header']))
       $http['header'] .= (empty($http['header']) ? '' : "\n") . $this->accept_header($format);
 
-    debug($url);
     debug($http);
 
     $context = empty($http) ? NULL : stream_context_create(array('http' => $http));
     
     if (!empty($this->oauth)){
       $oauth = new OAuth($this->oauth['consumer_key'], $this->oauth['consumer_secret'], OAUTH_SIG_METHOD_HMACSHA1, OAUTH_AUTH_TYPE_URI);
+      $oauth->enableDebug();
       $oauth->setToken($this->oauth['token'], $this->oauth['secret']);
-      $this->response = $oauth->fetch($url);
+      try {
+        debug($url);
+        $this->response = $oauth->fetch($url);
+        $info = $oauth->getLastResponseInfo();
+        debug($info);
+        $this->http_response_header = explode("\n", $info['headers_recv']);
+        debug($this->http_response_header);
+      } catch (OAuthException $e) { debug($oauth->debugInfo); }
     }
     else {
+      debug('Sending request to ' . $url);
       $this->response = file_get_contents($url, NULL, $context);
+      debug('Received response');
+      debug($http_response_header);
+      $this->http_response_header = $http_response_header;
     }
-
-    debug($http_response_header);
+    
+    $this->parse_http_response_header();    
     debug($this->response);
-
-    $this->http_response_header = $http_response_header;
-    $this->parse_http_response_header();
 
     try {
       $this->data = $this->format_data($format);

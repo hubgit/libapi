@@ -20,22 +20,39 @@ class Twitter extends API {
   function __construct(){
     if (!(Config::$properties['TWITTER_TOKEN'] && Config::$properties['TWITTER_TOKEN_SECRET']))
       $this->authorize();
+      
+    $this->oauth = array(
+      'consumer_key' => Config::get('TWITTER_CONSUMER_KEY'),
+      'consumer_secret' => Config::get('TWITTER_CONSUMER_SECRET'),
+      'token' => Config::get('TWITTER_TOKEN'),
+      'secret' => Config::get('TWITTER_TOKEN_SECRET'),
+      );
   }
   
   function authorize(){
     $oauth = new OAuth(Config::get('TWITTER_CONSUMER_KEY'), Config::get('TWITTER_CONSUMER_SECRET'), OAUTH_SIG_METHOD_HMACSHA1, OAUTH_AUTH_TYPE_URI);
     $oauth->enableDebug();
     
-    $request_token = $oauth->getRequestToken($this->request_token_url);
+    try {
+      $request_token = $oauth->getRequestToken($this->request_token_url);
+    } catch (OAuthException $e){ debug($oauth->debugInfo); };
       
-    print 'Authorize: ' . $this->authorize_url . '?' . http_build_query(array('oauth_token' => $request_token['oauth_token']))  . "\n";  
+    $url = $this->authorize_url . '?' . http_build_query(array('oauth_token' => $request_token['oauth_token'], 'callback_url'));
+    print 'Authorize: ' . $url  . "\n";  
+    system(sprintf('open %s', escapeshellarg($url)));
     fwrite(STDOUT, "Enter the PIN: ");
-    $token = fgets(STDIN);
+    $verifier = trim(fgets(STDIN));
 
-    $oauth->setToken($token, $request_token['oauth_token_secret']);
-    $access_token = $oauth->getAccessToken($this->access_token_url);
+    //$oauth->setToken($token, $request_token['oauth_token_secret']);
+    //$access_token = $oauth->getAccessToken($this->access_token_url);
     
-    printf("'TWITTER_TOKEN' => '%s'),\n'TWITTER_TOKEN_SECRET' => '%s'\n", $access_token['oauth_token'], $access_token['oauth_token_secret']);
+    $oauth->setToken($request_token['oauth_token'], $request_token['oauth_token_secret']);
+    try {
+      $access_token = $oauth->getAccessToken($this->access_token_url, NULL, $verifier);
+    } catch (OAuthException $e){ debug($oauth->debugInfo); };
+    
+    
+    printf("'TWITTER_TOKEN' => '%s',\n'TWITTER_TOKEN_SECRET' => '%s',\n", $access_token['oauth_token'], $access_token['oauth_token_secret']);
     exit();
   }
 

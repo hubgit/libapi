@@ -43,6 +43,39 @@ class OpenCalais extends API {
      }
    }
    
+   function annotate_soap($html){
+     $this->soap('http://api.opencalais.com/enlighten/?wsdl', 'Enlighten', array(
+         'content' => $html,
+         'licenseID' => Config::get('OPENCALAIS'),
+         'paramsXML' => '<c:params xmlns:c="http://s.opencalais.com/1/pred/">
+           <c:processingDirectives c:contentType="text/html" c:outputFormat="application/json" c:calculateRelevanceScore="true" c:enableMetadataType="GenericRelations"/>
+           <c:userDirectives c:allowDistribution="false" c:allowSearch="false"/>
+           <c:externalMetadata/>
+           </c:params>',
+       ));
+       
+     $this->data = json_decode($this->data->EnlightenResult); 
+     
+     foreach ($this->data as $id => $data){
+        if ($id == 'doc' || $data->{'_typeGroup'} != 'entities')
+          continue;
+
+        foreach ($data->instances as $instance){
+          $this->annotations[] = array(
+            'start' => $instance->offset,
+            'end' => $instance->offset + $instance->length,
+            'text' => $instance->exact,
+            'type' => $data->{'_type'},
+            'data' => array(
+               'title' => $data->name,
+               'score' => $data->relevance,
+               'raw' => $data,
+               ),
+            );
+        }
+      }
+   }
+   
    function categorise($text){
      $this->query(array(
        'content' => sprintf('<Document><Body>%s</Body></Document>', htmlspecialchars($text)),

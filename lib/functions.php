@@ -34,6 +34,15 @@ function debug($arg = ''){
       }
       $fire->log($arg);
     break;
+    
+    case 'CONSOLE':
+      if (!is_string($arg))
+        $arg = json_encode($arg);
+        
+      $trace = debug_backtrace();
+      $arg = sprintf('%s %.4f %s#%d:%s %s', date('H:i:s'), microtime(TRUE) - $_SERVER['REQUEST_TIME'], basename($trace[1]['file']), $trace[1]['line'], $trace[1]['function'], $arg);
+      header('X-DEBUG: ' . $arg, FALSE);
+    break;
 
     default:
       error_log(print_r($arg, TRUE) . "\n", 3, Config::get('LOG'));
@@ -294,4 +303,26 @@ function mb_str_replace($needle, $replacement, $haystack){
   }
   return $haystack;
 }
+
+function upload_error_message($code) {
+  switch ($code) {
+    case UPLOAD_ERR_INI_SIZE:
+    return 'The uploaded file exceeds the upload_max_filesize directive in php.ini';
+    case UPLOAD_ERR_FORM_SIZE:
+    return 'The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form';
+    case UPLOAD_ERR_PARTIAL:
+    return 'The uploaded file was only partially uploaded';
+    case UPLOAD_ERR_NO_FILE:
+    return 'No file was uploaded';
+    case UPLOAD_ERR_NO_TMP_DIR:
+    return 'Missing a temporary folder';
+    case UPLOAD_ERR_CANT_WRITE:
+    return 'Failed to write file to disk';
+    case UPLOAD_ERR_EXTENSION:
+    return 'File upload stopped by extension';
+    default:
+    return 'Unknown upload error';
+  }
+}
+
 

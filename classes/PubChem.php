@@ -43,8 +43,7 @@ class PubChem extends API{
     $default = array(
       'db' => $this->db,
       'term' => $term,
-      'retmax' => 1,
-      'retmode' => 'xml',
+      'RetMax' => 1,
       'usehistory' => 'y',
       'tool' => Config::get('EUTILS_TOOL'),
       'email' => Config::get('EUTILS_EMAIL'),

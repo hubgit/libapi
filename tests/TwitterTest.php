@@ -9,6 +9,7 @@ class TwitterTest extends PHPUnit_Framework_TestCase {
     $auth = explode(':', Config::get('TWITTER_AUTH'));
     $this->username = $auth[0];
     $this->api = new Twitter;
+    $this->api->cache = FALSE;
   }
   
   public function testFollowers(){
@@ -16,7 +17,7 @@ class TwitterTest extends PHPUnit_Framework_TestCase {
     $this->assertGreaterThan(10, count($this->api->results));
   }
   
-  public function xtestFriends(){
+  public function testFriends(){
     $this->api->friends($this->username);
     $this->assertGreaterThan(10, count($this->api->results));
   }
