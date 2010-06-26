@@ -10,15 +10,23 @@ class Police extends API {
   public $cache = TRUE;
 
   function get_data($path, $params = array()){
-    parent::get_data($this->server . $path, $params + array('key' => Config::get('POLICE')), 'dom');
+    return parent::get_data($this->server . $path, $params + array('key' => Config::get('POLICE')), 'dom');
   }
 
   function forces(){
-    $this->get_data('forces');
+    return $this->get_data('forces');
+  }
+
+  function types(){
+    return $this->get_data('crime-types');
   }
 
   function areas($force){
-    $this->get_data('crime-areas', array('force' => $force));
+    return $this->get_data('crime-areas', array('force' => $force));
+  }
+
+  function area($force, $area, $crimetype){
+    return $this->get_data('crime-area', array('force' => $force, 'area' => $area, 'crimetype' => $crimetype));
   }
 }
 

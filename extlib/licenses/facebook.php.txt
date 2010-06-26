@@ -1,0 +1,4 @@
+http://github.com/facebook/php-sdk
+
+Except as otherwise noted, the Facebook PHP SDK is licensed under the Apache Licence, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0.html)
+
