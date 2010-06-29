@@ -325,4 +325,27 @@ function upload_error_message($code) {
   }
 }
 
+function oauth_authorize($prefix, $urls){
+  $oauth = new OAuth(Config::get($prefix . '_CONSUMER_KEY'), Config::get($prefix . '_CONSUMER_SECRET'), OAUTH_SIG_METHOD_HMACSHA1, OAUTH_AUTH_TYPE_URI);
+  $oauth->enableDebug();
+  
+  try {
+    $request_token = $oauth->getRequestToken($urls['request_token']);
+  } catch (OAuthException $e){ debug($oauth->debugInfo); };
+    
+  $url = $urls['authorize'] . '?' . http_build_query(array('oauth_token' => $request_token['oauth_token'], 'callback_url' => 'oob'));
+  print 'Authorize: ' . $url  . "\n";  
+  system(sprintf('open %s', escapeshellarg($url)));
+  fwrite(STDOUT, "Enter the PIN: ");
+  $verifier = trim(fgets(STDIN));
+
+  $oauth->setToken($request_token['oauth_token'], $request_token['oauth_token_secret']);
+  try {
+    $access_token = $oauth->getAccessToken($urls['access_token'], NULL, $verifier);
+  } catch (OAuthException $e){ debug($oauth->debugInfo); };
+  
+  printf("'%s_TOKEN' => '%s',\n'%s_TOKEN_SECRET' => '%s',\n", $prefix, $access_token['oauth_token'], $prefix, $access_token['oauth_token_secret']);
+  exit();
+}
+
 

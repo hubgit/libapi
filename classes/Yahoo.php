@@ -134,6 +134,7 @@ class Yahoo extends API {
       $this->annotations[] = array(
         'start' => (int) $item->start, 
         'end' => (int) $item->end, 
+        'type' => 'place',
         'text' => (string) $item->text, 
         'entity' => $this->entities[(string) $item->woeIds],
         );

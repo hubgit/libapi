@@ -17,7 +17,7 @@ class MendeleyTest extends PHPUnit_Framework_TestCase {
   }
   
   public function testDetails(){
-    $this->api->document_details('77aaab00-6d02-11df-afb8-0026b95d30b2'); //'10.1038/nature09036');
+    $this->api->document_details('77aaab00-6d02-11df-afb8-0026b95d30b2');
     debug($this->api->data);        
     //$this->api->document_details('10.1038/nature09036', 'doi');
     //debug($this->api->data);    
