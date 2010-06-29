@@ -1,9 +1,14 @@
 <?php
 
 class UniProt extends API{
-  public $doc = 'http://www.uniprot.org/uniprot/';
-  
+  public $doc = 'http://www.uniprot.org/';
   static $server = 'http://www.uniprot.org/uniprot/';
+  public $cache = TRUE;
+  
+  function item($id){
+    $this->get_data(sprintf('http://www.uniprot.org/uniprot/%s.xml', rawurlencode($id)), array(), 'dom');
+    $this->xpath->registerNamespace('u', 'http://uniprot.org/uniprot');
+  }
   
   function build_term($args){
     if ($args['id'])
@@ -20,10 +25,8 @@ class UniProt extends API{
   function search($args, $params = array()){
     unset($this->total, $this->data);
     
-    $term = $this->build_term($args);
-
     $default = array(
-      'query' => $term,
+      'query' => $this->build_term($args),
       'sort' => 'score',
       'limit' => 10,
       'format' => 'tab',
@@ -54,7 +57,24 @@ class UniProt extends API{
         ); 
     }
         
-      debug($this->results);
+    debug($this->results);
+  }
+  
+  function search_minimal($term){
+      $this->opensearch('http://www.uniprot.org/uniprot/', array(
+      'query' => $term,
+      'sort' => 'score',
+      'offset' => 0,
+      'limit' => 10,
+      'format' => 'rss',
+      ));
 
+    $this->results = array();
+    foreach ($this->xpath->query('channel/item') as $item)
+      $this->results[] = array(
+       'link' => $this->xpath->query('link', $item)->item(0)->textContent,
+       'title' => $this->xpath->query('title', $item)->item(0)->textContent,
+       'description' => $this->xpath->query('description', $item)->item(0)->textContent,
+       );
   }
 }

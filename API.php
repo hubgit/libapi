@@ -94,7 +94,8 @@ class API {
   }
 
   function get_cached_data($url, $params = array(), $format = 'json', $http = array()){
-    //debug();
+    debug();
+
     if (!empty($params))
       ksort($params);
     $suffix = empty($params) ? NULL : '?' . http_build_query($params);
@@ -160,7 +161,7 @@ class API {
     debug($http);
 
     $context = empty($http) ? NULL : stream_context_create(array('http' => $http));
-    
+
     if (!empty($this->oauth)){
       $oauth = new OAuth($this->oauth['consumer_key'], $this->oauth['consumer_secret'], OAUTH_SIG_METHOD_HMACSHA1, OAUTH_AUTH_TYPE_URI);
       $oauth->enableDebug();
