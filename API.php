@@ -75,7 +75,7 @@ class API {
       debug("Cached:\n" . print_r(array($wsdl, $method, $params), TRUE));
     }
 
-    debug($this->data);
+    //debug($this->data);
   }
 
   function cache_set($key, $data = NULL){
@@ -166,7 +166,7 @@ class API {
     }
 
     debug($http_response_header);
-    debug($this->response);
+    //debug($this->response);
 
     $this->http_response_header = $http_response_header;
     $this->parse_http_response_header();

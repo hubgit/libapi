@@ -8,7 +8,7 @@ mb_internal_encoding('UTF-8');
 mb_regex_encoding('UTF-8');
 
 ini_set('display_errors', TRUE);
-ini_set('error_reporting', E_ALL  & ~E_NOTICE);
+ini_set('error_reporting', E_ALL & ~E_DEPRECATED & ~E_NOTICE & ~E_WARNING);
 
 libxml_use_internal_errors(FALSE); // true = hide parsing errors; use libxml_get_errors() to display later.
 
@@ -43,6 +43,7 @@ set_include_path(implode(PATH_SEPARATOR, array(
   LIBAPI_ROOT . '/lib/',
   LIBAPI_ROOT . '/extlib/',
   get_include_path())));
-  
+
 function libapi_autoload($class){ require $class . '.php'; }
 spl_autoload_register('libapi_autoload', FALSE, TRUE);
+

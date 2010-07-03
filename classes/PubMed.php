@@ -2,15 +2,15 @@
 
 class PubMed extends API {
   public $doc = 'http://www.ncbi.nlm.nih.gov/entrez/query/static/eutils_help.html';
-  
+
   public $webenv;
   public $querykey;
-  
+
   public $n = 500;
-   
+
   function search_soap($q, $params = array()){
     unset($this->webenv, $this->querykey);
-    
+
     $default = array(
       'db' => 'pubmed',
       'retmode' => 'xml',
@@ -20,16 +20,16 @@ class PubMed extends API {
       'tool' => Config::get('EUTILS_TOOL'),
       'email' => Config::get('EUTILS_EMAIL'),
       );
-      
+
     $this->soap('http://www.ncbi.nlm.nih.gov/entrez/eutils/soap/v2.0/eutils.wsdl', 'run_eSearch', array_merge($default, $params));
-    
+
     $this->total = $this->data->Count;
     $this->webenv = $this->data->WebEnv;
     $this->querykey = $this->data->QueryKey;
-    
+
     return $this->data;
   }
-  
+
   function fetch_soap($ids = NULL, $params = array()){
      $default = array(
       'db' => 'pubmed',
@@ -37,7 +37,7 @@ class PubMed extends API {
       'tool' => Config::get('EUTILS_TOOL'),
       'email' => Config::get('EUTILS_EMAIL'),
       );
-      
+
     if (!empty($ids)){
       $default['id'] = implode(',', is_array($ids) ? $ids : array($ids));
     }
@@ -47,14 +47,14 @@ class PubMed extends API {
     }
 
     $this->soap('http://www.ncbi.nlm.nih.gov/entrez/eutils/soap/v2.0/efetch_pubmed.wsdl', 'run_eFetch', array_merge($default, $params));
-    
+
     return $this->data;
   }
-  
+
   function related_soap($pmids, $params = array()){
     if (!is_array($pmids))
       $pmids = array($pmids);
-    
+
     $default = array(
        'db' => 'pubmed',
        'dbfrom' => 'pubmed',
@@ -63,17 +63,17 @@ class PubMed extends API {
        'tool' => Config::get('EUTILS_TOOL'),
        'email' => Config::get('EUTILS_EMAIL'),
      );
-     
+
     $this->soap('http://www.ncbi.nlm.nih.gov/entrez/eutils/soap/v2.0/eutils.wsdl', 'run_eLink', array_merge($default, $params));
-    
+
     $this->results = array();
-    //debug($this->data->LinkSet);
     foreach ($this->data->LinkSet[0]->LinkSetDb[0]->Link as $link)
       $this->results[] = $link->Id->{'_'};
-    
+
     $this->total = count($this->results);
+    return $this->results;
   }
-  
+
   function search($q, $params = array()){
     unset($this->webenv, $this->querykey);
 
@@ -92,7 +92,7 @@ class PubMed extends API {
     $this->total = $this->xpath->query("Count")->item(0)->nodeValue;
     $this->webenv = $this->xpath->query("WebEnv")->item(0)->nodeValue;
     $this->querykey = $this->xpath->query("QueryKey")->item(0)->nodeValue;
-    
+
     return $this->data;
   }
 
@@ -103,7 +103,7 @@ class PubMed extends API {
       'tool' => Config::get('EUTILS_TOOL'),
       'email' => Config::get('EUTILS_EMAIL'),
       );
-      
+
     if (!empty($ids)){
       $default['id'] = implode(',', is_array($ids) ? $ids : array($ids));
     }
@@ -115,11 +115,11 @@ class PubMed extends API {
     $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi', array_merge($default, $params), 'dom');
     return $this->data;
   }
-  
+
   function related($pmid, $params = array()){
     if (!is_array($pmid))
       $pmid = array($pmid);
-    
+
     $default = array(
        'db' => 'pubmed',
        'dbfrom' => 'pubmed',
@@ -128,27 +128,27 @@ class PubMed extends API {
        'tool' => Config::get('EUTILS_TOOL'),
        'email' => Config::get('EUTILS_EMAIL'),
      );
-     
+
     $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi', array_merge($default, $params), 'dom');
-    
+
     $this->results = array();
     foreach ($this->xpath->query("LinkSet/LinkSetDb/Link") as $link)
       $this->results[] = $this->xpath->query("Id", $link)->item(0)->nodeValue;
-    
+
     $this->total = count($items);
   }
-  
+
   function fulltext($pmid){
     $params = array(
-      'db' => 'pubmed', 
-      'retmode' => 'xml', 
+      'db' => 'pubmed',
+      'retmode' => 'xml',
       'id' => $pmid,
       'tool' => Config::get('EUTILS_TOOL'),
       'email' => Config::get('EUTILS_EMAIL'),
     );
-    
+
     $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi', $params, 'dom');
-    
+
     $nodes = $this->xpath->query("DocSum/Item[@Name='DOI']");
     return $node->length ? 'http://dx.doi.org/' . $nodes->item(0)->nodeValue : 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi?cmd=prlinks&dbfrom=pubmed&retmode=ref&id=' . $pmid;
   }
@@ -163,7 +163,7 @@ class PubMed extends API {
        ),
     ));
     */
-  
+
     $from = $this->get_latest($from, 0); // 0 = 1970-01-01T00:00:00Z
 
     $to = date('Y/m/d', time() + 60*60*24*365*10); // 10 years in future
@@ -188,11 +188,11 @@ class PubMed extends API {
           'retstart' => $start,
           //'sort' => 'pub+date',
           );
-     
+
         $this->fetch(NULL, $params);
-    
+
         foreach ($this->xpath->query("PubmedArticle") as $article){
-          $medline = $this->xpath->query("MedlineCitation", $article)->item(0);          
+          $medline = $this->xpath->query("MedlineCitation", $article)->item(0);
           $id = $this->xpath->query("PMID", $medline)->item(0)->nodeValue;
           $status = $medline->getAttribute('Status');
 
@@ -201,17 +201,17 @@ class PubMed extends API {
           else
             $this->results[$id] = $article;
         }
-  
+
         //sleep(1);
-    
+
         $start += $n;
       } while ($start < min($max, $this->total));
     }
-    
+
     if ($this->output_dir)
       file_put_contents($this->output_dir . '/latest', date('Y/m/d'));
   }
-  
+
   // fetch an individual item from PubMed by DOI or PMID
   // TODO: clean up
   function metadata($pmid, $data){
@@ -225,9 +225,9 @@ class PubMed extends API {
         'tool' => Config::get('EUTILS_TOOL'),
         'email' => Config::get('EUTILS_EMAIL'),
         ), 'dom');
-      
-      
-      if ($this->xpath->query('Count')->nodeValue > 0)  
+
+
+      if ($this->xpath->query('Count')->nodeValue > 0)
         $pmid = $this->xpath->query('IdList/Id')->item(0)->nodeValue;
     }
 
@@ -263,3 +263,4 @@ class PubMed extends API {
       );
   }
 }
+
