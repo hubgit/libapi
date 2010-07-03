@@ -34,6 +34,15 @@ function debug($arg = ''){
       }
       $fire->log($arg);
     break;
+    
+    case 'CONSOLE':
+      if (!is_string($arg))
+        $arg = json_encode($arg);
+        
+      $trace = debug_backtrace();
+      $arg = sprintf('%s %.4f %s#%d:%s %s', date('H:i:s'), microtime(TRUE) - $_SERVER['REQUEST_TIME'], basename($trace[1]['file']), $trace[1]['line'], $trace[1]['function'], $arg);
+      header('X-DEBUG: ' . $arg, FALSE);
+    break;
 
     default:
       error_log(print_r($arg, TRUE) . "\n", 3, Config::get('LOG'));
@@ -294,4 +303,49 @@ function mb_str_replace($needle, $replacement, $haystack){
   }
   return $haystack;
 }
+
+function upload_error_message($code) {
+  switch ($code) {
+    case UPLOAD_ERR_INI_SIZE:
+    return 'The uploaded file exceeds the upload_max_filesize directive in php.ini';
+    case UPLOAD_ERR_FORM_SIZE:
+    return 'The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form';
+    case UPLOAD_ERR_PARTIAL:
+    return 'The uploaded file was only partially uploaded';
+    case UPLOAD_ERR_NO_FILE:
+    return 'No file was uploaded';
+    case UPLOAD_ERR_NO_TMP_DIR:
+    return 'Missing a temporary folder';
+    case UPLOAD_ERR_CANT_WRITE:
+    return 'Failed to write file to disk';
+    case UPLOAD_ERR_EXTENSION:
+    return 'File upload stopped by extension';
+    default:
+    return 'Unknown upload error';
+  }
+}
+
+function oauth_authorize($prefix, $urls){
+  $oauth = new OAuth(Config::get($prefix . '_CONSUMER_KEY'), Config::get($prefix . '_CONSUMER_SECRET'), OAUTH_SIG_METHOD_HMACSHA1, OAUTH_AUTH_TYPE_URI);
+  $oauth->enableDebug();
+  
+  try {
+    $request_token = $oauth->getRequestToken($urls['request_token']);
+  } catch (OAuthException $e){ debug($oauth->debugInfo); };
+    
+  $url = $urls['authorize'] . '?' . http_build_query(array('oauth_token' => $request_token['oauth_token'], 'callback_url' => 'oob'));
+  print 'Authorize: ' . $url  . "\n";  
+  system(sprintf('open %s', escapeshellarg($url)));
+  fwrite(STDOUT, "Enter the PIN: ");
+  $verifier = trim(fgets(STDIN));
+
+  $oauth->setToken($request_token['oauth_token'], $request_token['oauth_token_secret']);
+  try {
+    $access_token = $oauth->getAccessToken($urls['access_token'], NULL, $verifier);
+  } catch (OAuthException $e){ debug($oauth->debugInfo); };
+  
+  printf("'%s_TOKEN' => '%s',\n'%s_TOKEN_SECRET' => '%s',\n", $prefix, $access_token['oauth_token'], $prefix, $access_token['oauth_token_secret']);
+  exit();
+}
+
 

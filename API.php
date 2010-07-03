@@ -17,6 +17,8 @@ class API {
   public $response;
   public $data;
 
+  public $preserveWhiteSpace = TRUE;
+
   public $cache = TRUE;
   public $cache_expire = 86400; //60*60*24; // use the cache file if it's less than one day old
 
@@ -51,8 +53,8 @@ class API {
   function soap($wsdl, $method){
     $args = func_get_args();
     $params = array_slice($args, 2);
-    debug($params);
     ksort($params);
+    debug($params);
     $key = md5($wsdl . '#' . $method . '?' . http_build_query($params));
 
     if ($this->cache)
@@ -111,26 +113,31 @@ class API {
         $http['header'] .= (empty($http['header']) ? '' : "\n") . $this->accept_header($format);
 
       $this->get_data($url, $params, 'raw', $http, FALSE);
-      if ($this->response !== FALSE)
+      if ($this->response !== FALSE && in_array(substr($this->http_status, 0, 1), array(2,3)))
         $this->cache_set($key, array('header' => $this->http_response_header, 'content' => $this->data));
     }
 
-    try {
-      $this->data = $this->format_data($format);
-      $this->validate_data($format);
+    $this->data = NULL;
+    if ($this->response !== FALSE){
+      try {
+        $this->data = $this->format_data($format);
+        $this->validate_data($format);
+      }
+      catch (DataException $e) { $e->errorMessage(); }
+      catch (Exception $e) { debug($e->getMessage()); }
     }
-    catch (DataException $e) { $e->errorMessage(); }
-    catch (Exception $e) { debug($e->getMessage()); }
 
     return $this->data;
   }
 
   function get_data($url, $params = array(), $format = 'json', $http = array(), $cache = TRUE){
-    debug();
+    unset($this->response, $this->data);
 
     if ($cache && $this->cache) // can set either of these to FALSE to disable the cache
       if (!isset($http['method']) || $http['method'] == 'GET') // only use the cache for GET requests (TODO: allow caching of some POST requests?)
         return $this->get_cached_data($url, $params, $format, $http);
+
+    debug();
 
     // FIXME: is this a good idea?
     if ($http['method'] == 'POST' && empty($http['content']) && !empty($params)){
@@ -151,32 +158,43 @@ class API {
     if (!isset($http['header']) || !preg_match('/Accept: /', $http['header']))
       $http['header'] .= (empty($http['header']) ? '' : "\n") . $this->accept_header($format);
 
-    debug($url);
     debug($http);
 
     $context = empty($http) ? NULL : stream_context_create(array('http' => $http));
 
     if (!empty($this->oauth)){
       $oauth = new OAuth($this->oauth['consumer_key'], $this->oauth['consumer_secret'], OAUTH_SIG_METHOD_HMACSHA1, OAUTH_AUTH_TYPE_URI);
+      $oauth->enableDebug();
       $oauth->setToken($this->oauth['token'], $this->oauth['secret']);
-      $this->response = $oauth->fetch($url);
+      try {
+        //debug($url);
+        $this->response = $oauth->fetch($url);
+        $info = $oauth->getLastResponseInfo();
+        //debug($info);
+        $this->http_response_header = explode("\n", $info['headers_recv']);
+        //debug($this->http_response_header);
+      } catch (OAuthException $e) { debug($oauth->debugInfo); }
     }
     else {
+      debug('Sending request to ' . $url);
       $this->response = file_get_contents($url, NULL, $context);
+      debug('Received response');
+      //debug($http_response_header);
+      $this->http_response_header = $http_response_header;
     }
 
-    debug($http_response_header);
-    //debug($this->response);
-
-    $this->http_response_header = $http_response_header;
     $this->parse_http_response_header();
+   // debug($this->response);
 
-    try {
-      $this->data = $this->format_data($format);
-      $this->validate_data($format);
+    $this->data = NULL;
+    if ($this->response !== FALSE){
+      try {
+        $this->data = $this->format_data($format);
+        $this->validate_data($format);
+      }
+      catch (DataException $e) { $e->errorMessage(); }
+      catch (Exception $e) { debug($e->getMessage()); }
     }
-    catch (DataException $e) { $e->errorMessage(); }
-    catch (Exception $e) { debug($e->getMessage()); }
 
     return $this->data;
   }
@@ -263,7 +281,7 @@ class API {
       return simplexml_load_string($this->response, NULL, LIBXML_NOCDATA | LIBXML_NONET);
       case 'dom':
       $dom = new DOMDocument;
-      $dom->preserveWhiteSpace = FALSE;
+      $dom->preserveWhiteSpace = $this->preserveWhiteSpace;
       $dom->loadXML($this->response, LIBXML_DTDLOAD | LIBXML_DTDVALID | LIBXML_NOCDATA | LIBXML_NOENT | LIBXML_NONET);
       $dom->encoding = 'UTF-8';
       $dom->formatOutput = TRUE;
@@ -273,7 +291,11 @@ class API {
       case 'html':
       return simplexml_import_dom($this->format_data('html-dom'));
       case 'html-dom':
-      $dom = @DOMDocument::loadHTML($this->response);
+      $dom = new DOMDocument;
+      $dom->preserveWhiteSpace = $this->preserveWhiteSpace;
+      @$dom->loadHTML($this->response);
+      $dom->encoding = 'UTF-8';
+      $dom->formatOutput = TRUE;
       if (is_object($dom))
         $this->xpath = new DOMXPath($dom);
       return $dom;
@@ -320,6 +342,7 @@ class API {
       case 'dom':
       return 'Accept: application/xml,*/*;q=0.2';
       case 'html':
+      case 'html-dom':
       return 'Accept: text/html,*/*;q=0.2';
       case 'rdf':
       return 'Accept: application/rdf+xml,*/*;q=0.2';

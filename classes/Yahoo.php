@@ -100,7 +100,20 @@ class Yahoo extends API {
       'documentType' => 'text/plain',
       'documentContent' => $text,
     );
+    return $this->_placemaker($params);
+  }
+  
+  # http://developer.yahoo.com/geo/placemaker/
+  function placemaker_html($html){
+    $params = array(
+      'appid' => Config::get('YAHOO'),
+      'documentType' => 'text/html',
+      'documentContent' => $html,
+    );
+    return $this->_placemaker($params);
+  }
 
+  function _placemaker($params){
     $http = array('method' => 'POST', 'content' => http_build_query($params), 'header' => 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8');
     $this->get_data('http://wherein.yahooapis.com/v1/document', array(), 'xml', $http);
 
@@ -121,6 +134,7 @@ class Yahoo extends API {
       $this->annotations[] = array(
         'start' => (int) $item->start, 
         'end' => (int) $item->end, 
+        'type' => 'place',
         'text' => (string) $item->text, 
         'entity' => $this->entities[(string) $item->woeIds],
         );
