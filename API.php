@@ -16,7 +16,7 @@ class API {
 
   public $response;
   public $data;
-  
+
   public $preserveWhiteSpace = TRUE;
 
   public $cache = TRUE;
@@ -116,7 +116,7 @@ class API {
       if ($this->response !== FALSE && in_array(substr($this->http_status, 0, 1), array(2,3)))
         $this->cache_set($key, array('header' => $this->http_response_header, 'content' => $this->data));
     }
-    
+
     $this->data = NULL;
     if ($this->response !== FALSE){
       try {
@@ -132,13 +132,13 @@ class API {
 
   function get_data($url, $params = array(), $format = 'json', $http = array(), $cache = TRUE){
     unset($this->response, $this->data);
-    
+
     if ($cache && $this->cache) // can set either of these to FALSE to disable the cache
       if (!isset($http['method']) || $http['method'] == 'GET') // only use the cache for GET requests (TODO: allow caching of some POST requests?)
         return $this->get_cached_data($url, $params, $format, $http);
 
     debug();
-    
+
     // FIXME: is this a good idea?
     if ($http['method'] == 'POST' && empty($http['content']) && !empty($params)){
       $http['content'] = http_build_query($params);
@@ -182,9 +182,9 @@ class API {
       //debug($http_response_header);
       $this->http_response_header = $http_response_header;
     }
-    
-    $this->parse_http_response_header();    
-    debug($this->response);
+
+    $this->parse_http_response_header();
+   // debug($this->response);
 
     $this->data = NULL;
     if ($this->response !== FALSE){
