@@ -12,9 +12,12 @@ class UniProt extends API{
   
   function build_term($args){
     if ($args['id'])
-      $args['term'] = sprintf('id:%s', $args['id']);
-    else if ($args['name'])
+      $args['term'] = sprintf('accession:%s', $args['id']);
+    else if ($args['name']){
       $args['term'] = sprintf('"%s"', $args['name']);
+      if ($args['organism'])
+        $args['term'] .= sprintf(' AND organism:"%s"', $args['organism']);
+    }
 
     if (!$term = $args['term'])
       return FALSE;
@@ -35,7 +38,7 @@ class UniProt extends API{
 
     $params = array_merge($default, $params);
     $this->get_data($this::$server, $params, 'raw');
-    
+        
     if (!isset($this->data))
       throw new Exception('Error searching UniProt');
     

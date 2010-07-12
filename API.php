@@ -106,6 +106,7 @@ class API {
       $this->response = $data['content'];
       $this->http_response_header = $data['header'];
       $this->parse_http_response_header();
+      $this->parse_effective_url($url);
     }
     else {
       // set the accept header here, because the format is set to 'raw'
@@ -137,7 +138,6 @@ class API {
       if (!isset($http['method']) || $http['method'] == 'GET') // only use the cache for GET requests (TODO: allow caching of some POST requests?)
         return $this->get_cached_data($url, $params, $format, $http);
 
-    debug();
 
     // FIXME: is this a good idea?
     if ($http['method'] == 'POST' && empty($http['content']) && !empty($params)){
@@ -184,7 +184,9 @@ class API {
     }
 
     $this->parse_http_response_header();
-   // debug($this->response);
+    $this->parse_effective_url($url);
+    
+    //debug($this->response);
 
     $this->data = NULL;
     if ($this->response !== FALSE){
@@ -372,8 +374,8 @@ class API {
       $item[str_replace('-', '_', strtolower($matches[1]))][] = $matches[2];
     }
 
-    $this->save_http_header($status, $item);
-
+    $this->save_http_header($status, $item);  
+    
     $h = explode(' ', $this->http_response_header[0], 3);
     $this->http_status = $h[1];
     debug('Status: ' . $this->http_status);
@@ -387,6 +389,13 @@ class API {
 
     $item['status'] = $status;
     $this->http_headers[] = $item;
+  }
+  
+  function parse_effective_url($url){
+    foreach ($this->http_headers as $item)
+      if (isset($item['location']))
+        $url = $item['location'];
+    $this->http_effective_url = $url;
   }
 
   static function get_input_dir($dir = ''){

@@ -18,7 +18,7 @@ class PubChem extends API{
     else if ($args['iupac'])
       $args['term'] = sprintf('"%s"[IUPACName]', $args['name']); // TODO
     else if ($args['name'])
-      $args['term'] = sprintf('"%s"', $args['name']);
+      $args['term'] = sprintf('"%s"[All Fields]', $args['name']);
 
     if (!$term = $args['term'])
       return FALSE;
@@ -26,11 +26,11 @@ class PubChem extends API{
     if ($args['sid'])
       $this->db = 'pcsubstance';
 
-    debug($term);
-
     // put free text queries in quotes
     if (strpos($term, '"') === FALSE && !preg_match('/\[[CS]ID\]/', $term)) // && strpos($term, '[') === FALSE)
       $term = sprintf('"%s"', $term);
+
+    debug($term);
     
     return $term;
   }
@@ -42,9 +42,10 @@ class PubChem extends API{
         
     $default = array(
       'db' => $this->db,
+      'usehistory' => 'y',
+      'rettype' => 'count',
       'term' => $term,
       'RetMax' => 1,
-      'usehistory' => 'y',
       'tool' => Config::get('EUTILS_TOOL'),
       'email' => Config::get('EUTILS_EMAIL'),
       );
@@ -113,9 +114,13 @@ class PubChem extends API{
       $this->webenv = (string) $this->data->WebEnv;
       $this->querykey = (int) $this->data->QueryKey;
     }
+    
+    return $this->data;
   }
 
   function fetch($ids = NULL, $params = array()){
+    unset($this->results);
+    
     $default = array(
       'db' => $this->db,
       'retmode' => 'xml',
@@ -139,9 +144,12 @@ class PubChem extends API{
 
     if (isset($xml->ERROR))
       return FALSE;
-
+    
+    $this->results = array();
     foreach ($this->data->DocSum as $item)
       $this->results[] = $item;
+      
+    return $this->results;
   }
 
   function parse($doc){
@@ -251,7 +259,7 @@ class PubChem extends API{
 
     if (file_exists($file)){
       header('Content-Type: image/png');
-      header('Content-Length: ' . filesize($file));
+      //header('Content-Length: ' . filesize($file));
       readfile($file);
     }
     else{

@@ -13,9 +13,8 @@ class PubMed extends API {
 
     $default = array(
       'db' => 'pubmed',
-      'retmode' => 'xml',
       'usehistory' => 'y',
-      'retmax' => 1,
+      'RetMax' => 1,
       'term' => $q,
       'tool' => Config::get('EUTILS_TOOL'),
       'email' => Config::get('EUTILS_EMAIL'),

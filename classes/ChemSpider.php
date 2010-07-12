@@ -66,7 +66,7 @@ class ChemSpider extends API {
 
       if (file_exists($file)){
         header('Content-Type: image/png');
-        header('Content-Length: ' . filesize($file));
+        //header('Content-Length: ' . filesize($file));
         readfile($file);
       }
       else{

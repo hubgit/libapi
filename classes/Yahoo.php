@@ -114,9 +114,14 @@ class Yahoo extends API {
   }
 
   function _placemaker($params){
+    $this->annotations = array();
+    
     $http = array('method' => 'POST', 'content' => http_build_query($params), 'header' => 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8');
     $this->get_data('http://wherein.yahooapis.com/v1/document', array(), 'xml', $http);
-
+    
+    if (!is_object($this->data))
+      return FALSE;
+     
     $this->data->registerXPathNamespace('y', 'http://wherein.yahooapis.com/v1/schema');
 
     $nodes = $this->data->xpath("y:document/y:placeDetails/y:place");
