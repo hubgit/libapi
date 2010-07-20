@@ -51,10 +51,13 @@ class API {
   }
 
   function soap($wsdl, $method){
+    unset($this->response, $this->data);
+    
     $args = func_get_args();
     $params = array_slice($args, 2);
     ksort($params);
-    debug($params);
+    debug(array($this->cache, $method, $params));
+
     $key = md5($wsdl . '#' . $method . '?' . http_build_query($params));
 
     if ($this->cache)
@@ -65,6 +68,7 @@ class API {
         $this->soapclient = new SOAPClient($wsdl, array(
           'features' => SOAP_SINGLE_ELEMENT_ARRAYS,
           //'compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP,
+          'trace' => 1,
         ));
         $this->data = call_user_func_array(array($this->soapclient, $method), $params);
       } catch (SoapFault $exception) { debug($exception); } // FIXME: proper error handling

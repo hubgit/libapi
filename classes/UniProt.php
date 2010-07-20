@@ -14,9 +14,17 @@ class UniProt extends API{
     if ($args['id'])
       $args['term'] = sprintf('accession:%s', $args['id']);
     else if ($args['name']){
-      $args['term'] = sprintf('"%s"', $args['name']);
+      //$query = array(sprintf('"%s"', $args['name']));
+      $query = array();
+      foreach (array('mnemonic', 'name', 'gene', 'family', 'keyword') as $field)
+        $query[] = $field . sprintf(':"%s"', $args['name']);  
+      //$query[] = sprintf('"%s"', $args['name']);   
+      $args['term'] = sprintf('(%s)', implode(' OR ', $query));
+      
       if ($args['organism'])
         $args['term'] .= sprintf(' AND organism:"%s"', $args['organism']);
+      
+      //$args['term'] .= ' AND reviewed:yes';    
     }
 
     if (!$term = $args['term'])
@@ -33,7 +41,7 @@ class UniProt extends API{
       'sort' => 'score',
       'limit' => 10,
       'format' => 'tab',
-      'columns' => 'id,entry name,protein names,genes,organism',
+      'columns' => 'id,entry name,protein names,genes,organism,organism-id,reviewed,families,interpro,keywords,score',
       );
 
     $params = array_merge($default, $params);
@@ -57,6 +65,12 @@ class UniProt extends API{
         'synonyms' => $item[2],
         'genes' => explode(' ', $item[3]),
         'organism' => $item[4],
+        'organism-id' => $item[5],
+        'reviewed' => $item[6],
+        'families' => $item[7],
+        'interpro' => $item[8],
+        'keywords' => $item[9],
+        'score' => $item[10],
         ); 
     }
         

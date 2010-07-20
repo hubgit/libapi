@@ -59,4 +59,9 @@ class ChemSpiderTest extends PHPUnit_Framework_TestCase {
     $result = $this->api->InChIToCSID($this->inchi);
     $this->assertEquals($this->csid, $result);    
   }
+  
+  public function testAutocomplete(){
+    $results = $this->api->autocomplete('4-hydroxy', 20);
+    $this->assertEquals(20, count($results)); 
+  }
 }

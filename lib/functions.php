@@ -230,6 +230,32 @@ function positions($haystack, $needle, $modifiers = 'u'){
   return $positions;
 }
 
+function raw_preg_match_all($haystack, $needle, $modifiers = 'u'){
+  if (empty($needle))
+    return array();
+    
+  $offset = 0;
+  $positions = array();
+
+  $length = strlen($needle); // strlen = length in bytes
+  $pattern = sprintf('/\b%s\b/%s', preg_quote($needle, '/'), $modifiers);
+
+  do {
+    $count = preg_match($pattern, $haystack, $matches, PREG_OFFSET_CAPTURE, $offset); // find the offset of the next occurrence
+    if (!$count)
+      break;
+
+    $i = $matches[0][1]; // PREG_OFFSET_CAPTURE returns the offset in bytes
+
+    $sub = mb_strcut($haystack, 0, $i); // mb_strcut cuts at an offset counted in bytes
+    $positions[] = mb_strlen($sub); // mb_strlen returns the length of a string in chars
+
+    $offset = $i + $length;
+  } while (1);
+  
+  return $positions;
+}
+
 function truncate($string, $length, $suffix = ''){
   if (mb_strlen($string) <= $length)
     return $string;
@@ -374,6 +400,32 @@ function mol2stdinchi($data){
        $response['iupac:stdinchikey'] = $matches[1];
   }
   return $response;
+}
+
+function show_xml_error($error, $xml) {
+  $return = $xml[$error->line - 1];
+  $return[] = str_repeat('-', $error->column) . '^';
+
+  switch ($error->level) {
+    case LIBXML_ERR_WARNING:
+    $return[] = "Warning $error->code: ";
+    break;
+    case LIBXML_ERR_ERROR:
+    $return[] = "Error $error->code: ";
+    break;
+    case LIBXML_ERR_FATAL:
+    $return[] = "Fatal Error $error->code: ";
+    break;
+  }
+
+  $return[] = trim($error->message);
+  $return[] = " Line: $error->line";
+  $return[] = " Column: $error->column";
+
+  if ($error->file)
+    $return[] = "  File: $error->file";
+  
+  return implode("\n", $return);
 }
 
 

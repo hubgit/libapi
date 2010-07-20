@@ -3,6 +3,7 @@
 class ChemSpider extends API {
     public $doc = 'http://www.chemspider.com/AboutServices.aspx';
     public $def = 'CHEMSPIDER';
+    public $cache = TRUE;
     
     function InChIKeyToCSID($inchikey){      
       $this->soap('http://www.chemspider.com/inchi.asmx?wsdl', 'InChIKeyToCSID', array('inchi_key' => $inchikey));
@@ -72,5 +73,21 @@ class ChemSpider extends API {
       else{
         // default image
       }
+    }
+    
+    function autocomplete($text, $n = 10){
+      $this->soap('http://www.chemspider.com/AutoComplete.asmx?wsdl', 'GetSynonymsSuggestions', array('prefixText' => $text, 'count' => $n));
+      return $this->data->GetSynonymsSuggestionsResult->string;
+    }
+    
+    function autocomplete_json($text, $n = 10){
+      $content = json_encode(array('prefixText' => $text, 'count' => $n));
+      $headers = array(
+       'Content-Type: application/json; charset=utf-8',
+       'Content-Length: ' . strlen($content),
+       );
+      $http = array('method' => 'POST', 'header' => implode("\n", $headers), 'content' => $content);
+      $this->get_data('http://www.chemspider.com/AutoComplete.asmx/GetSynonymsSuggestions', NULL, 'json', $http);
+      return $this->data->d;
     }
 }

@@ -2,122 +2,94 @@
 
 class Whatizit extends API {
   public $doc = 'http://www.ebi.ac.uk/webservices/whatizit/';
+  public $wsdl = 'http://www.ebi.ac.uk/webservices/whatizit/ws?wsdl';
 
-  function entities($text){     
-    /* Proteins */
-    $xml = $this->soap('whatizitSwissprot', $text);
-          
-    $entities = array();
-    $references = array();
-    foreach ($xml->xpath('//ebi:uniprot') as $item)
-      $entities['Protein'][(string) $item] = (string) $item['ids'];
+  function annotate($text, $plan = 'whatizitSwissprot'){
+    $timeout = ini_get('default_socket_timeout');
+    ini_set('default_socket_timeout', 3600); // 1 hour
 
-    /*
-    foreach ($xml->xpath('//ebi:go') as $item){
-      $id = (string) $item['concept'];
-      $entities['GO'][$id] = (string) $item['term'];
-    
-      $references[] = array(
-        'start' => (string) $item['id'],
-        'text' => (string) $item,
-        'score' => (string) $item['score'],
-        'entity' => $id,
-        );
+    $params = array('text' => $text,'pipelineName' => $plan,'convertToHtml' => FALSE);
+    $this->soap($this->wsdl, 'contact', $params);
+
+    ini_set('default_socket_timeout', $timeout);
+
+    $this->response = $this->data->return;
+    $this->api->formatOutput = FALSE;
+    $this->data = $this->format_data('dom');
+    $this->xpath->registerNamespace('ebi', 'http://www.ebi.ac.uk/z');
+
+    $this->textnodes = $this->xpath->query("//text");
+
+    $items = array();
+    $nodes = $this->xpath->query("//ebi:uniprot");
+    foreach ($nodes as $node){
+      //$position = $this->findPositionForNode($node);
+      if (!isset($items[$node->textContent]))
+        $items[$node->textContent] = explode(',', $node->getAttribute('ids'));
     }
-    */
-  
-    /* Chemical compounds */
-  
-    /*$xml = $this->soap('whatizitOscar3', $text);
-    if (!is_object($xml))
-      return FALSE;
 
-    foreach ($xml->xpath('//ebi:e') as $item){
-      $type = (string) $item['sem'];
+    // TODO: is this sorting necessary?
+    $titles = array();
+    foreach (array_keys($items) as $title)
+      $titles[$title] = mb_strlen($title);
+    arsort($titles);    
+
+    $textLower = strtolower($text);
     
-      $id = NULL;
-      foreach (array('InChI', 'ontIDs') as $attribute){
-        if (isset($item[$attribute])){
-          $id = (string) $item[$attribute];
-          break;
-        }
-      }
-      if (!$id)
-        continue;
-    
-      $entities[$type][$id] = (string) $item['surface'];
-        
-      $references[] = array(
-        'text' => (string) $item,
-        'score' => (string) $item['weight'],
-        'entity' => $id,
-        );
-    }*/
+    $this->annotations = array();
+    foreach ($titles as $title => $length){
+      $positions = raw_preg_match_all($textLower, strtolower($title));
+      foreach ($positions as $position)
+        $this->annotations[] = array(
+          'start' => $position,
+          'end' => $position + $length,
+          'type' => 'protein',
+          'text' => $title,
+          //'data' => array('uniprot:id' => $items[$title]),
+          );
+    }
+  }
   
-    $references = array();
-      
-    return array($entities, $references);
+  /*
+  function findPositionForNode($item){
+     $position = 0;
+     $this->depth = 0;
+     foreach ($this->textnodes as $node){
+       while ($node = $this->nextTextNode($node)){
+         if ($node->parentNode->isSameNode($item))
+           break(2);
+         $position += mb_strlen($node->nodeValue);
+       }
+     }
+     return $position;
   }
 
-  function soap($pipeline, $text){  
-    static $client;
-    if (!is_object($client))
-      //$client = new SoapClient('http://www.ebi.ac.uk/webservices/whatizit/ws?wsdl');
-      $client = new SoapClient(LIBAPI_ROOT . '/misc/whatizit/whatizit.wsdl');
-  
-    $params = array(
-      'text' => $text,
-      'pipelineName' => $pipeline,
-      'convertToHtml' => FALSE,
-      );
-    
-    try{
-      $result = $client->contact($params);
-    } catch (SoapFault $exception) { debug($exception); exit(); return FALSE; } // FIXME: better error handling/logging
-    
-    libxml_use_internal_errors(TRUE); // FIXME: better error handling/logging
-  
-    libxml_clear_errors();
-    $xml = simplexml_load_string($result->return);
-  
-    $errors = libxml_get_errors();
-    foreach ($errors as $error)
-      print $this->display_xml_error($error, $xml);
-    libxml_clear_errors();
-
-    if (!empty($errors))
-      return FALSE;
-    
-    $xml->registerXPathNamespace('ebi', 'http://www.ebi.ac.uk/z');
-  
-    return $xml;
+  function nextTextNode($node){
+    do {
+      $node = $this->nextNode($node);
+    } while ($node && $node->nodeType !== XML_TEXT_NODE);
+    return $node;
   }
 
-  // for debugging XML errors
-  function display_xml_error($error, $xml) {
-      $return  = $xml[$error->line - 1] . "\n";
-      $return .= str_repeat('-', $error->column) . "^\n";
+  function nextNode($node){
+    if ($node->firstChild){
+      $this->depth++;
+      return $node->firstChild;
+    }
+    else if ($node->nextSibling){
+      return $node->nextSibling;
+    }
+    else while ($node = $node->parentNode){
+      $this->depth--;
 
-      switch ($error->level) {
-          case LIBXML_ERR_WARNING:
-              $return .= "Warning $error->code: ";
-              break;
-           case LIBXML_ERR_ERROR:
-              $return .= "Error $error->code: ";
-              break;
-          case LIBXML_ERR_FATAL:
-              $return .= "Fatal Error $error->code: ";
-              break;
+      if ($this->depth == -1){
+        return FALSE;
       }
 
-      $return .= trim($error->message) .
-                 "\n  Line: $error->line" .
-                 "\n  Column: $error->column";
-
-      if ($error->file) {
-          $return .= "\n  File: $error->file";
+      if ($node->nextSibling){
+        return $node->nextSibling;
       }
-
-      return "$return\n\n--------------------------------------------\n\n";
+    }
   }
+  */
 }
