@@ -12,6 +12,6 @@ class AlchemyTest extends PHPUnit_Framework_TestCase {
   
   public function testAnnotate(){
     $this->api->annotate($this->text);
-    $this->assertEquals(29, count($this->api->entities));
+    $this->assertEquals(30, count($this->api->entities));
   }
 }

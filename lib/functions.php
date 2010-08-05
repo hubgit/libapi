@@ -428,4 +428,19 @@ function show_xml_error($error, $xml) {
   return implode("\n", $return);
 }
 
+function human_filesize($path){
+  $units = array('B', 'KB', 'MB', 'GB', 'TB', 'PB');
+  $n = count($units) - 1;
+  $size = filesize($path);
+  
+  $i = 0;
+  while ($size > 1024 && $i < $n){
+    $size /= 1024;
+    $i++;
+  }
+
+  return number_format($size, 0) . ' ' . $units[$i];
+}
+
+
 

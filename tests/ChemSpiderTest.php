@@ -11,13 +11,23 @@ class ChemSpiderTest extends PHPUnit_Framework_TestCase {
     // http://www.nature.com/nchem/journal/v1/n7/compound/nchem.351_comp1-epi.html
     $this->sid = 85098522;
     $this->cid = 44141874;
-    $this->inchikey = 'LFQSCWFLJHTTHZ-UHFFFAOYSA-N';
-    $this->inchi = 'InChI=1S/C2H6O/c1-2-3/h3H,2H2,1H3';
+    $this->inchikey = 'LFQSCWFLJHTTHZ-UHFFFAOYAB';
+    $this->inchi = 'InChI=1/C2H6O/c1-2-3/h3H,2H2,1H3';
+    $this->stdinchikey = 'LFQSCWFLJHTTHZ-UHFFFAOYSA-N';
+    $this->stdinchi = 'InChI=1S/C2H6O/c1-2-3/h3H,2H2,1H3';
     $this->compoundName = 'ethanol';
     $this->csid = 682;
     
     $this->molfile = dirname(__FILE__) . '/text/ethanol.mol';
     $this->wikipedia = 'http://en.wikipedia.org/wiki/Ethanol';
+  }
+  
+  public function testGetCompoundInfo(){
+    $result = $this->api->GetCompoundInfo($this->csid);
+    debug($result);
+    $this->assertEquals($this->csid, $result->CSID);
+    $this->assertEquals($this->inchi, $result->InChI);
+    $this->assertEquals($this->inchikey, $result->InChIKey);
   }
   
   public function testInChIKeyToCSID(){

@@ -15,6 +15,8 @@ class PubChem extends API{
       $args['term'] = sprintf('"%s"[InChIKey]', preg_replace('/^inchikey=/i', '', $args['inchikey']));
     else if ($args['inchi'])
       return $this->pug($args['inchi']);
+    //else if ($args['formula'])
+      //return $this->pug($args['formula']);
     else if ($args['iupac'])
       $args['term'] = sprintf('"%s"[IUPACName]', $args['name']); // TODO
     else if ($args['name'])

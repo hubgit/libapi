@@ -36,6 +36,16 @@ class ChemSpider extends API {
       return $this->data->GetStructureSynonymsResult->string;
     }
     
+    function GetCompoundInfo($id){
+      $params = array(
+        'token' => Config::get('CHEMSPIDER'),
+        'CSID' => $id,
+        );
+        
+      $this->soap('http://www.chemspider.com/search.asmx?wsdl', 'GetCompoundInfo', $params);     
+      return $this->data->GetCompoundInfoResult;
+    }
+    
     function search($term){        
       $params = array(
         'token' => Config::get('CHEMSPIDER'),

@@ -80,8 +80,7 @@ class API {
       debug('Cached SOAP response');
       debug("Cached:\n" . print_r(array($wsdl, $method, $params), TRUE));
     }
-
-    //debug($this->data);
+    return $this->data;
   }
 
   function cache_set($key, $data = NULL){
@@ -189,7 +188,7 @@ class API {
 
     $this->parse_http_response_header();
     $this->parse_effective_url($url);
-    
+
     //debug($this->response);
 
     $this->data = NULL;
@@ -286,27 +285,14 @@ class API {
       case 'xml':
       return simplexml_load_string($this->response, NULL, LIBXML_NOCDATA | LIBXML_NONET);
       case 'dom':
-      $dom = new DOMDocument;
-      $dom->preserveWhiteSpace = $this->preserveWhiteSpace;
-      $dom->loadXML($this->response, LIBXML_DTDLOAD | LIBXML_DTDVALID | LIBXML_NOCDATA | LIBXML_NOENT | LIBXML_NONET);
-      $dom->encoding = 'UTF-8';
-      $dom->formatOutput = TRUE;
-      if (is_object($dom))
-       $this->xpath = new DOMXPath($dom);
-      return $dom;
+      return $this->xml_to_dom($this->response);
       case 'html':
       return simplexml_import_dom($this->format_data('html-dom'));
       case 'html-dom':
-      $dom = new DOMDocument;
-      $dom->preserveWhiteSpace = $this->preserveWhiteSpace;
-      @$dom->loadHTML($this->response);
-      $dom->encoding = 'UTF-8';
-      $dom->formatOutput = TRUE;
-      if (is_object($dom))
-        $this->xpath = new DOMXPath($dom);
-      return $dom;
+      return $this->xml_to_dom($this->response, 'loadHTML');
+      // FIXME: need proper RDF parser
       case 'rdf-xml':
-      return DOMDocument::loadXML($this->response, LIBXML_DTDLOAD | LIBXML_DTDVALID | LIBXML_NOCDATA | LIBXML_NOENT | LIBXML_NONET); // FIXME: need proper RDF parser
+      return $this->xml_to_dom($this->response);
       case 'php':
       return unserialize($this->response);
       case 'xmlrpc':
@@ -315,6 +301,27 @@ class API {
       default:
       return $this->response;
     }
+  }
+  
+  function xml_to_dom($xml, $method = 'loadXML', $options = NULL){
+    if ($options = NULL)
+      $options = LIBXML_DTDLOAD | LIBXML_DTDVALID | LIBXML_NOCDATA | LIBXML_NOENT | LIBXML_NONET;
+ 
+    $xml = preg_replace('/<!--.+?-->/s', '', $xml);
+    
+    $dom = new DOMDocument;
+    $dom->preserveWhiteSpace = $this->preserveWhiteSpace;
+    $dom->$method($xml, $options);
+    $dom->encoding = 'UTF-8';
+    $dom->formatOutput = TRUE;
+    
+    //$dom = DOMDocument::loadHTML($xml);
+    //debug($dom->saveXML());
+        
+    if (is_object($dom))
+     $this->xpath = new DOMXPath($dom);
+     
+    return $dom;
   }
 
   function validate_data($format){
