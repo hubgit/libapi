@@ -22,9 +22,19 @@ class CHEBI extends API {
     function fetch($ids){
       $params = array('ListOfChEBIIds' => $ids);
       $this->soap('http://www.ebi.ac.uk/webservices/chebi/2.0/webservice?wsdl', 'getCompleteEntityByList', $params);  
+        
+      $items = array();
+      foreach ($this->data->return as $item){
+        $data = $this->parse_item($item);
+        $items[$data->chebiId] = $data;
+      }
+      
+      // re-sort the items, as getCompleteEntityByList doesn't maintain the original order
       $this->items = array();
-      foreach ($this->data->return as $item)
-        $this->items[] = $this->parse_item($item);
+      foreach ($ids as $id)
+        if (!empty($items[$id]))
+          $this->items[$id] = $items[$id];
+
       return $this->items;
     }
     

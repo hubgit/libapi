@@ -203,6 +203,7 @@ class PubChem extends API{
      return $result;
    }
 
+  /*
   function pug($inchi){    
     if (stripos($inchi, 'inchi=') !== 0)
       $inchi = 'InChI=' . $inchi;
@@ -249,6 +250,7 @@ class PubChem extends API{
 
     return simplexml_import_dom($node);
   }
+  */
   
   function pug_soap($inchi){
     $this->total = 0;
