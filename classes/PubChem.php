@@ -14,7 +14,7 @@ class PubChem extends API{
     else if ($args['inchikey'])
       $args['term'] = sprintf('"%s"[InChIKey]', preg_replace('/^inchikey=/i', '', $args['inchikey']));
     else if ($args['inchi'])
-      return $this->pug($args['inchi']);
+      return array('pug_soap', $args['inchi']);
     //else if ($args['formula'])
       //return $this->pug($args['formula']);
     else if ($args['iupac'])
@@ -39,8 +39,11 @@ class PubChem extends API{
   
   function search_soap($args, $params = array()){
     unset($this->total, $this->webenv, $this->querykey);
-    $this->db = 'pccompound';
+    $this->db = 'pccompound'; 
     $term = $this->build_term($args);
+    
+    if (is_array($term))
+      return call_user_func(array($this, $term[0]), $term[1]);
         
     $default = array(
       'db' => $this->db,
@@ -93,6 +96,9 @@ class PubChem extends API{
     unset($this->total, $this->webenv, $this->querykey);
     $this->db = 'pccompound';
     $term = $this->build_term($args);
+    
+    if (is_array($term))
+      return call_user_func(array($this, $term[0]), $term[1]);
 
     $default = array(
       'db' => $this->db,
@@ -186,18 +192,18 @@ class PubChem extends API{
        }
      }
 
-     if (!empty($result['synonyms']))
+     if (!empty($result['meshheadings']))
+       //$result['name'] = implode(' | ', $result['meshheadings']);
+       $result['name'] = $result['meshheadings'][0];
+     else if (!empty($result['synonyms']))
        $result['name'] = $result['synonyms'][0];
      else if (!empty($result['IUPACName']))
        $result['name'] = $result['IUPACName'];
-     else if (!empty($result['meshheadings']))
-       $result['name'] = implode(' | ', $result['meshheadings']);
 
      return $result;
    }
 
-  // TODO: pug_soap
-  function pug($inchi){
+  function pug($inchi){    
     if (stripos($inchi, 'inchi=') !== 0)
       $inchi = 'InChI=' . $inchi;
 
@@ -237,11 +243,53 @@ class PubChem extends API{
     $node = $nodes->item(0);
 
     $this->db = $this->xpath->query('PCT-Entrez_db', $node)->item(0)->nodeValue;
-    $this->count = $this->xpath->query('PCT-Entrez_count', $node)->item(0)->nodeValue;
+    $this->total = $this->xpath->query('PCT-Entrez_count', $node)->item(0)->nodeValue;
     $this->webenv = $this->xpath->query('PCT-Entrez_webenv', $node)->item(0)->nodeValue;
     $this->querykey = $this->xpath->query('PCT-Entrez_query-key', $node)->item(0)->nodeValue;
 
     return simplexml_import_dom($node);
+  }
+  
+  function pug_soap($inchi){
+    $this->total = 0;
+    $this->db = NULL;
+    $this->webenv = NULL;
+    $this->querykey = NULL;
+    
+    $wsdl = 'http://pubchem.ncbi.nlm.nih.gov/pug_soap/pug_soap.cgi?wsdl';
+    
+    if (stripos($inchi, 'inchi=') !== 0)
+      $inchi = 'InChI=' . $inchi;
+      
+    $result = $this->soap($wsdl, 'InputStructure', array(
+      'structure' => $inchi,
+      'format' => 'eFormat_InChI',
+      ));
+            
+    $result = $this->soap($wsdl, 'IdentitySearch', array(
+      'StrKey' => $result->StrKey, 
+      'idOptions' => array(
+        'eIdentity' => 'eIdentity_SameIsotope',
+        //'ToWebEnv' => '',
+        ),
+      'limits' => array(
+        'seconds' => 10,
+        'maxRecords' => 20,
+        //'ListKey' => '',
+        ),
+     ));
+     
+     $result = $this->soap($wsdl, 'GetEntrezKey', array(
+       'ListKey' => $result->ListKey,
+       ));
+       
+     if (!$result->EntrezKey)
+      return FALSE;
+     
+     $this->total = $result->EntrezKey ? '1+' : 0;
+     $this->db = $result->EntrezKey->db;
+     $this->webenv = $result->EntrezKey->webenv;
+     $this->querykey = $result->EntrezKey->key;
   }
 
   function image($params){
