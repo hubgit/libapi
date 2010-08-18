@@ -8,7 +8,7 @@ class Whatizit extends API {
     $timeout = ini_get('default_socket_timeout');
     ini_set('default_socket_timeout', 3600); // 1 hour
 
-    $params = array('text' => $text,'pipelineName' => $plan,'convertToHtml' => FALSE);
+    $params = array('text' => $text, 'pipelineName' => $plan, 'convertToHtml' => FALSE);
     $this->soap($this->wsdl, 'contact', $params);
 
     ini_set('default_socket_timeout', $timeout);
@@ -49,47 +49,4 @@ class Whatizit extends API {
           );
     }
   }
-  
-  /*
-  function findPositionForNode($item){
-     $position = 0;
-     $this->depth = 0;
-     foreach ($this->textnodes as $node){
-       while ($node = $this->nextTextNode($node)){
-         if ($node->parentNode->isSameNode($item))
-           break(2);
-         $position += mb_strlen($node->nodeValue);
-       }
-     }
-     return $position;
-  }
-
-  function nextTextNode($node){
-    do {
-      $node = $this->nextNode($node);
-    } while ($node && $node->nodeType !== XML_TEXT_NODE);
-    return $node;
-  }
-
-  function nextNode($node){
-    if ($node->firstChild){
-      $this->depth++;
-      return $node->firstChild;
-    }
-    else if ($node->nextSibling){
-      return $node->nextSibling;
-    }
-    else while ($node = $node->parentNode){
-      $this->depth--;
-
-      if ($this->depth == -1){
-        return FALSE;
-      }
-
-      if ($node->nextSibling){
-        return $node->nextSibling;
-      }
-    }
-  }
-  */
 }

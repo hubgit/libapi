@@ -1,27 +1,30 @@
 <?php
 
-class CHEBI extends API {
+class CHEBI extends BioPortal {
     public $doc = 'http://www.ebi.ac.uk/chebi/webServices.do';
     public $cache = TRUE;
-        
-    function search($term, $start = 0, $n = 10){        
+    
+    public $wsdl = 'http://www.ebi.ac.uk/webservices/chebi/2.0/webservice?wsdl';
+    public $n = 10;
+    
+    function search($term, $field = 'ALL'){
       $params = array(
-        'search' => '"' . $term . '"',
-        'searchCategory' => 'ALL',
-        'maximumResults' => $n,
+        'search' => $term,
+        'searchCategory' => $field,
+        'maximumResults' => $this->n,
         'stars' => 'THREE ONLY',
         );
 
-      $this->soap('http://www.ebi.ac.uk/webservices/chebi/2.0/webservice?wsdl', 'getLiteEntity', $params);     
-      // TODO: check for errors
+      $this->soap($this->wsdl, 'getLiteEntity', $params);     
       $this->items = $this->data->return->ListElement;
       $this->total = count($this->items);
+      
       return $this->items;
     }
     
     function fetch($ids){
       $params = array('ListOfChEBIIds' => $ids);
-      $this->soap('http://www.ebi.ac.uk/webservices/chebi/2.0/webservice?wsdl', 'getCompleteEntityByList', $params);  
+      $this->soap($this->wsdl, 'getCompleteEntityByList', $params);  
         
       $items = array();
       foreach ($this->data->return as $item){
@@ -43,5 +46,13 @@ class CHEBI extends API {
       $item->stdinchi = $properties['iupac:stdinchi'];
       $item->stdinchikey = $properties['iupac:stdinchikey'];
       return $item;
+    }
+    
+    function annotate($text){
+      parent::annotate($text, array(42878)); // 42878 = version-specific localOntologyId from http://rest.bioontology.org/obs/ontologies 1007 = virtualOntologyId
+      foreach ($this->annotations as &$annotation)
+        $annotation['type'] = 'chemical';
+        
+      // TODO: lookup structures and calculate stdinchi + stdinchikey for each one
     }
 }

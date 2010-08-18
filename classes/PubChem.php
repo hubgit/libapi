@@ -1,11 +1,14 @@
 <?php
 
 class PubChem extends API{
-  public $doc = 'http://pubchem.ncbi.nlm.nih.gov/';
+  public $doc = 'http://pubchem.ncbi.nlm.nih.gov/'; // http://pubchem.ncbi.nlm.nih.gov/pug_soap/pug_soap_help.html
   public $def = array('EUTILS_TOOL', 'EUTILS_EMAIL');
   
   public $db = 'pccompound';
   
+  public $pug_wsdl = 'http://pubchem.ncbi.nlm.nih.gov/pug_soap/pug_soap.cgi?wsdl';
+  
+  // http://pubchem.ncbi.nlm.nih.gov/search/help_search.html
   function build_term($args){
     if ($args['cid'])
       $args['term'] = sprintf('%d[CID]', $args['cid']);
@@ -14,7 +17,9 @@ class PubChem extends API{
     else if ($args['inchikey'])
       $args['term'] = sprintf('"%s"[InChIKey]', preg_replace('/^inchikey=/i', '', $args['inchikey']));
     else if ($args['inchi'])
-      return array('pug_soap', $args['inchi']);
+      return array('pug_soap_inchi', $args['inchi']);
+    else if ($args['formula'])
+      return array('pug_soap_formula', $args['formula']);
     //else if ($args['formula'])
       //return $this->pug($args['formula']);
     else if ($args['iupac'])
@@ -161,7 +166,6 @@ class PubChem extends API{
   }
 
   function parse($doc){
-     //debug($doc);
      $result = array(
        'id' => (int) $doc->Id,
        'synonyms' => array(),
@@ -252,23 +256,21 @@ class PubChem extends API{
   }
   */
   
-  function pug_soap($inchi){
+  function pug_soap_inchi($inchi){
     $this->total = 0;
     $this->db = NULL;
     $this->webenv = NULL;
     $this->querykey = NULL;
-    
-    $wsdl = 'http://pubchem.ncbi.nlm.nih.gov/pug_soap/pug_soap.cgi?wsdl';
-    
+        
     if (stripos($inchi, 'inchi=') !== 0)
       $inchi = 'InChI=' . $inchi;
       
-    $result = $this->soap($wsdl, 'InputStructure', array(
+    $result = $this->soap($this->pug_wsdl, 'InputStructure', array(
       'structure' => $inchi,
       'format' => 'eFormat_InChI',
       ));
-            
-    $result = $this->soap($wsdl, 'IdentitySearch', array(
+                  
+    $result = $this->soap($this->pug_wsdl, 'IdentitySearch', array(
       'StrKey' => $result->StrKey, 
       'idOptions' => array(
         'eIdentity' => 'eIdentity_SameIsotope',
@@ -281,8 +283,54 @@ class PubChem extends API{
         ),
      ));
      
-     $result = $this->soap($wsdl, 'GetEntrezKey', array(
-       'ListKey' => $result->ListKey,
+     $key = $result->ListKey;
+     
+     //debug($result);
+     
+     $this->cache = FALSE;
+     
+     $i = 0;
+     do { // try 20 times, every 3 seconds
+       $result = $this->soap($this->pug_wsdl, 'GetOperationStatus', array('AnyKey' => $key));
+       debug($result);
+       
+       if (!in_array($result->status, array('eStatus_Running', 'eStatus_Queued')))
+         break;
+         
+       sleep(3);
+     } while ($i++ < 20);
+     
+     $this->cache = TRUE;
+
+     if ($result->status == 'eStatus_Success')
+       return $this->pug_soap_fetch_results($key);
+  }
+  
+  function pug_soap_formula($formula){
+    $this->total = 0;
+    $this->db = NULL;
+    $this->webenv = NULL;
+    $this->querykey = NULL;
+                
+    $result = $this->soap($this->pug_wsdl, 'MFSearch', array(
+      'MF' => $formula, 
+      'mfOptions' => array(
+        'AllowOtherElements' => false,
+        //'ToWebEnv' => '',
+        ),
+      'limits' => array(
+        'seconds' => 10,
+        'maxRecords' => 20,
+        //'ListKey' => '',
+        ),
+     ));
+     
+     return $this->pug_soap_fetch_results($result->ListKey);
+  }
+  
+  function pug_soap_fetch_results($listKey){     
+     $result = $this->soap($this->pug_wsdl, 'GetEntrezKey', array(
+       'ListKey' => $listKey,
        ));
        
      if (!$result->EntrezKey)

@@ -376,16 +376,18 @@ function oauth_authorize($prefix, $urls){
 
 // needs standard InChI library from IUPAC
 function mol2stdinchi($data){
+  $inchi_bin = Config::get('INCHI');
+    
   static $seen = array(); // TODO: use memcache for longer-term storage?
   $md5 = md5($data);
   
-  if (!$seen[$data]) {
+  if (!$seen[$md5]) {
     if (strpos($data, 'InChI=') === 0) // $data = InChI
-      $command = 'echo %s | /usr/bin/inchi-1 -STDIO -InChI2Struct 2>/dev/null | /usr/bin/inchi-1 -InpAux -Key 2>/dev/null';
+      $command = 'echo %s | %s -STDIO -InChI2Struct 2>/dev/null | /usr/bin/inchi-1 -InpAux -Key 2>/dev/null';
     else // $data = MOL
-      $command = 'echo %s | /usr/bin/inchi-1 -STDIO -Key 2>/dev/null';
+      $command = 'echo %s | %s -STDIO -Key 2>/dev/null';
   
-    $command = sprintf($command, escapeshellarg($data)); 
+    $command = sprintf($command, escapeshellarg($data), escapeshellarg($inchi_bin)); 
     exec($command, $output, $value);
     // TODO: check for errors
     if (!empty($output))

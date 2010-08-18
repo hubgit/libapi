@@ -35,6 +35,8 @@ class API {
   // for entity extraction
   public $annotations = array();
   public $entities = array();
+  
+  public $csv_separator = ',';
 
   function __construct(){
     if (isset($this->def) && !empty($this->def))
@@ -180,7 +182,8 @@ class API {
     }
     else {
       debug('Sending request to ' . $url);
-      $this->response = file_get_contents($url, NULL, $context);
+      //debug(array($url, $http));
+      $this->response = file_get_contents($url, false, $context);
       debug('Received response');
       //debug($http_response_header);
       $this->http_response_header = $http_response_header;
@@ -297,6 +300,8 @@ class API {
       return unserialize($this->response);
       case 'xmlrpc':
       return xmlrpc_decode($this->response);
+      case 'csv':
+      return $this->parse_csv($this->response);
       case 'raw':
       default:
       return $this->response;
@@ -322,6 +327,16 @@ class API {
      $this->xpath = new DOMXPath($dom);
      
     return $dom;
+  }
+  
+  function parse_csv($csv){
+    $f = fopen('php://temp/csv', 'rw');
+    fwrite($f, $csv);
+    rewind($f);
+    $items = array();
+    while (($data = fgetcsv($f, NULL, $this->csv_separator)) !== FALSE)
+      $items[] = $data;
+    return $items;
   }
 
   function validate_data($format){
