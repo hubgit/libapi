@@ -185,9 +185,10 @@ class API {
       //debug(array($url, $http));
       $this->response = file_get_contents($url, false, $context);
       debug('Received response');
-      //debug($http_response_header);
       $this->http_response_header = $http_response_header;
     }
+
+    //debug($this->http_response_header);
 
     $this->parse_http_response_header();
     $this->parse_effective_url($url);

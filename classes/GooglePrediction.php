@@ -6,9 +6,10 @@ class GooglePrediction extends Google {
   public $cache = FALSE;
 
   function train($model){
-    $this->authorise();
-    $http = array('method' => 'POST', 'header' => "Content-Type: application/json\nAuthorization: GoogleLogin auth=" . $this->token, 'content' => '{data:{}}');
+    $this->authorise('xapi');
+    $http = array('method' => 'POST', 'header' => "Content-Type: application/json\nAuthorization: GoogleLogin auth=" . $this->token, 'content' => '{data:{}}', 'ignore_errors' => true);
     $this->get_data('https://www.googleapis.com/prediction/v1/training', array('data' => $model), 'json', $http);
+    //debug($this->data);
   }
   
   function check_training($model){
