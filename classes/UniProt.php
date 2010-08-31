@@ -15,6 +15,9 @@ class UniProt extends API{
       $args['term'] = sprintf('accession:%s', $args['id']);
     else if ($args['name']){
       //$query = array(sprintf('"%s"', $args['name']));
+      
+      $args['name'] = preg_replace('/(\+|\-|\&\&|\|\||\!|\(|\)|\{|\}|\[|\]|\^|\"|\~|\*|\?|\:|\\\\)/', '\\\\$1', $args['name']);
+        
       $query = array();
       foreach (array('mnemonic', 'name', 'gene', 'family', 'keyword') as $field)
         $query[] = $field . sprintf(':"%s"', $args['name']);  
