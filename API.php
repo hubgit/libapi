@@ -264,7 +264,7 @@ class API {
     $this->http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     $this->http_info = array(curl_getinfo($curl));
 
-    //debug($this->response);
+    debug($this->response);
     debug('Status: ' . $this->http_status);
     file_put_contents(sys_get_temp_dir() . '/raw.xml', $this->response);
 
@@ -310,23 +310,30 @@ class API {
   }
   
   function xml_to_dom($xml, $method = 'loadXML', $options = NULL){
-    if ($options = NULL)
+    if (is_null($options))
       $options = LIBXML_DTDLOAD | LIBXML_DTDVALID | LIBXML_NOCDATA | LIBXML_NOENT | LIBXML_NONET;
- 
+      
     $xml = preg_replace('/<!--.+?-->/s', '', $xml);
     
     $dom = new DOMDocument;
     $dom->preserveWhiteSpace = $this->preserveWhiteSpace;
-    $dom->$method($xml, $options);
+    
+    switch ($method){
+      case 'loadHTML':
+      $dom->loadHTML($xml);
+      break;
+      
+      case 'loadXML':
+      $dom->loadXML($xml, $options);
+      break;
+    }
+      
     $dom->encoding = 'UTF-8';
     $dom->formatOutput = TRUE;
-    
-    //$dom = DOMDocument::loadHTML($xml);
-    //debug($dom->saveXML());
-        
+
     if (is_object($dom))
      $this->xpath = new DOMXPath($dom);
-     
+
     return $dom;
   }
   
