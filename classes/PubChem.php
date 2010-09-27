@@ -14,8 +14,10 @@ class PubChem extends API{
       $args['term'] = sprintf('%d[CID]', $args['cid']);
     else if ($args['sid'])
       $args['term'] = sprintf('%d[SID]', $args['sid']);
-    else if ($args['inchikey'])
-      $args['term'] = sprintf('"%s"[InChIKey]', preg_replace('/^inchikey=/i', '', $args['inchikey']));
+    else if ($args['stdinchikey'])
+      $args['term'] = sprintf('"%s"[InChIKey]', preg_replace('/^inchikey=/i', '', $args['stdinchikey']));
+    else if ($args['stdinchi'])
+      return array('pug_soap_inchi', $args['stdinchi']);
     else if ($args['inchi'])
       return array('pug_soap_inchi', $args['inchi']);
     else if ($args['formula'])
@@ -335,6 +337,8 @@ class PubChem extends API{
        
      if (!$result->EntrezKey)
       return FALSE;
+      
+     debug($result);
      
      $this->total = $result->EntrezKey ? '1+' : 0;
      $this->db = $result->EntrezKey->db;
