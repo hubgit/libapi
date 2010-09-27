@@ -186,16 +186,12 @@ function innerXML($node){
   if (get_class($node) == 'SimpleXMLElement')
     $node = dom_import_simplexml($node);
 
-
-  if (get_class($node) == 'SimpleXMLElement')
-    $node = dom_import_simplexml($node);
-
+  if (!$node->hasChildNodes())
+    return $node->textContent; // TODO: nodeValue?
+    
   $dom = new DOMDocument;
-  if ($node->hasChildNodes())
-    foreach ($node->childNodes as $child)
-      $dom->appendChild($dom->importNode($child, TRUE));
-  else
-    return $node->textContent;
+  foreach ($node->childNodes as $child)
+    $dom->appendChild($dom->importNode($child, TRUE));    
 
   return $dom->saveXML($dom->documentElement);
 }
@@ -380,14 +376,17 @@ function mol2stdinchi($data){
     
   static $seen = array(); // TODO: use memcache for longer-term storage?
   $md5 = md5($data);
-  
+    
   if (!$seen[$md5]) {
-    if (strpos($data, 'InChI=') === 0) // $data = InChI
-      $command = 'echo %s | %s -STDIO -InChI2Struct 2>/dev/null | /usr/bin/inchi-1 -InpAux -Key 2>/dev/null';
-    else // $data = MOL
+    if (strpos($data, 'InChI=') === 0){ // $data is an InChI
+      $command = 'echo %s | %s -STDIO -InChI2Struct 2>/dev/null | %s -InpAux -Key 2>/dev/null';
+      $command = sprintf($command, escapeshellarg($data), escapeshellarg($inchi_bin), escapeshellarg($inchi_bin)); 
+    }
+    else{ // $data = MOL
       $command = 'echo %s | %s -STDIO -Key 2>/dev/null';
+      $command = sprintf($command, escapeshellarg($data), escapeshellarg($inchi_bin)); 
+    }
   
-    $command = sprintf($command, escapeshellarg($data), escapeshellarg($inchi_bin)); 
     exec($command, $output, $value);
     // TODO: check for errors
     if (!empty($output))
@@ -442,6 +441,26 @@ function human_filesize($path){
   }
 
   return number_format($size, 0) . ' ' . $units[$i];
+}
+
+function parse_sdf($sdf){
+  $items = array();
+  foreach (explode('$$$$', $sdf) as $item){
+    if (preg_match('/^(.+?\nM\s+END\n)(.*)/s', $item, $matches)){
+      list(, $structure, $text) = $matches;
+      
+      $item = array();
+      preg_match_all('/>\s+<(\w+)>(?:\r|\n)(.+?)(?:\r|\n){2}/s', $text, $meta_matches, PREG_SET_ORDER);
+      foreach ($meta_matches as $m)
+        $item['meta-' . $m[1]] = $m[2];
+      
+      $item['chem:mol'] = $structure;       
+      $item = array_merge($item, mol2stdinchi($structure));
+          
+      $items[] = $item;
+    }
+  }
+  return $items;
 }
 
 
