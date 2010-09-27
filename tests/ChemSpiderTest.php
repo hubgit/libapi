@@ -22,6 +22,12 @@ class ChemSpiderTest extends PHPUnit_Framework_TestCase {
     $this->wikipedia = 'http://en.wikipedia.org/wiki/Ethanol';
   }
   
+  public function testSearch(){
+    $result = $this->api->search(array('name' => sprintf('"%s"', $this->compoundName)));
+    $this->assertEquals(1, count($result));   
+    $this->assertEquals($this->csid, $result[0]);
+  }
+  
   public function testGetCompoundInfo(){
     $result = $this->api->GetCompoundInfo($this->csid);
     debug($result);
@@ -36,8 +42,8 @@ class ChemSpiderTest extends PHPUnit_Framework_TestCase {
     $this->assertEquals($this->csid, $result);
   }
   
-  public function testSearch(){
-    $result = $this->api->search(sprintf('"%s"', $this->compoundName));
+  public function testSimpleSearch(){
+    $result = $this->api->SimpleSearch(sprintf('"%s"', $this->compoundName));
     $this->assertEquals(1, count($result));   
     $this->assertEquals($this->csid, $result[0]);
   }
