@@ -23,17 +23,33 @@ class CHEBI extends BioPortal {
     }
     
     function fetch($ids){
-      $params = array('ListOfChEBIIds' => $ids);
-      $this->soap($this->wsdl, 'getCompleteEntityByList', $params);  
+      $this->items = array();
+
+      switch(count($ids)){
+        case 0:
+        return false;
+        break;
         
+        case 100:
+        $this->soap($this->wsdl, 'getCompleteEntity', array('chebiId' => $ids[0]));
+        $result = array($this->data->return);
+        break;
+        
+        default:
+        $this->soap($this->wsdl, 'getCompleteEntityByList', array('ListOfChEBIIds' => $ids));  
+        $result = $this->data->return;
+        break;
+      }
+      
+      debug($result);
+
       $items = array();
-      foreach ($this->data->return as $item){
+      foreach ($result as $item){
         $data = $this->parse_item($item);
         $items[$data->chebiId] = $data;
       }
       
       // re-sort the items, as getCompleteEntityByList doesn't maintain the original order
-      $this->items = array();
       foreach ($ids as $id)
         if (!empty($items[$id]))
           $this->items[$id] = $items[$id];
