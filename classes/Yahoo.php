@@ -14,7 +14,7 @@ class Yahoo extends API {
       'format' => $format,
       ), $format);
       
-    debug($this->data);
+    return $this->data;
   }
 
   // http://developer.yahoo.com/maps/rest/V1/geocode.html
