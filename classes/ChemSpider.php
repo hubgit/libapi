@@ -5,6 +5,145 @@ class ChemSpider extends API {
     public $def = 'CHEMSPIDER';
     public $cache = TRUE;
     
+    function build_term($args){
+      if ($args->{'dc:title'})
+        return array('SimpleSearch', $args->{'dc:title'});
+      if ($args->{'iupac:name'})
+        return array('SimpleSearch', $args->{'iupac:name'});
+      else if ($args->{'iupac:stdinchi'})
+        return array('SimpleSearch', $args->{'iupac:stdinchi'});
+      else if ($args->{'iupac:stdinchikey'})
+        return array('SimpleSearch', $args->{'iupac:stdinchikey'});
+      else if ($args->{'iupac:inchi'})
+        return array('SimpleSearch', $args->{'iupac:inchi'});
+      else if ($args->{'iupac:inchikey'})
+        return array('SimpleSearch', $args->{'iupac:inchikey'});
+      else if ($args->{'chemspider:id'})
+        return array('SimpleSearch', $args->{'chemspider:id'});
+      else if ($args->{'chem:molecular-formula'})
+        return array('SearchByFormula2', $args->{'chem:molecular-formula'});
+    }
+    
+    function search($args, $params = array()){
+      unset($this->total);
+      $term = $this->build_term($args);
+      
+      $ids = array();
+      if (is_array($term))
+        $ids = call_user_func(array($this, $term[0]), $term[1]);
+                
+      if (!empty($ids)){
+        $items = $this->GetExtendedCompoundInfoArray($ids);
+        debug($items);
+        $items = array_map(array($this, 'fix_search_items'), $items);
+        return $items;
+      }
+    }
+    
+    function fix_search_items($item){      
+      $data = array(
+        'chemspider:id' => $item->CSID,
+        'chem:molecular-formula' => preg_replace('/_\{(\d+)\}/', '$1', $item->MF),
+        'chem:smiles' => $item->SMILES,
+        'iupac:inchi' => $item->InChI,
+        'iupac:inchikey' => $item->InChIKey,
+        'chem:molecular-weight' => $item->MolecularWeight,
+        'iupac:name' => $item->CommonName,
+        'misc:image' => url('http://www.chemspider.com/ImagesHandler.ashx', array('w' => 200, 'h' => 200, 'id' => $item->CSID)),
+        'rdf:uri' => url('http://www.chemspider.com/' . urlencode($item->CSID)),
+      ); 
+      
+      if ($data['iupac:inchi']){
+        $properties = mol2stdinchi($data['iupac:inchi']);
+        $data['iupac:stdinchi'] = $properties['iupac:stdinchi'];
+        $data['iupac:stdinchikey'] = $properties['iupac:stdinchikey'];
+      }
+
+      return $data;
+    }
+    
+    function SimpleSearch($term){        
+      $params = array(
+        'token' => Config::get('CHEMSPIDER'),
+        'query' => $term,
+        );
+
+      $this->soap('http://www.chemspider.com/search.asmx?wsdl', 'SimpleSearch', $params);  
+      return $this->data->SimpleSearchResult->int;
+    }
+    
+    function SearchByFormula2($formula){
+      $params = array(
+        //'token' => Config::get('CHEMSPIDER'),
+        'formula' => $formula,
+        );
+
+      $this->soap('http://www.chemspider.com/MassSpecAPI.asmx?wsdl', 'SearchByFormula2', $params);
+      debug($this->data);
+      return $this->data->SearchByFormula2Result->string;
+    }
+    
+    function AsyncSimpleSearch($term){
+      $params = array(
+        'token' => Config::get('CHEMSPIDER'),
+        'query' => $term,
+        );
+      
+      $this->cache = FALSE;
+      $this->soap('http://www.chemspider.com/search.asmx?wsdl', 'AsyncSimpleSearch', $params);    
+      debug($this->data); 
+      $rid = $this->data->AsyncSimpleSearchResult;
+      
+      if (!$rid)
+        throw new HTTPException(500, 'Error searching ChemSpider: rid = ' . $rid);
+      
+      $status = NULL;
+      
+      $i = 0;
+      while ($i++ < 10) { // try 12 times, every 5 seconds
+        $params = array(
+          'token' => Config::get('CHEMSPIDER'),
+          'rid' => $rid,
+          );
+
+        $this->soap('http://www.chemspider.com/search.asmx?wsdl', 'GetAsyncSearchStatus', $params); 
+        debug($this->data);
+        
+        $status = $this->data->GetAsyncSearchStatusResult;
+        if (!in_array($status, array('Created', 'Scheduled', 'Processing')))
+          break;
+          
+        sleep(5); 
+      }
+      
+      if ($status != 'ResultReady')
+        throw new HTTPException(500, 'Error searching ChemSpider; status = ' . $status);
+      
+      $sdf = $this->GetRecordsSdf($rid);
+      $items = parse_sdf($sdf); 
+      $items = array_map(array($this, 'fix_search_items'), $items);
+      return $items;
+    }
+
+    function fix_search_items_sdf($item){
+      $item['chemspider:id'] = $item['meta-CSID'];
+      unset($item['meta-CSID']);
+      
+      $item['misc:image'] = url('http://www.chemspider.com/ImagesHandler.ashx', array('id' => $item['chemspider:id'], 'w' => 200, 'h' => 200));
+      $item['rdf:uri'] = url('http://www.chemspider.com/' . urlencode($item['chemspider:id']));
+      return $item;
+    }
+    
+    function GetRecordsSdf($rid){
+      $params = array(
+        'token' => Config::get('CHEMSPIDER'),
+        'rid' => $rid,
+        );
+
+      $this->soap('http://www.chemspider.com/MassSpecAPI.asmx?wsdl', 'GetRecordsSdf', $params);
+      return $this->data->GetRecordsSdfResult;
+    }
+    
     function InChIKeyToCSID($inchikey){      
       $this->soap('http://www.chemspider.com/inchi.asmx?wsdl', 'InChIKeyToCSID', array('inchi_key' => $inchikey));
       return $this->data->InChIKeyToCSIDResult;
@@ -13,6 +152,12 @@ class ChemSpider extends API {
     function InChIToCSID($inchi){    
       $this->soap('http://www.chemspider.com/inchi.asmx?wsdl', 'InChIToCSID', array('inchi' => $inchi));
       return $this->data->InChIToCSIDResult;
+    }
+    
+    function Mol2CSID($mol, $options = 'eAllTautomers'){
+      // $options = eExactMatch or eAllTautomers or eSameSkeletonAndH or eSameSkeleton or eAllIsomers
+      $this->soap('http://www.chemspider.com/search.asmx?wsdl', 'Mol2CSID', array('mol' => $mol, 'options' => $options));
+      return $this->data->Mol2CSIDResult;
     }
     
     function CSID2ExtRefs($csid, $datasources = array('wikipedia')){
@@ -46,15 +191,16 @@ class ChemSpider extends API {
       return $this->data->GetCompoundInfoResult;
     }
     
-    function search($term){        
+    function GetExtendedCompoundInfoArray($ids){
       $params = array(
         'token' => Config::get('CHEMSPIDER'),
-        'query' => $term,
+        'CSIDs' => $ids,
         );
 
-      $this->soap('http://www.chemspider.com/search.asmx?wsdl', 'SimpleSearch', $params);     
-      return $this->data->SimpleSearchResult->int;
+      $this->soap('http://www.chemspider.com/MassSpecAPI.asmx?wsdl', 'GetExtendedCompoundInfoArray', $params);
+      return $this->data->GetExtendedCompoundInfoArrayResult->ExtendedCompoundInfo;      
     }
+    
     
     // or http://www.chemspider.com/ImagesHandler.ashx?id={$csid}
     function get_image($params){
