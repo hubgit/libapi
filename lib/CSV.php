@@ -46,4 +46,8 @@ class CSV {
     if (!empty($data))
       fputcsv(CSV::$output, $data, CSV::$separator);
   }
+  
+  static function close(){
+    fclose(CSV::$input);
+  }
 }

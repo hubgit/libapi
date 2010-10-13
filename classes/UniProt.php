@@ -11,46 +11,90 @@ class UniProt extends API{
   }
   
   function build_term($args){
-    if ($args['id'])
-      $args['term'] = sprintf('accession:%s', $args['id']);
-    else if ($args['name']){
+    $term = NULL;
+    
+    if (!$args['dc:title'] && $args['gene:symbol'])
+      $args['dc:title'] = $args['gene:symbol'];
+    
+    if ($args['uniprot:id']){
+      $term = sprintf('accession:%s', $args['uniprot:id']);
+    }
+    else if ($args['uniprot:mnemonic']){
+      $term = sprintf('%s', $args['uniprot:mnemonic']);
+    }
+    else if ($args['dc:title']){
       //$query = array(sprintf('"%s"', $args['name']));
       
-      $args['name'] = preg_replace('/(\+|\-|\&\&|\|\||\!|\(|\)|\{|\}|\[|\]|\^|\"|\~|\*|\?|\:|\\\\)/', '\\\\$1', $args['name']);
+      $args['name'] = preg_replace('/(\+|\-|\&\&|\|\||\!|\(|\)|\{|\}|\[|\]|\^|\"|\~|\*|\?|\:|\\\\)/', '\\\\$1', $args['dc:title']);
         
       $query = array();
       foreach (array('mnemonic', 'name', 'gene', 'family', 'keyword') as $field)
-        $query[] = $field . sprintf(':"%s"', $args['name']);  
+        $query[] = $field . sprintf(':"%s"', $args['dc:title']);  
       //$query[] = sprintf('"%s"', $args['name']);   
-      $args['term'] = sprintf('(%s)', implode(' OR ', $query));
+      $term = sprintf('(%s)', implode(' OR ', $query));
       
-      if ($args['organism'])
-        $args['term'] .= sprintf(' AND organism:"%s"', $args['organism']);
+      if ($args['bio:organism'])
+        $term .= sprintf(' AND organism:"%s"', $args['bio:organism']);
       
-      //$args['term'] .= ' AND reviewed:yes';    
+      //$term .= ' AND reviewed:yes';    
     }
-
-    if (!$term = $args['term'])
-      return FALSE;
-
     return $term;
   }
   
-  function search_list($args, $params = array()){
-    unset($this->total, $this->data, $this->results);
+  function search($args, $params = array()){
+    unset($this->total, $this->data);
+    
+    $term = $this->build_term($args);
+    if (!$term)
+      return false;
+    
     
     $default = array(
-      'query' => $this->build_term($args),
+      'query' => $term,
       'sort' => 'score',
       'limit' => 10,
-      'format' => 'list',
+      'format' => 'tab',
+      'columns' => 'id,entry name,protein names,genes,organism,organism-id,reviewed,families,interpro,keywords,score',
       );
 
     $params = array_merge($default, $params);
     $this->get_data($this::$server, $params, 'raw');
+        
+    if (!isset($this->data))
+      throw new Exception('Error searching UniProt');
     
-    $ids = explode("\n", trim($this->data));    
-    return empty($ids) ? FALSE : $this->fetch($ids);
+    $lines = explode("\n", trim($this->data));
+    $headings = array_shift($lines);
+
+    $this->total = count($lines);
+    
+    $this->results = array();
+    foreach ($lines as $line){
+      if (empty($line))
+        continue;
+        
+      $item = explode("\t", $line);
+      $this->results[$item[0]] = array(
+        'id' => $item[0],
+        'name' => $item[1],
+        'synonyms' => $item[2],
+        'genes' => explode(' ', $item[3]),
+        'organism' => $item[4],
+        'organism-id' => $item[5],
+        'reviewed' => $item[6],
+        'families' => $item[7],
+        'interpro' => $item[8],
+        'keywords' => $item[9],
+        'score' => $item[10],
+        ); 
+    }
+    
+    $items = $this->fetch(array_keys($this->results));
+    foreach ($items as $id => $item)
+      foreach ($item as $key => $value)
+        $this->results[$id][$key] = $value;
+        
+    //debug($this->results);
   }
   
   function fetch($ids){
@@ -88,69 +132,41 @@ class UniProt extends API{
         
       $items[$id] = array(
         'uniprot:id' => $id,
-        'uniprot:name' => $this->xpath->query("u:name", $node)->item(0)->textContent,
+        'uniprot:mnemonic' => $this->xpath->query("u:name", $node)->item(0)->textContent,
         'dc:title' => $this->xpath->query("u:protein/u:recommendedName/u:fullName", $node)->item(0)->textContent,
         'uniprot:genes' => $genes,
-        'bio:organism' => array(
-          'common' => $this->xpath->query("u:organism/u:name[@type='common']", $node)->item(0)->textContent,
-          'scientific' => $this->xpath->query("u:organism/u:name[@type='scientific']", $node)->item(0)->textContent,
-          ),
-        'x:synonyms' => $synonyms,
+        //'bio:organism' => array(
+          //'common' => $this->xpath->query("u:organism/u:name[@type='common']", $node)->item(0)->textContent,
+          //'scientific' => $this->xpath->query("u:organism/u:name[@type='scientific']", $node)->item(0)->textContent,
+        //),
+        'bio:organism' => $this->xpath->query("u:organism/u:name[@type='scientific']", $node)->item(0)->textContent,
+        'misc:synonyms' => $synonyms,
         );
     }
     
     return $items;      
   }
   
-  function search($args, $params = array()){
-    unset($this->total, $this->data);
+  /*
+  function search_list($args, $params = array()){
+    unset($this->total, $this->data, $this->results);
     
     $default = array(
       'query' => $this->build_term($args),
       'sort' => 'score',
       'limit' => 10,
-      'format' => 'tab',
-      'columns' => 'id,entry name,protein names,genes,organism,organism-id,reviewed,families,interpro,keywords,score',
+      'format' => 'list',
       );
 
     $params = array_merge($default, $params);
     $this->get_data($this::$server, $params, 'raw');
-        
-    if (!isset($this->data))
-      throw new Exception('Error searching UniProt');
     
-    $lines = explode("\n", $this->data);
-    $headings = array_shift($lines);
-    
-    $this->results = array();
-    foreach ($lines as $line){
-      if (empty($line))
-        continue;
-        
-      $item = explode("\t", $line);
-      $this->results[$item[0]] = array(
-        'id' => $item[0],
-        'name' => $item[1],
-        'synonyms' => $item[2],
-        'genes' => explode(' ', $item[3]),
-        'organism' => $item[4],
-        'organism-id' => $item[5],
-        'reviewed' => $item[6],
-        'families' => $item[7],
-        'interpro' => $item[8],
-        'keywords' => $item[9],
-        'score' => $item[10],
-        ); 
-    }
-    
-    $items = $this->fetch(array_keys($this->results));
-    foreach ($items as $id => $item)
-      foreach ($item as $key => $value)
-        $this->results[$id][$key] = $value;
-        
-    debug($this->results);
+    $ids = explode("\n", trim($this->data));    
+    return empty($ids) ? FALSE : $this->fetch($ids);
   }
+  */
   
+  /*
   function search_minimal($term){
       $this->opensearch('http://www.uniprot.org/uniprot/', array(
       'query' => $term,
@@ -168,4 +184,5 @@ class UniProt extends API{
        'description' => $this->xpath->query('description', $item)->item(0)->textContent,
        );
   }
+  */
 }

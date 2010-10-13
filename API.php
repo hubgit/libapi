@@ -35,16 +35,20 @@ class API {
   // for entity extraction
   public $annotations = array();
   public $entities = array();
-  
+
   public $csv_separator = ',';
 
   function __construct(){
-    if (isset($this->def) && !empty($this->def))
-      if (is_array($this->def))
-      foreach ($this->def as $def)
-      $this->check_def($def);
-    else
-      $this->check_def($this->def);
+    if (isset($this->def) && !empty($this->def)){
+      if (is_array($this->def)){
+        foreach ($this->def as $def){
+          $this->check_def($def);
+        }
+      }
+      else{
+        $this->check_def($this->def);
+      }
+    }
   }
 
   function check_def($def){
@@ -54,7 +58,7 @@ class API {
 
   function soap($wsdl, $method){
     unset($this->response, $this->data);
-    
+
     $args = func_get_args();
     $params = array_slice($args, 2);
     ksort($params);
@@ -163,7 +167,7 @@ class API {
     if (!isset($http['header']) || !preg_match('/Accept: /', $http['header']))
       $http['header'] .= (empty($http['header']) ? '' : "\n") . $this->accept_header($format);
 
-    debug($http);
+    //debug($http);
 
     $context = empty($http) ? NULL : stream_context_create(array('http' => $http));
 
@@ -184,7 +188,7 @@ class API {
       debug('Sending request to ' . $url);
       //debug(array($url, $http));
       $this->response = file_get_contents($url, false, $context);
-      debug('Received response');
+      //debug('Received response');
       $this->http_response_header = $http_response_header;
     }
 
@@ -293,7 +297,7 @@ class API {
       case 'html':
       return simplexml_import_dom($this->format_data('html-dom'));
       case 'html-dom':
-      return $this->xml_to_dom($this->response, 'loadHTML');
+      return $this->xml_to_dom($this->response, 'loadHTML', LIBXML_NOCDATA | LIBXML_NOENT | LIBXML_NONET);
       // FIXME: need proper RDF parser
       case 'rdf-xml':
       return $this->xml_to_dom($this->response);
@@ -308,26 +312,26 @@ class API {
       return $this->response;
     }
   }
-  
+
   function xml_to_dom($xml, $method = 'loadXML', $options = NULL){
     if (is_null($options))
       $options = LIBXML_DTDLOAD | LIBXML_DTDVALID | LIBXML_NOCDATA | LIBXML_NOENT | LIBXML_NONET;
-      
+
     $xml = preg_replace('/<!--.+?-->/s', '', $xml);
-    
+
     $dom = new DOMDocument;
     $dom->preserveWhiteSpace = $this->preserveWhiteSpace;
-    
+
     switch ($method){
       case 'loadHTML':
       $dom->loadHTML($xml);
       break;
-      
+
       case 'loadXML':
       $dom->loadXML($xml, $options);
       break;
     }
-      
+
     $dom->encoding = 'UTF-8';
     $dom->formatOutput = TRUE;
 
@@ -336,7 +340,7 @@ class API {
 
     return $dom;
   }
-  
+
   function parse_csv($csv){
     $f = fopen('php://temp/csv', 'rw');
     fwrite($f, $csv);
@@ -408,8 +412,8 @@ class API {
       $item[str_replace('-', '_', strtolower($matches[1]))][] = $matches[2];
     }
 
-    $this->save_http_header($status, $item);  
-    
+    $this->save_http_header($status, $item);
+
     $h = explode(' ', $this->http_response_header[0], 3);
     $this->http_status = $h[1];
     debug('Status: ' . $this->http_status);
@@ -424,7 +428,7 @@ class API {
     $item['status'] = $status;
     $this->http_headers[] = $item;
   }
-  
+
   function parse_effective_url($url){
     foreach ($this->http_headers as $item)
       if (isset($item['location']))

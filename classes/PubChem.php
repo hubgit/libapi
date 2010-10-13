@@ -1,6 +1,6 @@
 <?php
 
-class PubChem extends API{
+class PubChem extends Entrez{
   public $doc = 'http://pubchem.ncbi.nlm.nih.gov/'; // http://pubchem.ncbi.nlm.nih.gov/pug_soap/pug_soap_help.html
   public $def = array('EUTILS_TOOL', 'EUTILS_EMAIL');
   
@@ -9,100 +9,46 @@ class PubChem extends API{
   public $pug_wsdl = 'http://pubchem.ncbi.nlm.nih.gov/pug_soap/pug_soap.cgi?wsdl';
   
   // http://pubchem.ncbi.nlm.nih.gov/search/help_search.html
-  function build_term($args){
-    if ($args['cid'])
-      $args['term'] = sprintf('%d[CID]', $args['cid']);
-    else if ($args['sid'])
-      $args['term'] = sprintf('%d[SID]', $args['sid']);
-    else if ($args['stdinchikey'])
-      $args['term'] = sprintf('"%s"[InChIKey]', preg_replace('/^inchikey=/i', '', $args['stdinchikey']));
-    else if ($args['stdinchi'])
-      return array('pug_soap_inchi', $args['stdinchi']);
-    else if ($args['inchi'])
-      return array('pug_soap_inchi', $args['inchi']);
-    else if ($args['formula'])
-      return array('pug_soap_formula', $args['formula']);
-    //else if ($args['formula'])
-      //return $this->pug($args['formula']);
-    else if ($args['iupac'])
-      $args['term'] = sprintf('"%s"[IUPACName]', $args['name']); // TODO
-    else if ($args['name'])
-      $args['term'] = sprintf('"%s"[All Fields]', $args['name']);
+  function build_query($args){
+    $term = null;
+    
+    debug($args);
+    
+    if ($args['iupac:stdinchi'])
+      return array('pug_soap_inchi', $args['iupac:stdinchi']);
+    if ($args['iupac:inchi'])
+      return array('pug_soap_inchi', $args['iupac:inchi']);
+    if ($args['chem:molecular-formula'])
+      return array('pug_soap_formula', $args['chem:molecular-formula']);
+    
+    if ($args['pubchem:cid'])
+      $term = sprintf('%d[CID]', $args['pubchem:cid']);
+    else if ($args['pubchem:sid'])
+      $term = sprintf('%d[SID]', $args['pubchem:sid']);
+    else if ($args['iupac:stdinchikey'])
+      $term = sprintf('"%s"[InChIKey]', preg_replace('/^inchikey=/i', '', $args['iupac:stdinchikey']));
+    else if ($args['iupac:name'])
+      $term = sprintf('"%s"[IUPACName]', $args['iupac:name']); // TODO
+    else if ($args['dc:title'])
+      $term = sprintf('"%s"[All Fields]', $args['dc:title']);
 
-    if (!$term = $args['term'])
-      return FALSE;
-
-    if ($args['sid'])
-      $this->db = 'pcsubstance';
+    if (!$term)
+      return false;
 
     // put free text queries in quotes
-    if (strpos($term, '"') === FALSE && !preg_match('/\[[CS]ID\]/', $term)) // && strpos($term, '[') === FALSE)
+    if (strpos($term, '"') === false && !preg_match('/\[[CS]ID\]/', $term)) // && strpos($term, '[') === false)
       $term = sprintf('"%s"', $term);
-
-    debug($term);
     
     return $term;
   }
   
-  function search_soap($args, $params = array()){
-    unset($this->total, $this->webenv, $this->querykey);
-    $this->db = 'pccompound'; 
-    $term = $this->build_term($args);
-    
-    if (is_array($term))
-      return call_user_func(array($this, $term[0]), $term[1]);
-        
-    $default = array(
-      'db' => $this->db,
-      'usehistory' => 'y',
-      'rettype' => 'count',
-      'term' => $term,
-      'RetMax' => 1,
-      'tool' => Config::get('EUTILS_TOOL'),
-      'email' => Config::get('EUTILS_EMAIL'),
-      );
-
-    $params = array_merge($default, $params);
-    $this->soap('http://www.ncbi.nlm.nih.gov/entrez/eutils/soap/v2.0/eutils.wsdl', 'run_eSearch', $params);
-    
-    $this->total = $this->data->Count;
-    
-    if ($params['usehistory'] == 'y'){
-      $this->webenv = $this->data->WebEnv;
-      $this->querykey = $this->data->QueryKey;
-    }
-    
-    return $this->data;
-  }
-  
-  /*
-  function fetch_soap($ids = NULL, $params = array()){
-     $default = array(
-      'db' => $this->db,
-      'retmode' => 'xml',
-      'tool' => Config::get('EUTILS_TOOL'),
-      'email' => Config::get('EUTILS_EMAIL'),
-      );
-      
-    if (!empty($ids)){
-      $default['id'] = implode(',', is_array($ids) ? $ids : array($ids));
-    }
-    else if ($this->webenv){
-      $default['query_key'] = $this->querykey;
-      $default['WebEnv'] = $this->webenv;
-    }
-
-    $this->soap('http://www.ncbi.nlm.nih.gov/entrez/eutils/soap/v2.0/efetch_pubchem.wsdl', 'run_eFetch', array_merge($default, $params));
-    
-    return $this->data;
-  }
-  */
-  
-
   function search($args, $params = array()){
-    unset($this->total, $this->webenv, $this->querykey);
-    $this->db = 'pccompound';
-    $term = $this->build_term($args);
+    return $this->search_rest($args, $params); // PubChem SOAP interface to search has a bug?
+  }
+  
+  function search_rest($args, $params = array()){
+    unset($this->total, $this->data, $this->webenv, $this->querykey);
+    $term = $this->build_query($args);
     
     if (is_array($term))
       return call_user_func(array($this, $term[0]), $term[1]);
@@ -132,10 +78,12 @@ class PubChem extends API{
     
     return $this->data;
   }
+  
+  function fetch($ids = null, $params = array()){
+    return $this->fetch_rest($ids, $params); // no SOAP interface to eFetch for PubChem yet
+  }
 
-  function fetch($ids = NULL, $params = array()){
-    unset($this->results);
-    
+  function fetch_rest($ids = null, $params = array()){    
     $default = array(
       'db' => $this->db,
       'retmode' => 'xml',
@@ -155,115 +103,73 @@ class PubChem extends API{
     else
       throw new Exception('No IDs or query history to fetch');
 
-    $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi', array_merge($default, $params), 'xml');
+    $xml = $this->get_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi', array_merge($default, $params), 'xml');
 
-    if (isset($xml->ERROR))
-      return FALSE;
-    
-    $this->results = array();
+    if (isset($this->data->ERROR))
+      return false;
+          
+    $items = array();
     foreach ($this->data->DocSum as $item)
-      $this->results[] = $item;
+      $items[] = $this->parse_xml_summary($item);
       
-    return $this->results;
+    if ($this->total == 'multiple')
+      $this->total = count($items);
+        
+    return $items;
   }
 
-  function parse($doc){
-     $result = array(
-       'id' => (int) $doc->Id,
-       'synonyms' => array(),
-       'meshheadings' => array(),
-       'name' => '',
-       'raw' => $doc,
-       );
+  function parse_xml_summary($doc){   
+    $data = array();
 
-     foreach ($doc->Item as $item){
-       switch ($item['Type']){
-         case 'List':
-           switch ($item['Name']){
-             case 'SynonymList':
-               foreach ($item->Item as $subitem)
-                 $result['synonyms'][] = (string) $subitem;
-             break;
+    $mesh = array();
+    $synonyms = array();
 
-             case 'MeSHHeadingList':
-               foreach ($item->Item as $subitem)
-                 $result['meshheadings'][] = (string) $subitem;
-             break;
-           }
-         break;
+    foreach ($doc->Item as $item){
+      switch ($item['Type']){
+        case 'List':
+        switch ($item['Name']){
+          case 'SynonymList':
+          foreach ($item->Item as $subitem)
+            $synonyms[] = (string) $subitem;
+          break;
 
-         case 'String': case 'Integer': default:
-           $result[(string) $item['Name']] = (string) $item;
-         break;
-       }
-     }
-
-     if (!empty($result['meshheadings']))
-       //$result['name'] = implode(' | ', $result['meshheadings']);
-       $result['name'] = $result['meshheadings'][0];
-     else if (!empty($result['synonyms']))
-       $result['name'] = $result['synonyms'][0];
-     else if (!empty($result['IUPACName']))
-       $result['name'] = $result['IUPACName'];
-
-     return $result;
-   }
-
-  /*
-  function pug($inchi){    
-    if (stripos($inchi, 'inchi=') !== 0)
-      $inchi = 'InChI=' . $inchi;
-
-    $xml = sprintf(file_get_contents(Config::get('MISC_DIR') . '/pubchem/pug-inchi.xml'), htmlspecialchars($inchi));
-    $http = array('method'=> 'POST', 'content' => $xml, 'header' => 'Content-Type: text/xml; charset=UTF-8');
-    $this->get_data('http://pubchem.ncbi.nlm.nih.gov/pug/pug.cgi', array(), 'dom', $http);
-
-    $status = $this->xpath->query("//PCT-Status")->item(0)->getAttribute('value');
-    debug('Status: ' . $status);
-    if ($status != 'queued')
-      exit('Error searching PubChem');
-
-    $reqid = $this->xpath->query("//PCT-Waiting_reqid")->item(0)->nodeValue;
-    $xml = sprintf(file_get_contents(Config::get('MISC_DIR') . '/pubchem/pug-reqid.xml'), htmlspecialchars($reqid));
-
-    $i = 0;
-    do { // try 10 times to connect, every 6 seconds
-      $http = array('method'=> 'POST', 'content' => $xml, 'header' => 'Content-Type: text/xml; charset=UTF-8');
-      $this->get_data('http://pubchem.ncbi.nlm.nih.gov/pug/pug.cgi', array(), 'dom', $http);
-
-      $status = $this->xpath->query("//PCT-Status")->item(0)->getAttribute("value");
-      debug('Status: ' . $status);
-      if ($status == 'success')
+          case 'MeSHHeadingList':
+          foreach ($item->Item as $subitem)
+            $mesh[] = (string) $subitem;
+          break;
+        }
         break;
 
-      sleep(6);
-    } while ($i++ < 10);
+        case 'String': 
+        case 'Integer': 
+        default:
+          $data[(string) $item['Name']] = (string) $item;
+        break;
+      }
+    }
+    
+    $name = null;
+    if (!empty($mesh))
+      $name = implode(' | ', $mesh);
+    else if (!empty($synonyms))
+      $name = $synonyms[0];
+    else if (!empty($data['IUPACName']))
+      $name = $data['IUPACName'];
 
-    if ($i == 10)
-      exit('Timed out fetching results from PubChem');
-
-    debug($this->data->saveXML());
-    $nodes = $this->xpath->query("//PCT-Entrez");
-    if (!$nodes->length)
-      return FALSE;
-
-    $node = $nodes->item(0);
-
-    $this->db = $this->xpath->query('PCT-Entrez_db', $node)->item(0)->nodeValue;
-    $this->total = $this->xpath->query('PCT-Entrez_count', $node)->item(0)->nodeValue;
-    $this->webenv = $this->xpath->query('PCT-Entrez_webenv', $node)->item(0)->nodeValue;
-    $this->querykey = $this->xpath->query('PCT-Entrez_query-key', $node)->item(0)->nodeValue;
-
-    return simplexml_import_dom($node);
+    return array(
+      'pubchem:cid' => $data['CID'],
+      'dc:title' => $name,
+      'iupac:name' => $data['IUPACName'],
+      'misc:synonyms' => $synonyms,
+      'chem:molecular-formula' => $data['MolecularFormula'],
+      'chem:smiles' => $data['CanonicalSmile'],
+      'iupac:stdinchikey' => $data['InChIKey'],
+      'rdf:uri' => url('http://pubchem.ncbi.nlm.nih.gov/summary/summary.cgi', array('cid' => $data['CID'])),
+      'misc:image' => url('http://pubchem.ncbi.nlm.nih.gov/image/imagefly.cgi', array('width' => 200, 'height' => 200, 'cid' => $data['CID'])),
+      );
   }
-  */
-  
+
   function pug_soap_inchi($inchi){
-    $this->total = 0;
-    $this->db = NULL;
-    $this->webenv = NULL;
-    $this->querykey = NULL;
-        
     if (stripos($inchi, 'inchi=') !== 0)
       $inchi = 'InChI=' . $inchi;
       
@@ -285,35 +191,10 @@ class PubChem extends API{
         ),
      ));
      
-     $key = $result->ListKey;
-     
-     //debug($result);
-     
-     $this->cache = FALSE;
-     
-     $i = 0;
-     do { // try 20 times, every 3 seconds
-       $result = $this->soap($this->pug_wsdl, 'GetOperationStatus', array('AnyKey' => $key));
-       debug($result);
-       
-       if (!in_array($result->status, array('eStatus_Running', 'eStatus_Queued')))
-         break;
-         
-       sleep(3);
-     } while ($i++ < 20);
-     
-     $this->cache = TRUE;
-
-     if ($result->status == 'eStatus_Success')
-       return $this->pug_soap_fetch_results($key);
+     return $this->pug_fetch_when_ready($result->ListKey);
   }
   
-  function pug_soap_formula($formula){
-    $this->total = 0;
-    $this->db = NULL;
-    $this->webenv = NULL;
-    $this->querykey = NULL;
-                
+  function pug_soap_formula($formula){                
     $result = $this->soap($this->pug_wsdl, 'MFSearch', array(
       'MF' => $formula, 
       'mfOptions' => array(
@@ -326,28 +207,50 @@ class PubChem extends API{
         //'ListKey' => '',
         ),
      ));
-     
-     return $this->pug_soap_fetch_results($result->ListKey);
+          
+     return $this->pug_fetch_when_ready($result->ListKey);
   }
   
-  function pug_soap_fetch_results($listKey){     
+  function pug_fetch_when_ready($key){
+    $this->cache = false;
+
+    $i = 0;
+    do { // try 20 times, every 3 seconds
+      $result = $this->soap($this->pug_wsdl, 'GetOperationStatus', array('AnyKey' => $key));
+
+      if (!in_array($result->status, array('eStatus_Running', 'eStatus_Queued')))
+        break;
+
+      sleep(3);
+    } while ($i++ < 20);
+
+    $this->cache = true;
+
+    if ($result->status == 'eStatus_Success')
+      return $this->pug_soap_fetch_results($key);
+  }
+  
+  function pug_soap_fetch_results($listKey){ 
+    $this->total = 0;
+    $this->db = null;
+    $this->webenv = null;
+    $this->querykey = null;
+    
      $result = $this->soap($this->pug_wsdl, 'GetEntrezKey', array(
        'ListKey' => $listKey,
        ));
        
      if (!$result->EntrezKey)
-      return FALSE;
+      return false;
       
-     debug($result);
+     $this->total = 'multiple';
      
-     $this->total = $result->EntrezKey ? '1+' : 0;
      $this->db = $result->EntrezKey->db;
      $this->webenv = $result->EntrezKey->webenv;
      $this->querykey = $result->EntrezKey->key;
   }
 
   function image($params){
-    debug($params);
     $default = array(
       'width' => 100,
       'height' => 100,
@@ -371,7 +274,7 @@ class PubChem extends API{
     }
   }
 
-  function get_image($params, $file = NULL){
+  function get_image($params, $file = null){
     $this->get_data('http://pubchem.ncbi.nlm.nih.gov/image/imagefly.cgi', $params, 'raw');
     if ($file)
       file_put_contents($file, $this->data);

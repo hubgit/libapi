@@ -5,42 +5,40 @@ class ChemSpider extends API {
     public $def = 'CHEMSPIDER';
     public $cache = TRUE;
     
-    function build_term($args){
-      if ($args->{'dc:title'})
-        return array('SimpleSearch', $args->{'dc:title'});
-      if ($args->{'iupac:name'})
-        return array('SimpleSearch', $args->{'iupac:name'});
-      else if ($args->{'iupac:stdinchi'})
-        return array('SimpleSearch', $args->{'iupac:stdinchi'});
-      else if ($args->{'iupac:stdinchikey'})
-        return array('SimpleSearch', $args->{'iupac:stdinchikey'});
-      else if ($args->{'iupac:inchi'})
-        return array('SimpleSearch', $args->{'iupac:inchi'});
-      else if ($args->{'iupac:inchikey'})
-        return array('SimpleSearch', $args->{'iupac:inchikey'});
-      else if ($args->{'chemspider:id'})
-        return array('SimpleSearch', $args->{'chemspider:id'});
-      else if ($args->{'chem:molecular-formula'})
-        return array('SearchByFormula2', $args->{'chem:molecular-formula'});
+    public $n = 10;
+    
+    function build_query($args){
+      if ($args['dc:title'])
+        return array('SimpleSearch', $args['dc:title']);
+      if ($args['iupac:name'])
+        return array('SimpleSearch', $args['iupac:name']);
+      else if ($args['iupac:stdinchi'])
+        return array('SimpleSearch', $args['iupac:stdinchi']);
+      else if ($args['iupac:stdinchikey'])
+        return array('SimpleSearch', $args['iupac:stdinchikey']);
+      else if ($args['iupac:inchi'])
+        return array('SimpleSearch', $args['iupac:inchi']);
+      else if ($args['iupac:inchikey'])
+        return array('SimpleSearch', $args['iupac:inchikey']);
+      else if ($args['chemspider:id'])
+        return array('SimpleSearch', $args['chemspider:id']);
+      else if ($args['chem:molecular-formula'])
+        return array('SearchByFormula2', $args['chem:molecular-formula']);
     }
     
-    function search($args, $params = array()){
+    function search($args, $params = array(), $start = 0){
       unset($this->total);
-      $term = $this->build_term($args);
+      $term = $this->build_query($args);
       
-      $ids = array();
-      if (is_array($term))
-        $ids = call_user_func(array($this, $term[0]), $term[1]);
+      $ids = call_user_func(array($this, $term[0]), $term[1]);     
+      $this->total = count($ids);  
+      $ids = array_slice($ids, $start, $this->n);
                 
-      if (!empty($ids)){
-        $items = $this->GetExtendedCompoundInfoArray($ids);
-        debug($items);
-        $items = array_map(array($this, 'fix_search_items'), $items);
-        return $items;
-      }
+      if (!empty($ids))
+        return array_map(array($this, 'fix_search_items'), $this->GetExtendedCompoundInfoArray($ids));
     }
     
-    function fix_search_items($item){      
+    function fix_search_items($item){
       $data = array(
         'chemspider:id' => $item->CSID,
         'chem:molecular-formula' => preg_replace('/_\{(\d+)\}/', '$1', $item->MF),
@@ -48,7 +46,7 @@ class ChemSpider extends API {
         'iupac:inchi' => $item->InChI,
         'iupac:inchikey' => $item->InChIKey,
         'chem:molecular-weight' => $item->MolecularWeight,
-        'iupac:name' => $item->CommonName,
+        'dc:title' => $item->CommonName,
         'misc:image' => url('http://www.chemspider.com/ImagesHandler.ashx', array('w' => 200, 'h' => 200, 'id' => $item->CSID)),
         'rdf:uri' => url('http://www.chemspider.com/' . urlencode($item->CSID)),
       ); 

@@ -1,34 +1,15 @@
 <?php
 
-class PubMed extends API {
+class PubMed extends Entrez {
   public $doc = 'http://www.ncbi.nlm.nih.gov/entrez/query/static/eutils_help.html';
 
   public $webenv;
   public $querykey;
-
-  public $n = 500;
-
-  function search_soap($q, $params = array()){
-    unset($this->webenv, $this->querykey);
-
-    $default = array(
-      'db' => 'pubmed',
-      'usehistory' => 'y',
-      'RetMax' => 1,
-      'term' => $q,
-      'tool' => Config::get('EUTILS_TOOL'),
-      'email' => Config::get('EUTILS_EMAIL'),
-      );
-
-    $this->soap('http://www.ncbi.nlm.nih.gov/entrez/eutils/soap/v2.0/eutils.wsdl', 'run_eSearch', array_merge($default, $params));
-
-    $this->total = $this->data->Count;
-    $this->webenv = $this->data->WebEnv;
-    $this->querykey = $this->data->QueryKey;
-
-    return $this->data;
-  }
-
+  
+  public $db = 'pubmed';
+  public $n = 20;
+  
+/*
   function fetch_soap($ids = NULL, $params = array()){
      $default = array(
       'db' => 'pubmed',
@@ -45,10 +26,9 @@ class PubMed extends API {
       $default['WebEnv'] = $this->webenv;
     }
 
-    $this->soap('http://www.ncbi.nlm.nih.gov/entrez/eutils/soap/v2.0/efetch_pubmed.wsdl', 'run_eFetch', array_merge($default, $params));
-
-    return $this->data;
+    return $this->soap('http://www.ncbi.nlm.nih.gov/entrez/eutils/soap/v2.0/efetch_pubmed.wsdl', 'run_eFetch', array_merge($default, $params));
   }
+  */
 
   function related_soap($pmids, $params = array()){
     if (!is_array($pmids))
@@ -73,6 +53,7 @@ class PubMed extends API {
     return $this->results;
   }
 
+  /*
   function search($q, $params = array()){
     unset($this->webenv, $this->querykey);
 
@@ -94,8 +75,9 @@ class PubMed extends API {
 
     return $this->data;
   }
+  */
 
-  function fetch($ids = NULL, $params = array()){
+  function fetch_xml($ids = NULL, $params = array()){
     $default = array(
       'db' => 'pubmed',
       'retmode' => 'xml',
@@ -188,7 +170,7 @@ class PubMed extends API {
           //'sort' => 'pub+date',
           );
 
-        $this->fetch(NULL, $params);
+        $this->fetch_xml(NULL, $params);
 
         foreach ($this->xpath->query("PubmedArticle") as $article){
           $medline = $this->xpath->query("MedlineCitation", $article)->item(0);

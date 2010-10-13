@@ -463,5 +463,28 @@ function parse_sdf($sdf){
   return $items;
 }
 
+function build_multipart_data($params){
+  $boundary = '---------------------' . substr(md5(time()), 0, 10);    
+  $data = "--$boundary\n";
 
+  foreach ($params as $key => $item){
+    $data .= "Content-Disposition: form-data; name='$key'";
+    
+    if (is_array($item)){
+      $data .= '; filename="' . $item['filename'] . "'\nContent-Type: " . $item['type'];
+      $item = $item['content'];
+    }
+    
+    $data .= "\n\n$item\n--$boundary\n";
+  }
 
+  return array(
+    'method' => 'POST', 
+    'header' => 'Content-Type: multipart/form-data; boundary=' . $boundary, 
+    'content' => $data, 
+    );
+}
+
+function xmlspecialchars($input){
+  return htmlspecialchars($input, ENT_QUOTES, 'UTF-8');
+}

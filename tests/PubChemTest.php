@@ -15,6 +15,8 @@ class PubChemTest extends PHPUnit_Framework_TestCase {
     $this->stdinchikey = 'ZYQPHUOTSRRMDV-JAZMHMKJSA-N';
     $this->stdinchi = 'InChI=1S/C32H48O7/c1-11-25-19(4)28-20(5)26(36-31(37-28)23-12-14-24(34-10)15-13-23)17(2)16-18(3)27-21(6)29(22(7)30(33)35-25)39-32(8,9)38-27/h11-15,17-22,25-29,31H,1,16H2,2-10H3/t17-,18+,19+,20+,21-,22-,25+,26+,27+,28+,29+,31-/m1/s1';
     $this->term = 'ethanol';
+    
+    $this->listKey = '';
   }
 
   public function testSearchCID(){
@@ -66,6 +68,11 @@ class PubChemTest extends PHPUnit_Framework_TestCase {
     $result = $this->api->search(array('stdinchi' => $this->stdinchi));
     $this->assertEquals('1+', $this->api->total);
     $result = $this->api->fetch();
+  }
+  
+  public function testSearchListKey(){
+    $result = $this->api->pug_soap_fetch_results($this->listKey); 
+    debug($result);
   }
 }
 
