@@ -7,23 +7,26 @@ set_time_limit(0);
 mb_internal_encoding('UTF-8');
 mb_regex_encoding('UTF-8');
 
-ini_set('display_errors', TRUE);
+ini_set('display_errors', true);
 ini_set('error_reporting', E_ALL & ~E_DEPRECATED & ~E_NOTICE & ~E_WARNING);
 
 libxml_use_internal_errors(FALSE); // true = hide parsing errors; use libxml_get_errors() to display later.
-
-//ini_set('soap.wsdl_cache_enabled', '0');
 
 define('LIBAPI_ROOT', dirname(__FILE__));
 require LIBAPI_ROOT . '/lib/functions.php';
 require LIBAPI_ROOT . '/Config.php';
 
-date_default_timezone_set(Config::get('TIMEZONE'));
+ini_set('display_errors', !Config::get('PRODUCTION', false));
+
+date_default_timezone_set(Config::get('TIMEZONE'), 'Etc/UTC');
 
 // start output buffering if not on command line
-if (php_sapi_name() != 'cli' && !empty($_SERVER['REMOTE_ADDR'])){
+//if (php_sapi_name() != 'cli' && !empty($_SERVER['REMOTE_ADDR'])){
   ob_start();
-  require_once('FirePHPCore/FirePHP.class.php');
+  include_once('FirePHPCore/FirePHP.class.php');
+//}
+if (php_sapi_name() == 'cli'){
+  Config::set('DEBUG', 'PRINT');
 }
 
 /* set up directories */
