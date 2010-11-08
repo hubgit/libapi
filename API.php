@@ -141,12 +141,11 @@ class API {
   }
 
   function get_data($url, $params = array(), $format = 'json', $http = array(), $cache = TRUE){
-    unset($this->response, $this->data);
+    unset($this->response, $this->data, $this->xpath);
 
     if ($cache && $this->cache) // can set either of these to FALSE to disable the cache
       if (!isset($http['method']) || $http['method'] == 'GET') // only use the cache for GET requests (TODO: allow caching of some POST requests?)
         return $this->get_cached_data($url, $params, $format, $http);
-
 
     // FIXME: is this a good idea?
     if ($http['method'] == 'POST' && empty($http['content']) && !empty($params)){
@@ -166,6 +165,8 @@ class API {
 
     if (!isset($http['header']) || !preg_match('/Accept: /', $http['header']))
       $http['header'] .= (empty($http['header']) ? '' : "\n") . $this->accept_header($format);
+      
+    $http['header'] .= "Connection: close\n";
 
     //debug($http);
 
@@ -185,10 +186,10 @@ class API {
       } catch (OAuthException $e) { debug($oauth->debugInfo); }
     }
     else {
+      debug_log('Sending request to ' . $url);
       debug('Sending request to ' . $url);
       //debug(array($url, $http));
       $this->response = file_get_contents($url, false, $context);
-      //debug('Received response');
       $this->http_response_header = $http_response_header;
     }
 
@@ -196,8 +197,11 @@ class API {
 
     $this->parse_http_response_header();
     $this->parse_effective_url($url);
+    
+    debug('Received response from ' . $this->http_effective_url);
+    debug_log('Received response from ' . $this->http_effective_url);
 
-    //debug($this->response);
+    //debug_log($this->response);
 
     $this->data = NULL;
     if ($this->response !== FALSE){
