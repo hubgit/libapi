@@ -18,7 +18,7 @@ require LIBAPI_ROOT . '/Config.php';
 
 ini_set('display_errors', !Config::get('PRODUCTION', false));
 
-date_default_timezone_set(Config::get('TIMEZONE'), 'Etc/UTC');
+date_default_timezone_set(Config::get('TIMEZONE', 'Etc/UTC'));
 
 // start output buffering if not on command line
 //if (php_sapi_name() != 'cli' && !empty($_SERVER['REMOTE_ADDR'])){
