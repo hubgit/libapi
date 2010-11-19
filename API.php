@@ -62,7 +62,9 @@ class API {
     $args = func_get_args();
     $params = array_slice($args, 2);
     ksort($params);
-    debug(array($this->cache, $method, $params));
+    //debug(array($this->cache, $method, $params));
+    
+    debug_log('Calling ' . $wsdl . ' : ' . $method);
 
     $key = md5($wsdl . '#' . $method . '?' . http_build_query($params));
 
@@ -84,27 +86,48 @@ class API {
     }
     else{
       debug('Cached SOAP response');
-      debug("Cached:\n" . print_r(array($wsdl, $method, $params), TRUE));
+      //debug_log("Cached:\n" . print_r(array($wsdl, $method, $params), TRUE));
     }
     return $this->data;
+  }
+  
+  function cache_remove($key){
+    if (preg_match('/[^a-z0-9]/i', $key)) // must be an MD5 hash
+      return false;
+      
+    $cache_dir = $this->get_output_dir('cache-uri');
+    $cache_file = sprintf('%s/%s.gz', $cache_dir, $key);
+    
+    debug_log('Removing cache file ' . $cache_file);
+    unlink($cache_file);
   }
 
   function cache_set($key, $data = NULL){
     $cache_dir = $this->get_output_dir('cache-uri');
     $cache_file = sprintf('%s/%s.gz', $cache_dir, $key);
+    debug_log('Writing to cache file ' . $cache_file);    
     file_put_contents('compress.zlib://' . $cache_file, serialize($data));
   }
 
   function cache_get($key){
     $cache_dir = $this->get_output_dir('cache-uri');
     $cache_file = sprintf('%s/%s.gz', $cache_dir, $key);
-    if (file_exists($cache_file) && ((time() - filemtime($cache_file)) < $this->cache_expire))
+    if (file_exists($cache_file) && ((time() - filemtime($cache_file)) < $this->cache_expire)){
+      debug_log('Reading cache file ' . $cache_file);    
       return unserialize(file_get_contents('compress.zlib://' . $cache_file));
+    }
+  }
+  
+  function remove_cached_data($url, $params = array(), $format = 'json'){
+    if (!empty($params))
+      ksort($params);
+      
+    $suffix = empty($params) ? NULL : '?' . http_build_query($params);
+    $key = md5($format . ':' . $url . $suffix);
+    $this->cache_remove($key);
   }
 
   function get_cached_data($url, $params = array(), $format = 'json', $http = array()){
-    debug();
-
     if (!empty($params))
       ksort($params);
     $suffix = empty($params) ? NULL : '?' . http_build_query($params);
@@ -166,7 +189,7 @@ class API {
     if (!isset($http['header']) || !preg_match('/Accept: /', $http['header']))
       $http['header'] .= (empty($http['header']) ? '' : "\n") . $this->accept_header($format);
       
-    $http['header'] .= "Connection: close\n";
+    $http['header'] .= (empty($http['header']) ? '' : "\n") . "Connection: close";
 
     //debug($http);
 
@@ -222,8 +245,8 @@ class API {
       $url .= '?' . http_build_query($params);
 
     $curl = curl_init($url);
-    debug($url);
-    debug($http);
+    debug_log($url);
+    //debug($http);
 
     // array_merge doesn't preserve numeric keys
     curl_setopt_array($curl, array(
@@ -272,7 +295,7 @@ class API {
     $this->http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     $this->http_info = array(curl_getinfo($curl));
 
-    debug($this->response);
+    //debug($this->response);
     debug('Status: ' . $this->http_status);
     file_put_contents(sys_get_temp_dir() . '/raw.xml', $this->response);
 
