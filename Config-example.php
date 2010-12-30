@@ -21,9 +21,11 @@ class Config {
     
     /* DO NOT EDIT BELOW HERE */
     
-    static function get($key){
+    static function get($key, $default = null){
       if (isset(Config::$properties[$key]) && !empty(Config::$properties[$key]))
         return Config::$properties[$key];
+      else if (!is_null($default))
+        return $default;
       else
         throw new Exception('Config value not defined: ' . $key);
      }
