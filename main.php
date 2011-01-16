@@ -23,7 +23,7 @@ date_default_timezone_set(Config::get('TIMEZONE', 'Etc/UTC'));
 // start output buffering if not on command line
 if (php_sapi_name() != 'cli' && !empty($_SERVER['REMOTE_ADDR'])){
   ob_start();
-  //include_once('FirePHPCore/FirePHP.class.php');
+  include_once('FirePHPCore/FirePHP.class.php');
 }
 if (php_sapi_name() == 'cli'){
   Config::set('DEBUG', 'PRINT');
