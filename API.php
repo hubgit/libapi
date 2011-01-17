@@ -204,7 +204,9 @@ class API {
       $oauth->setToken($this->oauth['token'], $this->oauth['secret']);
       try {
         //debug($url);
-        $this->response = $oauth->fetch($url, $http['content'], constant('OAUTH_HTTP_METHOD_' . $http['method']), $http['header']);
+        $oauth->fetch($url, $http['content'], constant('OAUTH_HTTP_METHOD_' . $http['method']), $http['header']);
+        $this->response = $oauth->getLastResponse();
+        //debug($this->response);
         $info = $oauth->getLastResponseInfo();
         //debug($info);
         $this->http_response_header = explode("\n", $info['headers_recv']);

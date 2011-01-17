@@ -11,7 +11,7 @@ class LastFM extends API {
       'format' => 'json',
       );
       
-    $this->get_data('http://ws.audioscrobbler.com/2.0/', array_merge($default, $params));
+    $this->get_data('http://ws.audioscrobbler.com/2.0/', array_merge($default, $params), 'json');
     
     if (isset($this->data->error))
       return FALSE;
