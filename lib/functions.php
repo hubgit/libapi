@@ -370,6 +370,8 @@ function oauth_authorize($prefix, $urls){
   try {
     $request_token = $oauth->getRequestToken($urls['request_token']);
   } catch (OAuthException $e){ debug($oauth->debugInfo); };
+
+  //debug($request_token);
     
   $url = $urls['authorize'] . '?' . http_build_query(array('oauth_token' => $request_token['oauth_token'], 'callback_url' => 'oob'));
   print 'Authorize: ' . $url  . "\n";  

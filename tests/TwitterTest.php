@@ -6,10 +6,14 @@ Config::set('DEBUG', 'PRINT');
 
 class TwitterTest extends PHPUnit_Framework_TestCase {
   public function setUp(){
-    $auth = explode(':', Config::get('TWITTER_AUTH'));
-    $this->username = $auth[0];
+    //$auth = explode(':', Config::get('TWITTER_AUTH'));
+    $this->username = Config::get('TWITTER_USERNAME');
     $this->api = new Twitter;
     $this->api->cache = FALSE;
+  }
+
+  public function testOAuth(){
+    $this->api->oauth_init();
   }
   
   public function testFollowers(){

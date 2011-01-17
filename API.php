@@ -20,7 +20,7 @@ class API {
   public $preserveWhiteSpace = TRUE;
 
   public $cache = TRUE;
-  public $cache_expire = 86400; //60*60*24; // use the cache file if it's less than one day old
+  public $cache_expire = 864000; //60*60*24; // use the cache file if it's less than 10 days old
 
   // SOAP client
   public $soapclient;
@@ -166,12 +166,15 @@ class API {
   function get_data($url, $params = array(), $format = 'json', $http = array(), $cache = TRUE){
     unset($this->response, $this->data, $this->xpath);
 
+    if (!isset($http['method']))
+      $http['method'] = 'GET';
+
     if ($cache && $this->cache) // can set either of these to FALSE to disable the cache
-      if (!isset($http['method']) || $http['method'] == 'GET') // only use the cache for GET requests (TODO: allow caching of some POST requests?)
+      if ($http['method'] === 'GET') // only use the cache for GET requests (TODO: allow caching of some POST requests?)
         return $this->get_cached_data($url, $params, $format, $http);
 
     // FIXME: is this a good idea?
-    if ($http['method'] == 'POST' && empty($http['content']) && !empty($params)){
+    if ($http['method'] === 'POST' && empty($http['content']) && !empty($params)){
       $http['content'] = http_build_query($params);
       $params = array();
     }
@@ -201,7 +204,7 @@ class API {
       $oauth->setToken($this->oauth['token'], $this->oauth['secret']);
       try {
         //debug($url);
-        $this->response = $oauth->fetch($url);
+        $this->response = $oauth->fetch($url, $http['content'], constant('OAUTH_HTTP_METHOD_' . $http['method']), $http['header']);
         $info = $oauth->getLastResponseInfo();
         //debug($info);
         $this->http_response_header = explode("\n", $info['headers_recv']);
