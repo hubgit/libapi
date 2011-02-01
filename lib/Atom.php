@@ -7,8 +7,15 @@ class Atom {
     $this->feed = $this->dom->appendChild($this->dom->createElement('feed'));
 
     $this->addTextChild($this->feed, 'title', $title);
-    $this->addTextChild($this->feed, 'id', sprintf('http://%s%s', $_SERVER['SERVER_NAME'], $_SERVER['REQUEST_URI']));
-    $this->addTextChild($this->feed, 'updated', date(DATE_ATOM));
+    
+    if ($params['subtitle'])
+      $this->addTextChild($this->feed, 'subtitle', $params['subtitle']);
+    
+    $id = $params['id'] ? $params['id'] : sprintf('http://%s%s', $_SERVER['SERVER_NAME'], $_SERVER['REQUEST_URI']);
+    $this->addTextChild($this->feed, 'id', $id);
+    
+    $updated = $params['updated'] ? $params['updated'] : date(DATE_ATOM);
+    $this->addTextChild($this->feed, 'updated', $updated);
 
     $node = $this->feed->appendChild($this->dom->createElement('author'));
     $this->addTextChild($node, 'name', $author['name']);
@@ -29,6 +36,9 @@ class Atom {
     $this->addTextChild($entry, 'id', $id);
     $this->addTextChild($entry, 'title', $title);
     $this->addTextChild($entry, 'updated', date(DATE_ATOM, $updated));
+    
+    if ($params['published'])
+      $this->addTextChild($entry, 'published', date(DATE_ATOM, $params['published']));
 
     if (!is_null($summary))
       $this->addTextChild($entry, 'summary', $summary);
@@ -37,15 +47,25 @@ class Atom {
     return $entry;
   }
 
-  function addContent(&$parent){
+  function addContent(&$parent, $type = 'xhtml', $params = array()){
     $content = $this->dom->createElement('content');
-    $content->setAttribute('type', 'xhtml');
+    $content->setAttribute('type', $type);
     $parent->appendChild($content);
-
-    $div = $this->dom->createElement('div');
-    $div->setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
-    $content->appendChild($div);
-    return $div;
+    
+    if ($type === 'xhtml'){
+      $div = $this->dom->createElement('div');
+      $div->setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+      $content->appendChild($div);
+      return $div;
+    }
+    
+    if ($params['base'])
+      $content->setAttribute('xml:base', $params['base']);
+   
+    if ($params['lang'])
+      $content->setAttribute('xml:lang', $params['lang']); 
+    
+    return $content;
   }
 
   function addLinks(&$parent, $links){
