@@ -1,7 +1,10 @@
 <?php
 
 class Google extends API {
-  public $def = array('GOOGLE_AUTH', 'GOOGLE_REFERER');
+  public $def = array(
+    'GOOGLE_AUTH', 
+    //'GOOGLE_REFERER'
+  );
   
   public $token;
   
@@ -64,5 +67,10 @@ class Google extends API {
     $this->results = $this->data->responseData->results;
     $this->total = $this->data->responseData->cursor->estimatedResultCount;
     $this->cursor = $this->data->responseData->cursor;
+  }
+
+  function mail_feed($label = ''){
+    $http = array('header' => 'Authorization: Basic ' . base64_encode(Config::get('GOOGLE_AUTH')));
+    return $this->get_data('https://mail.google.com/a/mendeley.com/feed/atom/' . urlencode($label), array(), 'dom', $http);
   }
 }

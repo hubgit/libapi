@@ -194,8 +194,6 @@ class API {
       
     $http['header'] .= (empty($http['header']) ? '' : "\n") . "Connection: close";
 
-    //debug($http);
-
     $context = empty($http) ? NULL : stream_context_create(array('http' => $http));
 
     if (!empty($this->oauth)){
@@ -203,7 +201,13 @@ class API {
       $oauth->enableDebug();
       $oauth->setToken($this->oauth['token'], $this->oauth['secret']);
       try {
-        //debug($url);
+
+        $headers = explode("\n", $http['header']);
+        $http['header'] = array();
+        foreach ($headers as $value)
+          if (preg_match('/^\s*(.+?):\s*(.+)/', $value, $matches))
+            $http['header'][$matches[1]] = trim($matches[2]);
+        
         $oauth->fetch($url, $http['content'], constant('OAUTH_HTTP_METHOD_' . $http['method']), $http['header']);
         $this->response = $oauth->getLastResponse();
         //debug($this->response);
