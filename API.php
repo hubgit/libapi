@@ -171,12 +171,15 @@ class API {
   function get_data($url, $params = array(), $format = 'json', $http = array(), $cache = TRUE){
     unset($this->response, $this->data, $this->xpath);
 
+    if (!isset($http['method']))
+      $http['method'] = 'GET';
+
     if ($cache && $this->cache) // can set either of these to FALSE to disable the cache
-      if (!isset($http['method']) || $http['method'] == 'GET') // only use the cache for GET requests (TODO: allow caching of some POST requests?)
+      if ($http['method'] === 'GET') // only use the cache for GET requests (TODO: allow caching of some POST requests?)
         return $this->get_cached_data($url, $params, $format, $http);
 
     // FIXME: is this a good idea?
-    if ($http['method'] == 'POST' && empty($http['content']) && !empty($params)){
+    if ($http['method'] === 'POST' && empty($http['content']) && !empty($params)){
       $http['content'] = http_build_query($params);
       $params = array();
     }
@@ -196,8 +199,6 @@ class API {
       
     $http['header'] .= (empty($http['header']) ? '' : "\n") . "Connection: close";
 
-    //debug($http);
-
     $context = empty($http) ? NULL : stream_context_create(array('http' => $http));
 
     if (!empty($this->oauth)){
@@ -205,8 +206,14 @@ class API {
       $oauth->enableDebug();
       $oauth->setToken($this->oauth['token'], $this->oauth['secret']);
       try {
-        //debug($url);
-        $oauth->fetch($url);
+
+        $headers = explode("\n", $http['header']);
+        $http['header'] = array();
+        foreach ($headers as $value)
+          if (preg_match('/^\s*(.+?):\s*(.+)/', $value, $matches))
+            $http['header'][$matches[1]] = trim($matches[2]);
+        
+        $oauth->fetch($url, $http['content'], constant('OAUTH_HTTP_METHOD_' . $http['method']), $http['header']);
         $this->response = $oauth->getLastResponse();
         //debug($this->response);
         $info = $oauth->getLastResponseInfo();

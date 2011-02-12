@@ -8,6 +8,10 @@ class MendeleyTest extends PHPUnit_Framework_TestCase {
   public function setUp(){
     $this->api = new Mendeley;
   }
+
+  public function testOAuth(){
+    $this->api->oauth_init();
+  }
   
   public function testSearch(){
     $this->api->search('science');
