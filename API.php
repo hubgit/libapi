@@ -20,7 +20,7 @@ class API {
   public $preserveWhiteSpace = TRUE;
 
   public $cache = TRUE;
-  public $cache_expire = 86400; //60*60*24; // use the cache file if it's less than one day old
+  public $cache_expire = 864000; //60*60*24*10; // use the cache file if it's less than ten days old
 
   // SOAP client
   public $soapclient;
@@ -161,6 +161,11 @@ class API {
     }
 
     return $this->data;
+  }
+  
+  function get(){
+    $args = func_get_args();
+    call_user_func_array(array($this, 'get_data'), $args);
   }
 
   function get_data($url, $params = array(), $format = 'json', $http = array(), $cache = TRUE){
