@@ -62,5 +62,5 @@ class OAI extends API{
     $this->records = array();
     foreach ($this->results as $node)
       $this->records[] = $node; 
-  } 
+  }
 }
