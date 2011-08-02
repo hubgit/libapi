@@ -283,8 +283,9 @@ class API {
       if (!isset($http['file']) && isset($http['content'])){
         $http['file'] = tmpfile();
         fwrite($http['file'], $http['content']);
-        fseek($http['file'], 0);
       }
+
+      fseek($http['file'], 0);
 
       $fstat = fstat($http['file']);
       curl_setopt($curl, CURLOPT_INFILE, $http['file']);
@@ -325,7 +326,7 @@ class API {
   function format_data($format){
     switch ($format){
       case 'json':
-      return json_decode($this->response);
+      return json_decode($this->response, true);
       case 'xml':
       return simplexml_load_string($this->response, NULL, LIBXML_NOCDATA | LIBXML_NONET);
       case 'dom':
