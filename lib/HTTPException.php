@@ -48,14 +48,13 @@ class HTTPException extends Exception {
 
   function __construct($status, $content = NULL){
     $output = sprintf('HTTP/1.1 %d %s', $status, self::$messages[$status]);
-    if ($_SERVER['HTTP_HOST']) // not command line
-      header($output);
-    else
-      debug($output); 
+    
+    if ($_SERVER['HTTP_HOST']) header($output);// not command line 
+    else debug($output); 
       
     ob_end_flush();
-    if ($content)
-      print $content;
+    if ($content) print $content;
+    
     exit();
   }
 }
