@@ -20,7 +20,7 @@ class API {
   public $preserveWhiteSpace = TRUE;
 
   public $cache = TRUE;
-  public $cache_expire = 864000; //60*60*24; // use the cache file if it's less than 10 days old
+  public $cache_expire = 864000; //60*60*24*10; // use the cache file if it's less than ten days old
 
   // SOAP client
   public $soapclient;
@@ -54,6 +54,42 @@ class API {
   function check_def($def){
     if (Config::get($def) === FALSE)
       throw new Exception('Requirement not defined: ' . $def);
+  }
+
+  function get(){
+    $args = func_get_args();
+    return $this->add_method($args, 'GET');
+  }
+
+  function post(){
+    $args = func_get_args();
+    return $this->add_method($args, 'POST');
+  }
+
+  function put(){
+    $args = func_get_args();
+    return $this->add_method($args, 'PUT');
+  }
+
+  function delete(){
+    $args = func_get_args();
+    return $this->add_method($args, 'DELETE');
+  }
+  
+  function head(){
+    $args = func_get_args();
+    return $this->add_method($args, 'HEAD');
+  }
+  
+  function options(){
+    $args = func_get_args();
+    return $this->add_method($args, 'OPTIONS');
+  }
+
+  function add_method($args, $method){
+    if (!is_array($args[3])) $args[3] = array();
+    $args[3]['method'] = $method;
+    return call_user_func_array(array($this, 'get_data'), $args);
   }
 
   function soap($wsdl, $method){
@@ -161,11 +197,11 @@ class API {
     }
 
     return $this->data;
-  }
+  }  
 
   function get_data($url, $params = array(), $format = 'json', $http = array(), $cache = TRUE){
     unset($this->response, $this->data, $this->xpath);
-
+    
     if (!isset($http['method']))
       $http['method'] = 'GET';
 
@@ -195,7 +231,7 @@ class API {
     $http['header'] .= (empty($http['header']) ? '' : "\n") . "Connection: close";
 
     $context = empty($http) ? NULL : stream_context_create(array('http' => $http));
-
+    
     if (!empty($this->oauth)){
       $oauth = new OAuth($this->oauth['consumer_key'], $this->oauth['consumer_secret'], OAUTH_SIG_METHOD_HMACSHA1, OAUTH_AUTH_TYPE_URI);
       $oauth->enableDebug();
@@ -235,8 +271,7 @@ class API {
 
     //debug_log($this->response);
 
-    $this->data = NULL;
-    if ($this->response !== FALSE){
+    if ($this->response !== false){
       try {
         $this->data = $this->format_data($format);
         $this->validate_data($format);

@@ -81,8 +81,8 @@ class Twitter extends API {
   }
 
   function content_by_user($user, $max = 0, $from = 1){
-    $this->oauth_init();
-    $http = array('header' => sprintf('Authorization: Basic %s', base64_encode(Config::get('TWITTER_AUTH'))));
+    //$this->oauth_init();
+    //$http = array('header' => sprintf('Authorization: Basic %s', base64_encode(Config::get('TWITTER_AUTH'))));
 
     $from = $this->get_latest($from, 1); // 1 = earliest status id
 

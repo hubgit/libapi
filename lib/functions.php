@@ -182,7 +182,7 @@ function parse_file_extension($params = array()){
 }
 
 function send_content_type_header($format, $params = array(), $charset = 'utf-8'){
-  $types = array_merge(array(
+  $types = $params + array(
     'html' => 'text/html',
     'text' => 'text/plain',
     'xml' => 'application/xml',
@@ -190,7 +190,7 @@ function send_content_type_header($format, $params = array(), $charset = 'utf-8'
     'pdf' => 'application/pdf',
     'ris' => 'application/ris',
     'bibtext' => 'application/bibtex',
-  ), $params);
+  );
 
   header(sprintf('Content-type: %s; charset="%s"', $types[$format], $charset));
 }
