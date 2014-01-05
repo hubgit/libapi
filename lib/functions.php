@@ -457,39 +457,6 @@ function mol2inchi($data, $params = array()){
 
   $response = array();
 
-=======
-  }
-
-  return $response;
-}
-
-// needs InChI binary >= v1.03 from IUPAC
-function mol2inchi($data, $params = array()){
-  $inchi_bin = Config::get('INCHI');
-
-  static $seen = array(); // TODO: use memcache for longer-term storage?
-  $md5 = md5($data);
-
-  $params = array_map('escapeshellarg', $params);
-
-  if (!$seen[$md5]) {
-    if (strpos($data, 'InChI=') === 0){ // $data is an InChI
-      $command = 'echo %s | %s -STDIO -InChI2Struct 2>/dev/null | %s -InpAux -Key %s 2>/dev/null';
-      $command = sprintf($command, escapeshellarg($data), escapeshellarg($inchi_bin), escapeshellarg($inchi_bin), implode(' ', $params));
-    }
-    else{ // $data = MOL
-      $command = 'echo %s | %s -STDIO -Key %s 2>/dev/null';
-      $command = sprintf($command, escapeshellarg($data), escapeshellarg($inchi_bin), implode(' ', $params));
-    }
-    exec($command, $output, $value);
-    // TODO: check for errors
-    if (!empty($output))
-      $seen[$md5] = $output;
-  }
-
-  $response = array();
-
->>>>>>> 936892fb7d5469ace7d66b78ded847739971b26b
   foreach ($seen[$md5] as $i => $item){
     if (preg_match('/^(InChI=.+)/', $item, $matches)){
        $response['iupac:inchi'] = $matches[1];
