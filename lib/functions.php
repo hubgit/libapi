@@ -504,11 +504,7 @@ function mol2inchi($data, $params = array()){
        }
     }
   }
-<<<<<<< HEAD
 
-=======
-
->>>>>>> 936892fb7d5469ace7d66b78ded847739971b26b
   return $response;
 }
 
