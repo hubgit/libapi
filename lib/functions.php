@@ -13,6 +13,22 @@ function url($url, $params = array()){
   return $url . (empty($params) ? '' : '?' . http_build_query($params));
 }
 
+function debug_log($text = ''){
+  static $file;
+  if (!$file)
+    $file = Config::get('LOG_FILE', sys_get_temp_dir() . '/libapi-' . date('Y-m-d') . '.log');
+
+  if (is_array($text) || is_object($text))
+    $text = print_r($text, true);
+
+  $trace = debug_backtrace();
+  $text = sprintf("%s %s %d:%s\t%s", date(DATE_ATOM), basename($trace[1]['file']), $trace[1]['line'], $trace[1]['function'], $text);
+
+  $f = fopen($file, 'a');
+  fwrite($f, $text . "\n");
+  fclose($f);
+}
+
 function debug($arg = ''){
   switch (Config::get('DEBUG')){
     case 'PRINT':
@@ -34,11 +50,11 @@ function debug($arg = ''){
       }
       $fire->log($arg);
     break;
-    
+
     case 'CONSOLE':
       if (!is_string($arg))
         $arg = json_encode($arg);
-        
+
       $trace = debug_backtrace();
       $arg = sprintf('%s %.4f %s#%d:%s %s', date('H:i:s'), microtime(TRUE) - $_SERVER['REQUEST_TIME'], basename($trace[1]['file']), $trace[1]['line'], $trace[1]['function'], $arg);
       header('X-DEBUG: ' . $arg, FALSE);
@@ -165,8 +181,8 @@ function parse_file_extension($params = array()){
     return $extensions[$extension];
 }
 
-function send_content_type_header($format, $params = array(), $charset = 'utf-8'){
-  $types = array_merge(array(
+function send_content_type_header($format = 'html', $params = array(), $charset = 'utf-8'){
+  $types = $params + array(
     'html' => 'text/html',
     'text' => 'text/plain',
     'xml' => 'application/xml',
@@ -174,9 +190,9 @@ function send_content_type_header($format, $params = array(), $charset = 'utf-8'
     'pdf' => 'application/pdf',
     'ris' => 'application/ris',
     'bibtext' => 'application/bibtex',
-  ), $params);
+  );
 
-  header(sprintf('Content-type: %s; charset="%s"', $types[$format], $charset));
+  header(sprintf('Content-Type: %s; charset="%s"', $types[$format], $charset));
 }
 
 function innerXML($node){
@@ -188,10 +204,10 @@ function innerXML($node){
 
   if (!$node->hasChildNodes())
     return $node->textContent; // TODO: nodeValue?
-    
+
   $dom = new DOMDocument;
   foreach ($node->childNodes as $child)
-    $dom->appendChild($dom->importNode($child, TRUE));    
+    $dom->appendChild($dom->importNode($child, TRUE));
 
   return $dom->saveXML($dom->documentElement);
 }
@@ -229,7 +245,7 @@ function positions($haystack, $needle, $modifiers = 'u'){
 function raw_preg_match_all($haystack, $needle, $modifiers = 'u'){
   if (empty($needle))
     return array();
-    
+
   $offset = 0;
   $positions = array();
 
@@ -248,7 +264,7 @@ function raw_preg_match_all($haystack, $needle, $modifiers = 'u'){
 
     $offset = $i + $length;
   } while (1);
-  
+
   return $positions;
 }
 
@@ -350,13 +366,15 @@ function upload_error_message($code) {
 function oauth_authorize($prefix, $urls){
   $oauth = new OAuth(Config::get($prefix . '_CONSUMER_KEY'), Config::get($prefix . '_CONSUMER_SECRET'), OAUTH_SIG_METHOD_HMACSHA1, OAUTH_AUTH_TYPE_URI);
   $oauth->enableDebug();
-  
+
   try {
     $request_token = $oauth->getRequestToken($urls['request_token']);
   } catch (OAuthException $e){ debug($oauth->debugInfo); };
-    
+
+  //debug($request_token);
+
   $url = $urls['authorize'] . '?' . http_build_query(array('oauth_token' => $request_token['oauth_token'], 'callback_url' => 'oob'));
-  print 'Authorize: ' . $url  . "\n";  
+  print 'Authorize: ' . $url  . "\n";
   system(sprintf('open %s', escapeshellarg($url)));
   fwrite(STDOUT, "Enter the PIN: ");
   $verifier = trim(fgets(STDIN));
@@ -365,7 +383,7 @@ function oauth_authorize($prefix, $urls){
   try {
     $access_token = $oauth->getAccessToken($urls['access_token'], NULL, $verifier);
   } catch (OAuthException $e){ debug($oauth->debugInfo); };
-  
+
   printf("'%s_TOKEN' => '%s',\n'%s_TOKEN_SECRET' => '%s',\n", $prefix, $access_token['oauth_token'], $prefix, $access_token['oauth_token_secret']);
   exit();
 }
@@ -373,28 +391,28 @@ function oauth_authorize($prefix, $urls){
 // needs InChI binary >= v1.03 from IUPAC
 function mol2stdinchi($data){
   $inchi_bin = Config::get('INCHI');
-    
+
   static $seen = array(); // TODO: use memcache for longer-term storage?
   $md5 = md5($data);
-    
+
   if (!$seen[$md5]) {
     if (strpos($data, 'InChI=') === 0){ // $data is an InChI
       $command = 'echo %s | %s -STDIO -InChI2Struct 2>/dev/null | %s -InpAux -Key 2>/dev/null';
-      $command = sprintf($command, escapeshellarg($data), escapeshellarg($inchi_bin), escapeshellarg($inchi_bin)); 
+      $command = sprintf($command, escapeshellarg($data), escapeshellarg($inchi_bin), escapeshellarg($inchi_bin));
     }
     else{ // $data = MOL
       $command = 'echo %s | %s -STDIO -Key 2>/dev/null';
-      $command = sprintf($command, escapeshellarg($data), escapeshellarg($inchi_bin)); 
+      $command = sprintf($command, escapeshellarg($data), escapeshellarg($inchi_bin));
     }
-  
+
     exec($command, $output, $value);
     // TODO: check for errors
     if (!empty($output))
       $seen[$md5] = $output;
   }
-  
+
   $response = array();
-  
+
   foreach ($seen[$md5] as $i => $item){
     if (preg_match('/^(InChI=.+)/', $item, $matches)){
        $response['iupac:stdinchi'] = $matches[1];
@@ -409,36 +427,69 @@ function mol2stdinchi($data){
        }
     }
   }
-  
+
   return $response;
 }
 
 // needs InChI binary >= v1.03 from IUPAC
 function mol2inchi($data, $params = array()){
   $inchi_bin = Config::get('INCHI');
-    
+
   static $seen = array(); // TODO: use memcache for longer-term storage?
   $md5 = md5($data);
-  
+
   $params = array_map('escapeshellarg', $params);
-    
+
   if (!$seen[$md5]) {
     if (strpos($data, 'InChI=') === 0){ // $data is an InChI
       $command = 'echo %s | %s -STDIO -InChI2Struct 2>/dev/null | %s -InpAux -Key %s 2>/dev/null';
-      $command = sprintf($command, escapeshellarg($data), escapeshellarg($inchi_bin), escapeshellarg($inchi_bin), implode(' ', $params)); 
+      $command = sprintf($command, escapeshellarg($data), escapeshellarg($inchi_bin), escapeshellarg($inchi_bin), implode(' ', $params));
     }
     else{ // $data = MOL
       $command = 'echo %s | %s -STDIO -Key %s 2>/dev/null';
-      $command = sprintf($command, escapeshellarg($data), escapeshellarg($inchi_bin), implode(' ', $params)); 
+      $command = sprintf($command, escapeshellarg($data), escapeshellarg($inchi_bin), implode(' ', $params));
     }
     exec($command, $output, $value);
     // TODO: check for errors
     if (!empty($output))
       $seen[$md5] = $output;
   }
-  
+
   $response = array();
-  
+
+=======
+  }
+
+  return $response;
+}
+
+// needs InChI binary >= v1.03 from IUPAC
+function mol2inchi($data, $params = array()){
+  $inchi_bin = Config::get('INCHI');
+
+  static $seen = array(); // TODO: use memcache for longer-term storage?
+  $md5 = md5($data);
+
+  $params = array_map('escapeshellarg', $params);
+
+  if (!$seen[$md5]) {
+    if (strpos($data, 'InChI=') === 0){ // $data is an InChI
+      $command = 'echo %s | %s -STDIO -InChI2Struct 2>/dev/null | %s -InpAux -Key %s 2>/dev/null';
+      $command = sprintf($command, escapeshellarg($data), escapeshellarg($inchi_bin), escapeshellarg($inchi_bin), implode(' ', $params));
+    }
+    else{ // $data = MOL
+      $command = 'echo %s | %s -STDIO -Key %s 2>/dev/null';
+      $command = sprintf($command, escapeshellarg($data), escapeshellarg($inchi_bin), implode(' ', $params));
+    }
+    exec($command, $output, $value);
+    // TODO: check for errors
+    if (!empty($output))
+      $seen[$md5] = $output;
+  }
+
+  $response = array();
+
+>>>>>>> 936892fb7d5469ace7d66b78ded847739971b26b
   foreach ($seen[$md5] as $i => $item){
     if (preg_match('/^(InChI=.+)/', $item, $matches)){
        $response['iupac:inchi'] = $matches[1];
@@ -453,7 +504,11 @@ function mol2inchi($data, $params = array()){
        }
     }
   }
-  
+<<<<<<< HEAD
+
+=======
+
+>>>>>>> 936892fb7d5469ace7d66b78ded847739971b26b
   return $response;
 }
 
@@ -479,7 +534,7 @@ function show_xml_error($error, $xml) {
 
   if ($error->file)
     $return[] = "  File: $error->file";
-  
+
   return implode("\n", $return);
 }
 
@@ -487,7 +542,7 @@ function human_filesize($path){
   $units = array('B', 'KB', 'MB', 'GB', 'TB', 'PB');
   $n = count($units) - 1;
   $size = filesize($path);
-  
+
   $i = 0;
   while ($size > 1024 && $i < $n){
     $size /= 1024;
@@ -502,15 +557,15 @@ function parse_sdf($sdf){
   foreach (explode('$$$$', $sdf) as $item){
     if (preg_match('/^(.+?\nM\s+END\n)(.*)/s', $item, $matches)){
       list(, $structure, $text) = $matches;
-      
+
       $item = array();
       preg_match_all('/>\s+<(\w+)>(?:\r|\n)(.+?)(?:\r|\n){2}/s', $text, $meta_matches, PREG_SET_ORDER);
       foreach ($meta_matches as $m)
         $item['meta-' . $m[1]] = $m[2];
-      
-      $item['chem:mol'] = $structure;       
+
+      $item['chem:mol'] = $structure;
       $item = array_merge($item, mol2stdinchi($structure));
-          
+
       $items[] = $item;
     }
   }
@@ -518,24 +573,24 @@ function parse_sdf($sdf){
 }
 
 function build_multipart_data($params){
-  $boundary = '---------------------' . substr(md5(time()), 0, 10);    
+  $boundary = '---------------------' . substr(md5(time()), 0, 10);
   $data = "--$boundary\n";
 
   foreach ($params as $key => $item){
     $data .= "Content-Disposition: form-data; name='$key'";
-    
+
     if (is_array($item)){
       $data .= '; filename="' . $item['filename'] . "'\nContent-Type: " . $item['type'];
       $item = $item['content'];
     }
-    
+
     $data .= "\n\n$item\n--$boundary\n";
   }
 
   return array(
-    'method' => 'POST', 
-    'header' => 'Content-Type: multipart/form-data; boundary=' . $boundary, 
-    'content' => $data, 
+    'method' => 'POST',
+    'header' => 'Content-Type: multipart/form-data; boundary=' . $boundary,
+    'content' => $data,
     );
 }
 

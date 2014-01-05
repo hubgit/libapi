@@ -13,7 +13,7 @@ class DB {
     if (!isset($password))
       $password = Config::get('DB_PASS');
 
-    $this->link = mysql_connect($host, $user, $password) or die("Could not connect to MySQL database\n");
+    $this->link = mysql_connect($host, $user, $password) or die("Could not connect to MySQL database\n" . mysql_errno());
     mysql_select_db($database, $this->link) or die("Could not select database\n");
 
     mysql_query('SET CHARACTER SET utf8', $this->link);

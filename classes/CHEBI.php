@@ -41,7 +41,7 @@ class CHEBI extends BioPortal {
         'search' => $term,
         'searchCategory' => $field,
         'maximumResults' => $this->n,
-        'stars' => 'THREE ONLY',
+        //'stars' => 'THREE ONLY',
         );
      
       $this->soap($this->wsdl, 'getLiteEntity', array_merge($defaults, $params));     

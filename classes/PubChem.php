@@ -70,6 +70,9 @@ class PubChem extends Entrez{
       throw new Exception('Error searching PubChem');
 
     $this->total = (int) $this->data->Count;
+    
+    if (!$this->total)
+      $this->remove_cached_data('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi', $params, 'xml'); // FIXME: is there a better way to do this?
 
     if ($params['usehistory'] == 'y'){
       $this->webenv = (string) $this->data->WebEnv;
@@ -163,6 +166,7 @@ class PubChem extends Entrez{
       'misc:synonyms' => $synonyms,
       'chem:molecular-formula' => $data['MolecularFormula'],
       'chem:smiles' => $data['CanonicalSmile'],
+      'iupac:stdinchi' => $data['InChI'],
       'iupac:stdinchikey' => $data['InChIKey'],
       'rdf:uri' => url('http://pubchem.ncbi.nlm.nih.gov/summary/summary.cgi', array('cid' => $data['CID'])),
       'misc:image' => url('http://pubchem.ncbi.nlm.nih.gov/image/imagefly.cgi', array('width' => 200, 'height' => 200, 'cid' => $data['CID'])),

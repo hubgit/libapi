@@ -13,8 +13,8 @@ class Mendeley extends API {
   private $access_token_url = 'http://www.mendeley.com/oauth/access_token/';
   private $authorize_url = 'http://www.mendeley.com/oauth/authorize/';
   
-  function require_oauth(){
-    if (!(Config::$properties['MENDELEY_TOKEN'] && Config::$properties['MENDELEY_TOKEN_SECRET']))
+  function oauth_init(){
+    if (!(Config::get('MENDELEY_TOKEN', false) && Config::get('MENDELEY_TOKEN_SECRET', false)))
       oauth_authorize('MENDELEY', array('request_token' => $this->request_token_url, 'authorize' => $this->authorize_url, 'access_token' => $this->access_token_url));
       
     $this->oauth = array(
@@ -25,21 +25,46 @@ class Mendeley extends API {
       );
   }
 
+  function call($path, $params = array()){
+    $defaults = array('consumer_key' => Config::get('MENDELEY_CONSUMER_KEY'));
+    return $this->get_data($this->server . $path, array_merge($defaults, $params), 'json');
+  }
+
   function search($terms, $start = 0, $n = 20){
     $page = ($start * n) + 1;    
-    $this->get_data($this->server . 'documents/search/' . rawurlencode($terms), array('consumer_key' => Config::get('MENDELEY_CONSUMER_KEY'), 'page' => $page, 'items' => $n));      
+    $this->call('documents/search/' . rawurlencode($terms), array('page' => $page, 'items' => $n));      
     $this->total = $this->data->total_results;
-    $this->results = $this->data->documents;
+    return $this->results = $this->data->documents;
   }
   
   function document_details($id, $type = NULL){
-    $this->get_data($this->server . 'documents/details/' . rawurlencode($id), array('consumer_key' => Config::get('MENDELEY_CONSUMER_KEY'), 'type' => $type));
+    if ($type == 'doi') $id = str_replace('/', '%2F', $id); // workaround
+    return $this->call('documents/details/' . rawurlencode($id), array('type' => $type));
   }
   
-  function document_related($id){
-    $this->get_data($this->server . 'documents/related/' . rawurlencode($id), array('consumer_key' => Config::get('MENDELEY_CONSUMER_KEY')));
+  function document_related($id, $start = 0, $n = 20){
+    $this->call('documents/related/' . rawurlencode($id), array('page' => $page, 'items' => $n));
     $this->total = $this->data->total_results;
-    $this->results = $this->data->document_ids;
+    return $this->data->document_ids;
+  }
+
+  function document_authored($name, $start = 0, $n = 20){
+    $this->call('documents/authored/' . rawurlencode($name), array('page' => $page, 'items' => $n));
+    $this->total = $this->data->total_results;
+    return $this->data->document_ids;
+  }
+
+  function document_tagged($tag, $start = 0, $n = 20){
+    $this->call('documents/tagged/' . rawurlencode($tag), array('page' => $page, 'items' => $n));
+    $this->total = $this->data->total_results;
+    return $this->data->document_ids;
+  }
+
+  function create_group($name, $type = 'open'){
+    $this->oauth_init();
+    $data = array('group' => array('name' => $name, 'type' => $type));
+    $http = array('method' => 'POST', 'content' => json_encode($data));
+    $this->call('library/groups/', array(), 'json', $http);
   }
 }
 

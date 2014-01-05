@@ -34,6 +34,11 @@ class ElasticSearch {
     return $this->call($this->type . '/' . $id, array('method' => 'PUT', 'content' => $data));
   }
   
+  //curl -X DELETE http://localhost:9200/{INDEX}/{TYPE}/{ID} -d ...
+  function delete($id){
+    return $this->call($this->type . '/' . $id, array('method' => 'DELETE'));
+  }
+  
   //curl -X GET http://localhost:9200/{INDEX}/{TYPE}/_search?q= ...
   function query($q){
     return $this->call($this->type . '/_search?' . http_build_query(array('q' => $q)));

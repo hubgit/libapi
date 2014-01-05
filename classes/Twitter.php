@@ -17,8 +17,8 @@ class Twitter extends API {
   private $access_token_url = 'https://api.twitter.com/oauth/access_token';
   private $authorize_url = 'https://api.twitter.com/oauth/authorize';
   
-  function require_oauth(){
-    if (!(Config::$properties['TWITTER_TOKEN'] && Config::$properties['TWITTER_TOKEN_SECRET']))
+  function oauth_init(){
+    if (!(Config::get('TWITTER_TOKEN', false) && Config::get('TWITTER_TOKEN_SECRET', false)))
       return oauth_authorize('TWITTER', array('request_token' => $this->request_token_url, 'authorize' => $this->authorize_url, 'access_token' => $this->access_token_url));
       
     $this->oauth = array(
@@ -57,27 +57,32 @@ class Twitter extends API {
   }
 
   function followers($user, $id = NULL, $cursor = -1){      
-    $this->require_oauth();
+    $this->oauth_init();
     $this->get_data($this->server . 'followers/ids.json', array('screen_name' => $user, 'user_id' => $id, 'cursor' => $cursor));      
     $this->cursor = $this->data->next_cursor;
     $this->results = $this->data->ids;
   }
 
   function friends($user, $id = NULL, $cursor = -1){
-    $this->require_oauth();
+    $this->oauth_init();
     $this->get_data($this->server . 'friends/ids.json', array('screen_name' => $user, 'user_id' => $id, 'cursor' => $cursor));      
     $this->cursor = $this->data->next_cursor;
     $this->results = $this->data->ids;
   }
 
   function user($user, $id = NULL){
-    $this->require_oauth();
-    $this->get_data($this->server . 'users/show.json', array('screen_name' => $user, 'user_id' => $id));
+    $this->oauth_init();
+    return $this->get_data($this->server . 'users/show.json', array('screen_name' => $user, 'user_id' => $id));
+  }
+
+  function friends_timeline($user, $count = 200, $since = null){
+    $this->oauth_init();    
+    return $this->get_data($this->server . 'statuses/friends_timeline.json', array('count' => $count, 'since_id' => $since, 'include_rts' => 1, 'trim_user' => 1, 'include_entities' => 1));    
   }
 
   function content_by_user($user, $max = 0, $from = 1){
-    $this->require_oauth();
-    $http = array('header' => sprintf('Authorization: Basic %s', base64_encode(Config::get('TWITTER_AUTH'))));
+    //$this->oauth_init();
+    //$http = array('header' => sprintf('Authorization: Basic %s', base64_encode(Config::get('TWITTER_AUTH'))));
 
     $from = $this->get_latest($from, 1); // 1 = earliest status id
 

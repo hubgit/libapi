@@ -48,5 +48,6 @@ class Whatizit extends API {
           //'data' => array('uniprot:id' => $items[$title]),
           );
     }
+	return $this->annotations;
   }
 }
