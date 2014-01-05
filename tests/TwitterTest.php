@@ -18,6 +18,7 @@ class TwitterTest extends PHPUnit_Framework_TestCase {
   
   public function testFollowers(){
     $this->api->followers($this->username);
+  debug($this->api->data);
     $this->assertGreaterThan(10, count($this->api->results));
   }
   

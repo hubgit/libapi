@@ -20,7 +20,7 @@ class API {
   public $preserveWhiteSpace = TRUE;
 
   public $cache = TRUE;
-  public $cache_expire = 864000; //60*60*24; // use the cache file if it's less than 10 days old
+  public $cache_expire = 864000; //60*60*24*10; // use the cache file if it's less than ten days old
 
   // SOAP client
   public $soapclient;
@@ -56,6 +56,42 @@ class API {
       throw new Exception('Requirement not defined: ' . $def);
   }
 
+  function get(){
+    $args = func_get_args();
+    return $this->add_method($args, 'GET');
+  }
+
+  function post(){
+    $args = func_get_args();
+    return $this->add_method($args, 'POST');
+  }
+
+  function put(){
+    $args = func_get_args();
+    return $this->add_method($args, 'PUT');
+  }
+
+  function delete(){
+    $args = func_get_args();
+    return $this->add_method($args, 'DELETE');
+  }
+
+  function head(){
+    $args = func_get_args();
+    return $this->add_method($args, 'HEAD');
+  }
+
+  function options(){
+    $args = func_get_args();
+    return $this->add_method($args, 'OPTIONS');
+  }
+
+  function add_method($args, $method){
+    if (!is_array($args[3])) $args[3] = array();
+    $args[3]['method'] = $method;
+    return call_user_func_array(array($this, 'get_data'), $args);
+  }
+
   function soap($wsdl, $method){
     unset($this->response, $this->data);
 
@@ -63,7 +99,7 @@ class API {
     $params = array_slice($args, 2);
     ksort($params);
     //debug(array($this->cache, $method, $params));
-    
+
     debug_log('Calling ' . $wsdl . ' : ' . $method);
 
     $key = md5($wsdl . '#' . $method . '?' . http_build_query($params));
@@ -90,14 +126,14 @@ class API {
     }
     return $this->data;
   }
-  
+
   function cache_remove($key){
     if (preg_match('/[^a-z0-9]/i', $key)) // must be an MD5 hash
       return false;
-      
+
     $cache_dir = $this->get_output_dir('cache-uri');
     $cache_file = sprintf('%s/%s.gz', $cache_dir, $key);
-    
+
     debug_log('Removing cache file ' . $cache_file);
     unlink($cache_file);
   }
@@ -105,7 +141,7 @@ class API {
   function cache_set($key, $data = NULL){
     $cache_dir = $this->get_output_dir('cache-uri');
     $cache_file = sprintf('%s/%s.gz', $cache_dir, $key);
-    debug_log('Writing to cache file ' . $cache_file);    
+    debug_log('Writing to cache file ' . $cache_file);
     file_put_contents('compress.zlib://' . $cache_file, serialize($data));
   }
 
@@ -113,15 +149,15 @@ class API {
     $cache_dir = $this->get_output_dir('cache-uri');
     $cache_file = sprintf('%s/%s.gz', $cache_dir, $key);
     if (file_exists($cache_file) && ((time() - filemtime($cache_file)) < $this->cache_expire)){
-      debug_log('Reading cache file ' . $cache_file);    
+      debug_log('Reading cache file ' . $cache_file);
       return unserialize(file_get_contents('compress.zlib://' . $cache_file));
     }
   }
-  
+
   function remove_cached_data($url, $params = array(), $format = 'json'){
     if (!empty($params))
       ksort($params);
-      
+
     $suffix = empty($params) ? NULL : '?' . http_build_query($params);
     $key = md5($format . ':' . $url . $suffix);
     $this->cache_remove($key);
@@ -191,11 +227,11 @@ class API {
 
     if (!isset($http['header']) || !preg_match('/Accept: /', $http['header']))
       $http['header'] .= (empty($http['header']) ? '' : "\n") . $this->accept_header($format);
-      
+
     $http['header'] .= (empty($http['header']) ? '' : "\n") . "Connection: close";
 
     //debug($http);
-    $http['header'] = '';
+    //$http['header'] = '';
 
     $context = empty($http) ? NULL : stream_context_create(array('http' => $http));
 
@@ -204,7 +240,13 @@ class API {
       $oauth->enableDebug();
       $oauth->setToken($this->oauth['token'], $this->oauth['secret']);
       try {
-        //debug($url);
+
+        $headers = explode("\n", $http['header']);
+        $http['header'] = array();
+        foreach ($headers as $value)
+          if (preg_match('/^\s*(.+?):\s*(.+)/', $value, $matches))
+            $http['header'][$matches[1]] = trim($matches[2]);
+
         $oauth->fetch($url, $http['content'], constant('OAUTH_HTTP_METHOD_' . $http['method']), $http['header']);
         $this->response = $oauth->getLastResponse();
         //debug($this->response);
@@ -226,14 +268,13 @@ class API {
 
     $this->parse_http_response_header();
     $this->parse_effective_url($url);
-    
+
     debug('Received response from ' . $this->http_effective_url);
     debug_log('Received response from ' . $this->http_effective_url);
 
     //debug_log($this->response);
 
-    $this->data = NULL;
-    if ($this->response !== FALSE){
+    if ($this->response !== false){
       try {
         $this->data = $this->format_data($format);
         $this->validate_data($format);
@@ -280,8 +321,9 @@ class API {
       if (!isset($http['file']) && isset($http['content'])){
         $http['file'] = tmpfile();
         fwrite($http['file'], $http['content']);
-        fseek($http['file'], 0);
       }
+
+      fseek($http['file'], 0);
 
       $fstat = fstat($http['file']);
       curl_setopt($curl, CURLOPT_INFILE, $http['file']);
@@ -322,7 +364,7 @@ class API {
   function format_data($format){
     switch ($format){
       case 'json':
-      return json_decode($this->response);
+      return json_decode($this->response, true);
       case 'xml':
       return simplexml_load_string($this->response, NULL, LIBXML_NOCDATA | LIBXML_NONET);
       case 'dom':
