@@ -24,7 +24,7 @@ class Yelp extends API {
     $this->oauth_init();
     $defaults = array('term' => $term);
     $this->cache = false;
-    $this->get_data($this->server . 'search', array_merge($defaults, $params), 'json');
+    $this->get_data($this->server . 'search', array_merge($defaults, $params), 'raw');
     $this->total = $this->data->total;
     return $this->items = $this->data->businesses;
   } 

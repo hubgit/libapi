@@ -195,6 +195,7 @@ class API {
     $http['header'] .= (empty($http['header']) ? '' : "\n") . "Connection: close";
 
     //debug($http);
+    $http['header'] = '';
 
     $context = empty($http) ? NULL : stream_context_create(array('http' => $http));
 
